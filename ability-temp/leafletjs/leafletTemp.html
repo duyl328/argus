@@ -1,0 +1,93 @@
+<!--
+  ~ Time:2024/10/21 上午8:43 03
+  ~ Name:leafletTemp.html
+  ~ Path:
+  ~ ProjectName:leafletjs
+  ~ Author:charlatans
+  ~
+  ~  Il n'ya qu'un héroïsme au monde :
+  ~     c'est de voir le monde tel qu'il est et de l'aimer.
+  -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+	<meta charset="UTF-8">
+	<meta content="IE=edge" http-equiv="X-UA-Compatible">
+	<meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
+	<title>Title</title>
+	<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+	      integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY="
+	      crossorigin=""/>
+	<style>
+		* {
+			margin: 0;
+			padding: 0;
+			list-style: none;
+			font: 500 15px YouYuan;
+			text-decoration: none;
+		}
+
+		li {
+			cursor: pointer;
+			position: relative;
+		}
+
+		/*-------以上为默认设置（The above is the default setting）--------*/
+
+		#map {
+			height: 480px;
+		}
+
+
+	</style>
+</head>
+<body>
+<div id="map"></div>
+</body>
+<!-- Make sure you put this AFTER Leaflet's CSS -->
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"
+        integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo="
+        crossorigin=""></script>
+
+<script>
+	var map = L.map('map').setView([51.505, -0.09], 13);
+	L.tileLayer('https://tile.openstreetmap.org/{z}/{x}/{y}.png', {
+		maxZoom: 19,
+		// attribution: '&copy; <a href="http://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+	}).addTo(map);
+
+	var marker = L.marker([51.5, -0.09]).addTo(map);
+
+	var circle = L.circle([51.508, -0.11], {
+		color: 'red',
+		fillColor: '#f03',
+		fillOpacity: 0.5,
+		radius: 500
+	}).addTo(map);
+
+	var polygon = L.polygon([
+		[51.509, -0.08],
+		[51.503, -0.06],
+		[51.51, -0.047]
+	]).addTo(map);
+
+	marker.bindPopup("<b>Hello world!</b><br>I am a popup.").openPopup();
+	circle.bindPopup("I am a circle.");
+	polygon.bindPopup("I am a polygon.");
+
+	var popup = L.popup()
+	.setLatLng([51.513, -0.09])
+	.setContent("I am a standalone popup.")
+	.openOn(map);
+
+	function onMapClick(e) {
+		popup
+		.setLatLng(e.latlng)
+		.setContent("You clicked the map at " + e.latlng.toString())
+		.openOn(map);
+	}
+
+	map.on('click', onMapClick);
+
+</script>
+</html>

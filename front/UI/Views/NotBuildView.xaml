@@ -1,0 +1,22 @@
+<UserControl x:Class="UI.Views.NotBuildView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:local="clr-namespace:UI.Views"
+             xmlns:prism="http://prismlibrary.com/"
+             prism:ViewModelLocator.AutoWireViewModel="True"
+             xmlns:b="http://schemas.microsoft.com/xaml/behaviors"
+             xmlns:viewModels="clr-namespace:UI.ViewModels"
+             d:DataContext="{d:DesignInstance viewModels:NotBuildViewModel, IsDesignTimeCreatable=True}"
+             mc:Ignorable="d"
+             d:DesignHeight="300" d:DesignWidth="300">
+    <Grid>
+        <TextBlock FontSize="90">
+            你似乎进入了无人之境
+        </TextBlock>
+        <Button 
+            Command="{Binding GoHomeCommand}"
+            Content="Go Home"/>
+    </Grid>
+</UserControl>
