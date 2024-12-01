@@ -21,42 +21,6 @@
       "csp": null,
       "freezePrototype": true,
       "capabilities": [
-        {
-          "$schema": "../gen/schemas/desktop-schema.json",
-          "identifier": "run-app-base",
-          "description": "Base permissions to run the app",
-          "windows": [
-            "main"
-          ],
-          "permissions": [
-            "core:default",
-            "fs:default",
-            "core:window:allow-minimize",
-            "core:window:allow-maximize",
-            "core:window:allow-unmaximize",
-            "core:window:allow-close",
-            "core:window:allow-start-dragging",
-            "dialog:allow-open",
-            "dialog:allow-ask",
-            "dialog:allow-save",
-            "dialog:allow-confirm",
-            "dialog:default",
-            "dialog:allow-message",
-            "shell:allow-open",
-            "shell:allow-kill",
-            "shell:allow-stdin-write",
-            "fs:allow-open",
-            "fs:allow-write",
-            "fs:allow-read",
-            "fs:allow-rename",
-            "fs:allow-mkdir",
-            "fs:allow-remove",
-            "fs:allow-write-text-file",
-            "fs:scope-download-recursive",
-            "fs:scope-resource-recursive"
-          ],
-          "capabilities": []
-        }
       ],
       "assetProtocol": {
         "enable": true,

@@ -16,8 +16,8 @@ async function greet1() {
   <main class="container">
     <h1>Welcome to Tauri + Vue</h1>
     <button @click="greet1">greet</button>
-<!--    <img-show/>-->
-    <file-select/>
+    <img-show/>
+<!--    <file-select/>-->
 
   </main>
 </template>

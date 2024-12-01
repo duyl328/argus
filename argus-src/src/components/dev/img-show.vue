@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import {invoke, convertFileSrc} from "@tauri-apps/api/core";
 import {getImageAbsolutePathCommand} from "../../command.ts";
-import {computed, onMounted} from "vue";
+import {computed, onMounted, ref} from "vue";
 import {getImg} from "../../services/imgService.ts";
 import {path} from "@tauri-apps/api";
 import {readFile, BaseDirectory} from '@tauri-apps/plugin-fs';
@@ -28,11 +28,6 @@ function getPath() {
   })
 }
 
-// http://localhost:1420/@fs/D:/argus/img/%E5%B1%80%E9%83%A8/5e9324ca411fa3f6.jpg
-// http://localhost:1420/@fs/D:/argus/img/%E5%B1%80%E9%83%A8/5e9324ca411fa3f6.jpg
-
-// http://asset.localhost/tauri%3A%2F%2Ffile%2FD%3A%2Fargus%2Fimg%2F%25E5%25B1%2580%25E9%2583%25A8%2F5e9324ca411fa3f6.jpg
-// http://asset.localhost/tauri%3A%2F%2Ffile%2FD%3A%2Fargus%2Fimg%2F%E5%B1%80%E9%83%A8%2F5e9324ca411fa3f6.jpg
 onMounted(() => {
   getPath()
 })
@@ -46,7 +41,7 @@ let s = convertFileSrc(img4);
 console.log(s)
 let img2 = s
 let img5 = `http://localhost:1450/@fs/${img3}`;
-
+const img6 = ref("")
 
 // const updatePath = () => {
 //   setImagePath(`tauri://file/path/to/image.png?time=${Date.now()}`);
@@ -59,21 +54,26 @@ home.then((res) => {
 })
 
 
-// const icon = readFile('5e9324ca411fa3f6.jpg', {
-//   baseDir: BaseDirectory.Desktop,
-// });
-// icon.then((res) => {
-//   console.log('11111111', res)
-// })
-//
-//
-// readFile(img3)
-//     .then((data) => {
-//       console.log("File content:", data);
-//     })
-//     .catch((err) => {
-//       console.error("Error reading file:", err);
-//     });
+const icon = readFile('5e9324ca411fa3f6.jpg', {
+  baseDir: BaseDirectory.Desktop,
+});
+icon.then((res) => {
+  console.log('11111111', res)
+})
+
+
+readFile(img3)
+    .then((data) => {
+      const base64String = btoa(
+          new Uint8Array(data).reduce((acc, byte) => acc + String.fromCharCode(byte), "")
+      );
+      img6.value = `data:image/jpeg;base64,${base64String}`
+      console.log("File content:", data);
+      console.log("File content base64String:", base64String);
+    })
+    .catch((err) => {
+      console.error("Error reading file:", err);
+    });
 
 
 checkDirectoryAccess("C:/").then((res) => {
@@ -101,6 +101,7 @@ checkDirectoryAccess("C:\\Windows\\System32").then((res) => {
   <img :src="img1" alt="exam123ple"/>
   <img :src="img2" alt="example"/>
   <img :src="img5" alt="example1"/>
+  <img :src="img6" alt="examp123le1"/>
   <!--    <img src="tauri://file/D:/argus/img/局部/5e9324ca411fa3f6.jpg" alt="example" />-->
   <!--  <img :src="imgPath" alt="example"/>-->
 
