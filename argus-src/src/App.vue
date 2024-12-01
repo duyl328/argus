@@ -2,6 +2,7 @@
 import {onMounted, ref} from "vue";
 import ImgShow from "./components/dev/img-show.vue";
 import {greet} from "./services/base.ts";
+import FileSelect from "./components/dev/file-select.vue";
 
 const greetMsg = ref("");
 const name = ref("你好，这是测试的李子");
@@ -14,8 +15,10 @@ async function greet1() {
 <template>
   <main class="container">
     <h1>Welcome to Tauri + Vue</h1>
+    <button @click="greet1">greet</button>
+<!--    <img-show/>-->
+    <file-select/>
 
-    <img-show/>
   </main>
 </template>
 

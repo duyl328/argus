@@ -1,5 +1,5 @@
-use std::path::{Path, PathBuf};
 use std::fs;
+use std::path::{Path, PathBuf};
 /// 返回图像绝对路径
 #[tauri::command]
 pub fn get_image_absolute_path() -> String {
@@ -7,17 +7,11 @@ pub fn get_image_absolute_path() -> String {
     path
 }
 
-
-
 #[tauri::command]
 pub fn get_image_as_base64() -> String {
     let path = String::from("D:/argus/img/局部/5e9324ca411fa3f6.jpg");
     path
 }
-
-
-
-
 
 /// 检测是否有指定路径的访问权限
 #[tauri::command]

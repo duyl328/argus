@@ -6,51 +6,33 @@
     "main"
   ],
   "permissions": [
-    "fs:default",
-    {
-      "identifier": "fs:allow-read-file",
-      "allow": [
-        {
-          "path": "D:/*"
-        }
-      ]
-    },
-    {
-      "identifier": "fs:allow-read",
-      "allow": [
-        {
-          "path": "D:/*"
-        }
-      ]
-    },
-    {
-      "identifier": "allow-read-dir",
-      "allow": [
-        {
-          "path": "D:/*"
-        }
-      ]
-    },
-    {
-      "identifier": "fs:read-files",
-      "allow": [
-        {
-          "path": "D:/*"
-        }
-      ]
-    },
+    "dialog:allow-open",
     "core:default",
-    "shell:allow-open",
     "fs:default",
-    "core:path:default",
-    "core:event:default",
-    "core:window:default",
-    "core:app:default",
-    "core:resources:default",
-    "core:menu:default",
-    "core:tray:default",
-    "core:window:allow-set-title"
+    "core:window:allow-minimize",
+    "core:window:allow-maximize",
+    "core:window:allow-unmaximize",
+    "core:window:allow-close",
+    "core:window:allow-start-dragging",
+    "dialog:allow-open",
+    "dialog:allow-ask",
+    "dialog:allow-save",
+    "dialog:allow-confirm",
+    "dialog:default",
+    "dialog:allow-message",
+    "dialog:allow-open",
+    "shell:allow-open",
+    "shell:allow-kill",
+    "shell:allow-stdin-write",
+    "fs:allow-open",
+    "fs:allow-write",
+    "fs:allow-read",
+    "fs:allow-rename",
+    "fs:allow-mkdir",
+    "fs:allow-remove",
+    "fs:allow-write-text-file",
+    "fs:scope-download-recursive",
+    "fs:scope-resource-recursive"
   ],
-  "capabilities": [
-  ]
+  "capabilities": []
 }

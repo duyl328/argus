@@ -1,11 +1,11 @@
 {
   "$schema": "https://schema.tauri.app/config/2",
   "productName": "argus-src",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "identifier": "com.argus-src.app",
   "build": {
     "beforeDevCommand": "npm run dev",
-    "devUrl": "http://localhost:1420",
+    "devUrl": "http://localhost:1450",
     "beforeBuildCommand": "npm run build",
     "frontendDist": "../dist"
   },
@@ -18,7 +18,58 @@
       }
     ],
     "security": {
-      "csp": null
+      "csp": null,
+      "freezePrototype": true,
+      "capabilities": [
+        {
+          "$schema": "../gen/schemas/desktop-schema.json",
+          "identifier": "run-app-base",
+          "description": "Base permissions to run the app",
+          "windows": [
+            "main"
+          ],
+          "permissions": [
+            "core:default",
+            "fs:default",
+            "core:window:allow-minimize",
+            "core:window:allow-maximize",
+            "core:window:allow-unmaximize",
+            "core:window:allow-close",
+            "core:window:allow-start-dragging",
+            "dialog:allow-open",
+            "dialog:allow-ask",
+            "dialog:allow-save",
+            "dialog:allow-confirm",
+            "dialog:default",
+            "dialog:allow-message",
+            "shell:allow-open",
+            "shell:allow-kill",
+            "shell:allow-stdin-write",
+            "fs:allow-open",
+            "fs:allow-write",
+            "fs:allow-read",
+            "fs:allow-rename",
+            "fs:allow-mkdir",
+            "fs:allow-remove",
+            "fs:allow-write-text-file",
+            "fs:scope-download-recursive",
+            "fs:scope-resource-recursive"
+          ],
+          "capabilities": []
+        }
+      ],
+      "assetProtocol": {
+        "enable": true,
+        "scope": {
+          "allow": [
+            "$APPDATA/db/**",
+            "$RESOURCE/**"
+          ],
+          "deny": [
+            "$APPDATA/db/*.stronghold"
+          ]
+        }
+      }
     }
   },
   "bundle": {
