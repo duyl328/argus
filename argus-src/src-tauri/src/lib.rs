@@ -1,6 +1,7 @@
 mod commands;
 mod config;
 mod constant;
+mod utils;
 
 use std::panic;
 use tauri::{webview::{PageLoadEvent, WebviewWindowBuilder}, App, AppHandle, Emitter, Listener, Manager, RunEvent, WebviewUrl, WebviewWindow};
@@ -14,6 +15,7 @@ pub fn run() {
             commands::command::greet,
             commands::file_command::get_image_absolute_path,
             commands::file_command::check_directory_access,
+            commands::file_command::read_image_as_base64,
         ]).setup(|app| {
 
 
