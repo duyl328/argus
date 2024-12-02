@@ -1,0 +1,48 @@
+/**
+  * Time:2024/7/27 下午1:33 26
+  * Name:tailwind.css
+  * Path:src/assets
+  * ProjectName:utopia-front-vue
+  * Author:charlatans
+  *
+  *  Il n'ya qu'un héroïsme au monde :
+  *     c'est de voir le monde tel qu'il est et de l'aimer.
+  */
+@use 'main' as *; // `as *` 使其与 @import 行为相同
+
+* {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  text-decoration: none;
+}
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  h1 {
+    @apply text-3xl;
+  }
+
+  h2 {
+    @apply text-2xl;
+  }
+
+  h3 {
+    @apply text-xl;
+  }
+
+  h4 {
+    @apply text-lg;
+  }
+
+  h5 {
+    @apply text-base;
+  }
+
+  h6 {
+    @apply text-sm;
+  }
+}

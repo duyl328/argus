@@ -3,6 +3,7 @@ import {onMounted, ref} from "vue";
 import ImgShow from "./components/dev/img-show.vue";
 import {greet} from "./services/base.ts";
 import FileSelect from "./components/dev/file-select.vue";
+import SupportedFonts from "@/views/dev/font/SupportedFonts.vue";
 
 const greetMsg = ref("");
 const name = ref("你好，这是测试的李子");
@@ -14,10 +15,12 @@ async function greet1() {
 
 <template>
   <main class="container">
-    <button @click="greet1">greet</button>
-    <img-show/>
-<!--    <file-select/>-->
+<!--    <button @click="greet1">greet</button>-->
+<!--    <img-show/>-->
+    <file-select/>
 
+    <SupportedFonts/>
+<!--    <router-view />-->
   </main>
 </template>
 

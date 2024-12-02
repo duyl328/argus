@@ -1,0 +1,47 @@
+@use 'base';
+
+//#app {
+//  max-width: 1280px;
+//  margin: 0 auto;
+//  padding: 2rem;
+//  font-weight: normal;
+//}
+
+
+@media (hover: hover) {
+  a:hover {
+    background-color: hsla(160, 100%, 37%, 0.2);
+  }
+}
+
+@media (light-level: dim) {
+  /* 在昏暗的环境光下生效 */
+}
+
+@media (prefers-color-scheme: dark) {
+  /* 适用于深色模式 */
+}
+
+@media (prefers-color-scheme: light) {
+  /* 适用于浅色模式 */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  /* 适用于用户偏好减少动画的场景 */
+}
+
+@media (orientation: portrait) {
+  /* 纵向模式 */
+}
+
+@media (orientation: landscape) {
+  /* 横向模式 */
+}
+
+@media (pointer: coarse) {
+  /* 适用于触摸屏等粗指针设备 */
+}
+
+@media (pointer: fine) {
+  /* 适用于鼠标等精细指针设备 */
+}

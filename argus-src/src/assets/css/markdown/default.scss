@@ -1,0 +1,256 @@
+/**
+  * Time:2024/8/10 下午5:49 39
+  * Name:default.scss
+  * Path:src/assets/css/markdown
+  * ProjectName:utopia-front-vue
+  * Author:charlatans
+  *
+  *  Il n'ya qu'un héroïsme au monde :
+  *     c'est de voir le monde tel qu'il est et de l'aimer.
+  */
+
+.markdown-container {
+  width: 100vw;
+
+  // region 一级标题至六级标题
+  h1, h2, h3, h4, h5, h6 {
+    white-space: pre-wrap;
+    page-break-after: avoid;
+    break-after: avoid-page;
+    page-break-inside: avoid;
+    widows: 3;
+    orphans: 4;
+    position: relative;
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+    font-weight: bold;
+    line-height: 1.4;
+    cursor: text;
+
+    &:hover {
+      text-decoration: none;
+    }
+  }
+
+  h1, h2, h3, h4, h5, h6, p {
+    margin-top: 1rem;
+    margin-bottom: 1rem;
+  }
+
+  h1 {
+
+    font-size: 2.25em;
+    line-height: 1.2;
+    border-bottom: 1px solid #eee;
+
+    tt, code {
+      font-size: inherit;
+    }
+
+  }
+
+  h2 {
+    font-size: 1.75em;
+    line-height: 1.225;
+    border-bottom: 1px solid #eee;
+
+    tt, code {
+      font-size: inherit;
+    }
+  }
+
+  h3 {
+    font-size: 1.5em;
+    line-height: 1.43;
+
+    tt, code {
+      font-size: inherit;
+    }
+  }
+
+  h4 {
+    font-size: 1.25em;
+
+    tt, code {
+      font-size: inherit;
+    }
+  }
+
+  h5 {
+    font-size: 1em;
+
+    tt, code {
+      font-size: inherit;
+    }
+  }
+
+  h6 {
+    font-size: 1em;
+    color: #777;
+
+    tt, code {
+      font-size: inherit;
+    }
+  }
+
+  // endregion
+
+  // region 段落
+  p {
+    line-height: inherit;
+    // 规定在分页时至少要保留的行数。
+    // orphans 属性主要在打印样式或多栏布局中使用，在屏幕样式中通常没有效果。
+    // 它常常与 widows 属性结合使用，后者控制页面顶部或列顶部的“寡行”。
+    orphans: 4;
+  }
+
+  code {
+    //background-color: #f3f4f4;
+    //background-color: #e7e7e7;
+    font-size: 0.9em;
+    background-color: #f3f4f4;
+    text-align: left;
+    vertical-align: initial;
+    padding: 2px 5px 1px 5px;
+    border-radius: 4px;
+    border: 1px solid #e7eaed;
+    font-weight: bold;
+    // 保留换行
+    white-space: pre-wrap;
+  }
+
+  // endregion
+
+  // region 引用
+
+  blockquote {
+    border-left: 4px solid #dfe2e5;
+    padding: 0 15px;
+    color: #777777;
+    border-left-color: rgba(85, 85, 85, 0.12);
+
+    blockquote {
+      padding-right: 0;
+    }
+
+    // 引用中的词语引用
+    code {
+      // 词语留白
+      margin: 0 2px 0 2px;
+      font-weight: bold;
+      color: #4b4b4b;
+    }
+  }
+
+  // endregion
+
+  // region 文本加粗
+  strong {
+    font-size: 1.1em;
+  }
+
+  // endregion
+
+  // region 列表
+
+  ul {
+    padding-left: 30px;
+    position: relative;
+
+    &:first-child {
+      margin-top: 0;
+
+    }
+
+    &:last-child {
+      margin-bottom: 0;
+
+    }
+
+
+    li {
+      display: list-item;
+      position: relative;
+      /* 默认使用圆点 */
+      list-style-type: disc;
+
+
+      li {
+        // 小方块
+        list-style-type: circle;
+
+        li {
+          // 空心小圆点
+          list-style-type: square;
+
+        }
+      }
+
+      &::marker {
+
+      }
+    }
+  }
+
+  // endregion
+
+  //hr {
+  //  height: 2px;
+  //  padding: 0;
+  //  margin: 16px 0;
+  //  background-color: #e7e7e7;
+  //  border: 0 none;
+  //  overflow: hidden;
+  //  box-sizing: content-box;
+  //}
+  //
+  //blockquote {
+  //  border-left: 4px solid #dfe2e5;
+  //  padding: 0 15px;
+  //  color: #777777;
+  //}
+  //
+  //
+  //// 删除线
+  //s {
+  //  text-decoration: black;
+  //  text-decoration-line: line-through;
+  //}
+  //
+  //ul {
+  //  list-style-type: none;
+  //  padding: 0;
+  //}
+  //
+  //li {
+  //  margin: 5px 0;
+  //  border-radius: 5px;
+  //  font-family: Arial, sans-serif;
+  //  font-size: 16px;
+  //  position: relative;
+  //  /* 为小圆点留出空间 */
+  //  padding: 10px 10px 10px 20px;
+  //
+  //  // 小圆点
+  //  &::after {
+  //    content: '';
+  //    position: absolute;
+  //    left: 0;
+  //    top: 50%;
+  //    transform: translateY(-50%);
+  //    width: 8px;
+  //    height: 8px;
+  //    background-color: #000; /* 圆点颜色 */
+  //    border-radius: 50%; /* 圆形 */
+  //  }
+  //}
+  //
+  //a {
+  //  margin: 5px;
+  //  border-radius: 5px;
+  //  font-family: Arial, sans-serif;
+  //  color: #428bca;
+  //  font-weight: bold;
+  //  font-size: 20px;
+  //}
+}

@@ -1,0 +1,28 @@
+/* 集合属性（主题样式） */
+:root{
+}
+
+/* 深色模式 */
+[data-theme="dark"] {
+  --color-background: #181818;
+  --color-background-soft: #222222;
+  --color-background-mute: #282828;
+  
+  --color-border-hover: rgba(84, 84, 84, 0.65);
+  --color-border: rgba(84, 84, 84, 0.48);
+  --color-heading: #ffffff;
+  --color-text: rgba(235, 235, 235, 0.64);
+  
+}
+
+/* 浅色模式 */
+[data-theme="light"] {
+  --color-background: #ffffff;
+  --color-background-soft: #f8f8f8;
+  --color-background-mute: #f2f2f2;
+  
+  --color-border: rgba(60, 60, 60, 0.12);
+  --color-border-hover: rgba(60, 60, 60, 0.29);
+  --color-heading: #2c3e50;
+  --color-text: rgba(24, 24, 24, 0.80);
+}
