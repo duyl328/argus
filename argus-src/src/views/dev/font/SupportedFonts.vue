@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import PathUtils from '../../../utils/pathUtils'
-import type { FontStyleObject } from '../../../types/views/dev/font/SupportedFonts.type'
+import type {FontStyleObject} from '../../../types/views/dev/font/SupportedFonts.type'
+import {readDir} from "@tauri-apps/plugin-fs";
+import {convertFileSrc} from "@tauri-apps/api/core";
 // import PathUtils from "../../../utils/pathUtils.ts"
 /**
  * 将需要展示的文字文件放至 `/assets/fonts` ，该组件可以通过文件遍历的方式将所有字体文件找到
@@ -13,9 +15,28 @@ import type { FontStyleObject } from '../../../types/views/dev/font/SupportedFon
  */
 
 const fonts = import.meta.glob('@/assets/fonts/**/*.{ttf,otf}')
-
+// const fonts = import.meta.glob('/public/assets/fonts/**/*.{ttf,otf}')
 // 字体样式表
 const fontsList: FontStyleObject[] = []
+
+readDir("/public/").then((fonts) => {
+  console.log(fonts);
+  // fonts.map(({ name, path }) => {
+  //   const [fontName] = name?.split(".") || [];
+  //   if (fontName) {
+  //     const font = new FontFace(fontName, `url(${convertFileSrc(path)})`);
+  //     font
+  //         .load()
+  //         .then((loadedFont) => {
+  //           document.fonts.add(loadedFont);
+  //         })
+  //         .catch(function (error) {
+  //           console.log("Failed to load font: " + error);
+  //         });
+  //   }
+  // });
+});
+
 
 Object.keys(fonts).forEach((key: string) => {
   let font = fonts[key]
@@ -23,10 +44,13 @@ Object.keys(fonts).forEach((key: string) => {
 
   // 创建一个新的<style>元素
   const style = document.createElement('style')
+  // let message = font.name.split("/src/")[1];
+  let message = font.name;
+  // console.log(message);
   style.textContent = `
         @font-face {
           font-family: '${fontFamily}';
-          src: url('${font.name}') format('truetype');
+          src: url('${message}') format('truetype');
           font-weight: normal;
           font-style: normal;
         }
@@ -34,20 +58,22 @@ Object.keys(fonts).forEach((key: string) => {
   // 将<style>元素添加到<head>中
   document.head.appendChild(style)
 
-  fontsList.push({ name: fontFamily, fontStyle: font.name })
+  fontsList.push({name: fontFamily, fontStyle: font.name})
 })
 
 
 </script>
 
 <template>
+
+
   <div>
     <div
-      class="text-3xl text-black  "
-      v-for="(item,index) in fontsList"
-      :key="index"
-      :style="{fontFamily:item.name}"
-      style="{item.fontStyle}"
+        class="text-3xl text-black  "
+        v-for="(item,index) in fontsList"
+        :key="index"
+        :style="{fontFamily:item.name}"
+        style="{item.fontStyle}"
     >
       <br>
       <hr>
@@ -71,4 +97,6 @@ Object.keys(fonts).forEach((key: string) => {
 </template>
 
 <style scoped lang="scss">
+
+
 </style>
