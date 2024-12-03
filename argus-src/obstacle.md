@@ -76,3 +76,91 @@
 ```
 
 `permissions` 中的属性重复定义导致所有的权限失效
+
+
+
+
+
+## tuari 引入 freezePrototype 导致前端报错
+
+参数位置：
+```json
+{
+  "app": {
+    "security": {
+      "freezePrototype": false,
+    }
+  }
+}
+```
+
+> `freezePrototype` 是一个安全相关的配置选项，用于限制或防止 JavaScript 原型链污染攻击。
+
+> [!Tip]
+>
+> 设置该参数会导致前端的部分库失效如:`element-plus`和`lodash`
+
+
+
+### **`freezePrototype` 的作用**
+
+1. **防止原型链污染攻击**：
+
+   - JavaScript 原型链污染是一种攻击方式，攻击者通过修改全局对象（如 `Object.prototype`）上的属性，影响应用程序中使用该对象的所有实例。
+
+   - 例如：
+
+     ```javascript
+     Object.prototype.isAdmin = true;
+     console.log({}.isAdmin); // true
+     ```
+
+   - `freezePrototype` 会通过“冻结”基础对象（如 `Object.prototype`、`Array.prototype` 等），防止这些对象被篡改。
+
+2. **增强安全性**：
+
+   - 在 Tauri 应用中，JavaScript 的运行环境可能具有访问用户文件系统或调用系统 API 的能力。为了防止恶意代码通过污染原型链来破坏应用的逻辑，`freezePrototype` 可以保护这些全局对象的完整性。
+
+3. **默认行为**：
+
+   - 如果 `freezePrototype` 被启用，Tauri 会在应用启动时冻结关键的 JavaScript 原型，从而限制对其进行动态修改。
+
+
+
+启用后，Tauri 会在应用启动时冻结以下原型对象：
+
+- `Object.prototype`
+- `Array.prototype`
+- `Function.prototype`
+- 其他常见内置对象的原型
+
+
+
+### **推荐实践**
+
+1. **开发环境中禁用**：
+
+   - 在开发环境中，可以暂时关闭 `freezePrototype` 以便于调试和使用第三方工具：
+
+     ```json
+     {
+       "tauri": {
+         "security": {
+           "freezePrototype": false
+         }
+       }
+     }
+     ```
+
+2. **生产环境中启用**：
+
+   - 在生产环境中，为了提升安全性，建议启用 `freezePrototype`。
+
+3. **测试兼容性**：
+
+   - 在引入新的依赖库时，测试它们是否与冻结原型功能兼容。如果某些关键库不兼容，可以考虑调整项目的安全策略。
+
+
+
+
+

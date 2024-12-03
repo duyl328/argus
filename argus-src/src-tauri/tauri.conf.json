@@ -19,7 +19,7 @@
     ],
     "security": {
       "csp": null,
-      "freezePrototype": true,
+      "freezePrototype": false,
       "capabilities": [
       ],
       "assetProtocol": {

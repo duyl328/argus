@@ -4,6 +4,7 @@ import ImgShow from "./components/dev/img-show.vue";
 import {greet} from "./services/base.ts";
 import FileSelect from "./components/dev/file-select.vue";
 import SupportedFonts from "@/views/dev/font/SupportedFonts.vue";
+import HomeView from "@/views/HomeView.vue";
 
 const greetMsg = ref("");
 const name = ref("你好，这是测试的李子");
@@ -17,9 +18,10 @@ async function greet1() {
   <main class="container">
 <!--    <button @click="greet1">greet</button>-->
 <!--    <img-show/>-->
-    <file-select/>
-
-    <SupportedFonts/>
+<!--    <file-select/>-->
+<!--    <router-view />-->
+<HomeView/>
+<!--    <SupportedFonts/>-->
 <!--    <router-view />-->
   </main>
 </template>

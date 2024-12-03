@@ -1,10 +1,8 @@
 mod commands;
-mod config;
 mod constant;
 mod utils;
 
-use std::panic;
-use tauri::{webview::{PageLoadEvent, WebviewWindowBuilder}, App, AppHandle, Emitter, Listener, Manager, RunEvent, WebviewUrl, WebviewWindow};
+use tauri::{Emitter, Listener, Manager};
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -17,10 +15,7 @@ pub fn run() {
             commands::file_command::check_directory_access,
             commands::file_command::read_image_as_base64,
         ]).setup(|app| {
-
-
         Ok(())
-
     })
         .run(tauri::generate_context!())
         .expect("argus 启动失败!");

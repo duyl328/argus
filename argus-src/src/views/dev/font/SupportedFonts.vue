@@ -19,24 +19,6 @@ const fonts = import.meta.glob('@/assets/fonts/**/*.{ttf,otf}')
 // 字体样式表
 const fontsList: FontStyleObject[] = []
 
-readDir("/public/").then((fonts) => {
-  console.log(fonts);
-  // fonts.map(({ name, path }) => {
-  //   const [fontName] = name?.split(".") || [];
-  //   if (fontName) {
-  //     const font = new FontFace(fontName, `url(${convertFileSrc(path)})`);
-  //     font
-  //         .load()
-  //         .then((loadedFont) => {
-  //           document.fonts.add(loadedFont);
-  //         })
-  //         .catch(function (error) {
-  //           console.log("Failed to load font: " + error);
-  //         });
-  //   }
-  // });
-});
-
 
 Object.keys(fonts).forEach((key: string) => {
   let font = fonts[key]

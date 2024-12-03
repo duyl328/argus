@@ -19,6 +19,7 @@ function getSwitch () {
       主页
     </h1>
 
-    <ElButton @click="getSwitch">切换主题</ElButton>
+<!--    <ElButton @click="getSwitch">切换主题</ElButton>-->
+    <el-button />
   </main>
 </template>
