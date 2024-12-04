@@ -1,14 +1,49 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tauri + Vue + Typescript App</title>
-  </head>
+<head>
+  <meta charset="UTF-8">
+  <link rel="icon" href="/favicon.ico">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Vite App</title>
+  <!--[if lt IE 11]>
+  <script>window.location.href = '/html/ie.html';</script><![endif]-->
 
-  <body>
-    <div id="app"></div>
-    <script type="module" src="/src/main.ts"></script>
-  </body>
+</head>
+<body>
+<div id="app"></div>
+<script type="module" src="/src/main.ts"></script>
+</body>
+
+<script>
+  /**
+   * 全局异常捕捉
+   * @param message
+   * @param source
+   * @param lineno
+   * @param colno
+   * @param error
+   */
+  window.onerror = function(message, source, lineno, colno, error) {
+    console.error('前端错误：', message, source, lineno, colno, error)
+  }
+  /**
+   * promise 错误捕捉
+   */
+  window.addEventListener('unhandledrejection', function(event) {
+    console.error('Promise错误：', event.reason)
+  })
+
+  /**
+   * 页面白屏的问题
+   */
+  window.addEventListener('DOMContentLoaded', function() {
+    setTimeout(function() {
+      if (document.body.innerHTML === '') {
+        console.error('Page is blank.')
+      }
+    }, 3000)  // 3秒后检查页面是否为空
+  })
+
+
+</script>
 </html>

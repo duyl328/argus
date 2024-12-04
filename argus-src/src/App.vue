@@ -1,150 +1,93 @@
 <script setup lang="ts">
-import {onMounted, ref} from "vue";
-import ImgShow from "./components/dev/img-show.vue";
-import {greet} from "./services/base.ts";
-import FileSelect from "./components/dev/file-select.vue";
-import SupportedFonts from "@/views/dev/font/SupportedFonts.vue";
-import HomeView from "@/views/HomeView.vue";
+import { useRoute, useRouter } from 'vue-router'
+import PathUtils from '@/utils/pathUtils'
+import StringUtils from '@/utils/stringUtils'
+import type { subRoute, subRouteList } from '@/types/views/dev/DevIndex.type'
 
-const greetMsg = ref("");
-const name = ref("你好，这是测试的李子");
+const router = useRouter()
 
-async function greet1() {
-  greetMsg.value = await greet(name.value)
+// 判断主题颜色是否是深色
+const themeMedia = window.matchMedia('(prefers-color-scheme: light)')
+// 获取html标签
+const html = document.querySelector('html')
+// isLight: 浅色 true, 深色 false
+if (themeMedia.matches) {
+  html.setAttribute('data-theme', 'light')
+} else {
+  html.setAttribute('data-theme', 'dark')
 }
+themeMedia.addListener(e => {
+  if (e.matches) {
+    html.setAttribute('data-theme', 'light')
+  } else {
+    html.setAttribute('data-theme', 'dark')
+  }
+})
+
+// 自动获取路由列表
+const routes = {
+  ...import.meta.glob('@/views/*.vue'),
+  ...import.meta.glob('@/views/dev/*.vue')
+}
+const route = useRoute()
+
+// 子路由列表
+let subRouteLists: subRouteList = []
+// 遍历路由page列表进行路由渲染
+Object.keys(routes).map((path) => {
+  if ('.vue' === PathUtils.extname(path).trim()) {
+    let fileName = PathUtils.basename(path).split('.')[0]
+    let s = StringUtils.toCustomCase(fileName).toLowerCase().split("-")[0]
+    let items = {
+      displayName: fileName,
+      path: `/${s}` // 生成路径
+    }
+    subRouteLists.push(
+      items
+    )
+  }
+  return ''
+})
+/**
+ * 列表路径是否激活
+ * @param path
+ */
+const isActive = (path: string) => {
+  return route.path.includes(path)
+}
+
+/**
+ * 列表点击调准
+ */
+function listClickJump (item: subRoute) {
+  console.log(item.path);
+  router.push({ path: item.path })
+}
+
 </script>
 
 <template>
-  <main class="container">
-<!--    <button @click="greet1">greet</button>-->
-<!--    <img-show/>-->
-<!--    <file-select/>-->
-<!--    <router-view />-->
-<HomeView/>
-<!--    <SupportedFonts/>-->
-<!--    <router-view />-->
-  </main>
+  <div class="overflow-hidden flex flex-col h-dvh">
+    <!--    路由导航-->
+    <ul class="mr-20 top-0 bg-white sticky  hidden  lg:flex">
+      <li
+        class="list-none  list-item p-1 m-1 transition-all select-none cursor-pointer
+            hover:text-yellow-300 text-gray-700  "
+        v-for="(subRoute,index) in subRouteLists"
+        :key="index"
+      >
+        <ElButton
+          :type="isActive(subRoute.path) ? 'primary' : ''"
+          @click="listClickJump(subRoute)">
+          {{ subRoute.displayName }}
+        </ElButton>
+      </li>
+    </ul>
+    <hr>
+
+    <!--  展示主要内容-->
+    <div class="bg-amber-100 overflow-y-auto flex-1">
+      <router-view />
+    </div>
+  </div>
 </template>
-
-<style scoped>
-.logo.vite:hover {
-  filter: drop-shadow(0 0 2em #747bff);
-}
-
-.logo.vue:hover {
-  filter: drop-shadow(0 0 2em #249b73);
-}
-
-</style>
-<style>
-:root {
-  font-family: Inter, Avenir, Helvetica, Arial, sans-serif;
-  font-size: 16px;
-  line-height: 24px;
-  font-weight: 400;
-
-  color: #0f0f0f;
-  background-color: #f6f6f6;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  -webkit-text-size-adjust: 100%;
-}
-
-.container {
-  margin: 0;
-  padding-top: 10vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  text-align: center;
-}
-
-.logo {
-  height: 6em;
-  padding: 1.5em;
-  will-change: filter;
-  transition: 0.75s;
-}
-
-.logo.tauri:hover {
-  filter: drop-shadow(0 0 2em #24c8db);
-}
-
-.row {
-  display: flex;
-  justify-content: center;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-
-a:hover {
-  color: #535bf2;
-}
-
-h1 {
-  text-align: center;
-}
-
-input,
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  color: #0f0f0f;
-  background-color: #ffffff;
-  transition: border-color 0.25s;
-  box-shadow: 0 2px 2px rgba(0, 0, 0, 0.2);
-}
-
-button {
-  cursor: pointer;
-}
-
-button:hover {
-  border-color: #396cd8;
-}
-button:active {
-  border-color: #396cd8;
-  background-color: #e8e8e8;
-}
-
-input,
-button {
-  outline: none;
-}
-
-#greet-input {
-  margin-right: 5px;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    color: #f6f6f6;
-    background-color: #2f2f2f;
-  }
-
-  a:hover {
-    color: #24c8db;
-  }
-
-  input,
-  button {
-    color: #ffffff;
-    background-color: #0f0f0f98;
-  }
-  button:active {
-    background-color: #0f0f0f69;
-  }
-}
-
-</style>

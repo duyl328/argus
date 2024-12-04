@@ -1,5 +1,5 @@
 import {invoke} from "@tauri-apps/api/core";
-import {getImageAbsolutePathCommand, readImageAsBase64Command} from "../command.ts";
+import {getImageAbsolutePathCommand, readImageAsBase64Command} from '@/command';
 
 /**
  * 获取图片路径

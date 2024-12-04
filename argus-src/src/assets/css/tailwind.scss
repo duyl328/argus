@@ -8,13 +8,13 @@
   *  Il n'ya qu'un héroïsme au monde :
   *     c'est de voir le monde tel qu'il est et de l'aimer.
   */
-@use 'main' as *; // `as *` 使其与 @import 行为相同
+@import 'main';
 
 * {
-  margin: 0;
-  padding: 0;
-  list-style: none;
-  text-decoration: none;
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	text-decoration: none;
 }
 
 @tailwind base;
@@ -22,27 +22,23 @@
 @tailwind utilities;
 
 @layer base {
-  h1 {
-    @apply text-3xl;
-  }
-
-  h2 {
-    @apply text-2xl;
-  }
-
-  h3 {
-    @apply text-xl;
-  }
-
-  h4 {
-    @apply text-lg;
-  }
-
-  h5 {
-    @apply text-base;
-  }
-
-  h6 {
-    @apply text-sm;
-  }
+	h1 {
+		@apply text-3xl;
+	}
+	h2 {
+		@apply text-2xl;
+	}
+	h3 {
+		@apply text-xl;
+	}
+	h4 {
+		@apply text-lg;
+	}
+	h5 {
+		@apply text-base;
+	}
+	h6 {
+		@apply text-sm;
+	}
 }
+
