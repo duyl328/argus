@@ -61,7 +61,9 @@ pub fn list_directory(dir_path: &str) -> Result<Vec<PathBuf>, String> {
 
 /// 拷贝文件
 pub fn copy_file(src_path: &str, dest_path: &str) -> Result<(), String> {
-    fs::copy(src_path, dest_path).map(|_| ()).map_err(|e| format!("拷贝文件失败: {}", e))
+    fs::copy(src_path, dest_path)
+        .map(|_| ())
+        .map_err(|e| format!("拷贝文件失败: {}", e))
 }
 
 /// 移动文件（先拷贝后删除源文件）
@@ -69,7 +71,6 @@ pub fn move_file(src_path: &str, dest_path: &str) -> Result<(), String> {
     copy_file(src_path, dest_path)?;
     delete_file(src_path)
 }
-
 
 #[cfg(test)]
 mod tests {

@@ -1,13 +1,13 @@
-use std::path::{Path, PathBuf};
+use crate::utils::base64_util::base64_encode;
+use crate::utils::file_util::{file_exists, read_binary_file};
+use base64::encode;
+use base64::engine::general_purpose::STANDARD;
+use base64::Engine;
 use std::fs;
 use std::io::Cursor;
-use base64::Engine;
 use std::io::Read;
+use std::path::{Path, PathBuf};
 use std::slice::RChunksExactMut;
-use base64::{encode};
-use base64::engine::general_purpose::STANDARD;
-use crate::utils::base64_util::{base64_encode};
-use crate::utils::file_util::{file_exists, read_binary_file};
 
 /// 返回图像绝对路径
 #[tauri::command]

@@ -18,12 +18,13 @@
     "tauri": "tauri"
   },
   "dependencies": {
-    "@types/gsap": "^3.0.0",
-    "element-plus": "^2.7.8",
     "@tauri-apps/api": "^2",
     "@tauri-apps/plugin-dialog": "2.0.1",
     "@tauri-apps/plugin-fs": "^2.0.2",
     "@tauri-apps/plugin-shell": "^2",
+    "@tauri-apps/plugin-sql": "^2.0.2",
+    "@types/gsap": "^3.0.0",
+    "element-plus": "^2.7.8",
     "fonts.css": "^2.0.0",
     "gsap": "^3.12.5",
     "pinia": "^2.1.7",
@@ -34,8 +35,8 @@
   },
   "devDependencies": {
     "@rushstack/eslint-patch": "^1.8.0",
-    "@tsconfig/node20": "^20.1.4",
     "@tauri-apps/cli": "^2",
+    "@tsconfig/node20": "^20.1.4",
     "@types/jsdom": "^21.1.7",
     "@types/markdown-it": "^14.1.2",
     "@types/node": "^20.14.5",

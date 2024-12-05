@@ -17,3 +17,5 @@ export const checkDirectoryAccessCommand = "check_directory_access"
  * 读取照片为 Base64
  */
 export const readImageAsBase64Command = "read_image_as_base64"
+export const getAllPostCommand = "get_all_post"
+export const insertPostCommand = "insert_post"

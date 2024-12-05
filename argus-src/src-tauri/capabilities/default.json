@@ -33,7 +33,11 @@
     "fs:scope-resource-recursive",
     {
       "identifier": "fs:allow-read-file",
-      "allow": ["*/**"]
-    }
+      "allow": [
+        "*/**"
+      ]
+    },
+    "sql:default",
+    "sql:allow-execute"
   ]
 }
