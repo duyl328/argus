@@ -10,6 +10,9 @@ dir = "D:\\argus\\argus-src\\src-tauri\\migrations"
 
 # diesel migration run
 
+# 生成数据库迁移 create_posts_table 为标识名称
+# diesel migration generate create_posts_table
+
 #Commands:
 #migration     一组用于生成、运行和恢复迁移的命令。
 #setup         创建迁移目录，创建 DATABASE_URL 中指定的数据库，并运行现有迁移。

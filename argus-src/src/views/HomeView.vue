@@ -12,7 +12,7 @@ function getSwitch () {
     console.log(value)
   })
 
-  let html = document.querySelector('html')
+  let html = document.querySelector('html')!
   let currentTheme = html.getAttribute('data-theme')
 
   if (currentTheme === 'light') {

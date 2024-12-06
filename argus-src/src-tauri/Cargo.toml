@@ -1,6 +1,6 @@
 [package]
 name = "argus-src"
-version = "0.1.0"
+version = "0.0.1"
 description = "A Tauri App"
 authors = ["yuanll"]
 edition = "2021"
@@ -34,3 +34,6 @@ diesel              = { version = "2.2.0", features = ["sqlite", "returning_clau
 # pq-sys            = { version = "0.6", features = ["bundled"] }
 # openssl-sys       = { version = "0.9.100", features = ["vendored"] }
 dotenvy             = "0.15"
+#cargo add reqwest
+#npm config set proxy 127.0.0.1:7890
+#npm config set https-proxy 127.0.0.1:7890

@@ -9,7 +9,7 @@ const router = useRouter()
 // 判断主题颜色是否是深色
 const themeMedia = window.matchMedia('(prefers-color-scheme: light)')
 // 获取html标签
-const html = document.querySelector('html')
+const html = document.querySelector('html')!
 // isLight: 浅色 true, 深色 false
 if (themeMedia.matches) {
   html.setAttribute('data-theme', 'light')
