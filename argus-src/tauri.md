@@ -327,7 +327,7 @@ failed to bundle project: https://github.com/wixtoolset/wix3/releases/download/w
    > }
    > ```
    >
-   > 该信息在该地方报出，通过查询`get_and_extract_wix`的调用，在https://github.com/tauri-apps/tauri/blob/b37741da6a2d3dad71490c910a64eeedda2ba9ca/crates/tauri-bundler/src/bundle/windows/msi/mod.rs#L74 中查询到唯二的调用：
+   > 该信息在该地方报出，通过查询`get_and_extract_wix`的调用，在https://github.com/tauri-apps/tauri/blob/b37741da6a2d3dad71490c910a64eeedda2ba9ca/crates/tauri-bundler/src/bundle/windows/msi/mod.rs#L64 中查询到唯二的调用：
    >
    > ```rust
    > /// Runs all of the commands to build the MSI installer.
@@ -450,4 +450,3 @@ fn get_and_extract_nsis(nsis_toolset_path: &Path, _tauri_tools_path: &Path) -> c
 这里包含了该报错信息，将指定文件手动下载并移动至`$LOCALAPPDATA$\tauri\NSIS`文件夹中，尝试重新运行
 
 同样的报错(经过验证目标文件和使用文件SHA1不同)；将文件移动至`$LOCALAPPDATA$\tauri\NSIS\Plugins\x86-unicode`再次尝试，构建成功。
-

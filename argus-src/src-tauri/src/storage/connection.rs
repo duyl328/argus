@@ -1,8 +1,8 @@
-use std::sync::Mutex;
-use once_cell::sync::Lazy;
-use dotenvy::dotenv;
-use std::env;
 use diesel::{Connection, SqliteConnection};
+use dotenvy::dotenv;
+use once_cell::sync::Lazy;
+use std::env;
+use std::sync::Mutex;
 
 /// 全局惰性变量
 pub static DATABASE_URL: Lazy<String> = Lazy::new(|| {

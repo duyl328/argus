@@ -5,12 +5,12 @@ description = "A Tauri App"
 authors = ["yuanll"]
 edition = "2021"
 
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+# 查看更多键及其定义： https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lib]
-# The `_lib` suffix may seem redundant but it is necessary
-# to make the lib name unique and wouldn't conflict with the bin name.
-# This seems to be only an issue on Windows, see https://github.com/rust-lang/cargo/issues/8519
+# `_lib` 后缀可能看起来多余，但它是必要的`
+# 使 lib 名称唯一并且不会与 bin 名称冲突.
+# 这似乎只是 Windows 上的问题，请参阅 https://github.com/rust-lang/cargo/issues/8519
 name = "argus_src_lib"
 crate-type = ["staticlib", "cdylib", "rlib"]
 
@@ -34,6 +34,7 @@ diesel              = { version = "2.2.0", features = ["sqlite", "returning_clau
 # pq-sys            = { version = "0.6", features = ["bundled"] }
 # openssl-sys       = { version = "0.9.100", features = ["vendored"] }
 dotenvy             = "0.15"
+tauri-plugin-log    = "2"
+log                 = "0.4"
+
 #cargo add reqwest
-#npm config set proxy 127.0.0.1:7890
-#npm config set https-proxy 127.0.0.1:7890

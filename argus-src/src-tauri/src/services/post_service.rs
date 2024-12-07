@@ -1,8 +1,8 @@
-use diesel::sql_types::Integer;
 use crate::models::post::Post;
 use crate::storage::connection::establish_connection;
 use crate::storage::post;
 use crate::storage::schema::posts::dsl::posts;
+use diesel::sql_types::Integer;
 
 /// 获取所有评论
 pub fn get_all_post() {
