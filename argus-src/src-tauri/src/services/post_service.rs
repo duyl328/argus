@@ -6,7 +6,9 @@ use diesel::sql_types::Integer;
 
 /// 获取所有评论
 pub fn get_all_post() {
+    log::info!("get post get");
     let conn = &mut establish_connection();
+    log::info!("get post");
 
     let vec = post::get_all_post(conn);
     if vec.len() > 0 {
@@ -24,6 +26,7 @@ pub fn get_all_post() {
 /// 插入评论
 pub fn insert_post() {
     let conn = &mut establish_connection();
+    log::info!("inserting post");
     let post1 = post::insert_post(conn, "默认标题", "默认Body");
     println!("Displaying post success {}", post1.title);
 }

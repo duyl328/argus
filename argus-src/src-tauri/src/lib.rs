@@ -5,16 +5,20 @@ mod services;
 mod storage;
 mod utils;
 
-use tauri::{Emitter, Listener, Manager};
+use tauri::{Emitter, Listener, Manager, State};
+use tauri_plugin_sql::{Migration, MigrationKind};
+use crate::storage::connection;
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    std::env::set_var("RUST_BACKTRACE", "1");
     let log_plugin = tauri_plugin_log::Builder::new()
         // 设置文件大小
         .max_file_size(50_000)
         .rotation_strategy(tauri_plugin_log::RotationStrategy::KeepAll)
         .level(log::LevelFilter::Info)
         // 仅对命令模块进行动词日志
-        .level_for("commands::log_command", log::LevelFilter::Trace)
+        .level_for("commands::log_command", log::LevelFilter::Info)
         // 日志格式
         .format(|out, message, record| {
             out.finish(format_args!(
@@ -48,9 +52,26 @@ pub fn run() {
         )).build();
 
 
+    let migrations = vec![
+        Migration {
+            version: 1,
+            description: "create users table",
+            sql: "CREATE TABLE IF NOT EXISTS users (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                name TEXT NOT NULL,
+                email TEXT
+            )",
+            kind: MigrationKind::Up,
+        }
+    ];
+
+
     tauri::Builder::default()
         .plugin(log_plugin)
-        .plugin(tauri_plugin_sql::Builder::new().build())
+        .plugin(tauri_plugin_sql::Builder::new()
+            .add_migrations("sqlite:testsqlite.db", migrations)
+            .build()
+        )
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_shell::init())
@@ -64,8 +85,18 @@ pub fn run() {
             commands::log_command::log_logs,
         ])
         .setup(|app| {
-            log::info!("程序启动！");
+            log::info!(" =============================== 程序启动！==============================");
             log::info!("{}", constant::BANNER4);
+            let cpath = std::env::current_dir().expect("TODO: panic message");
+            let spath = std::env::current_exe().expect("TODO: panic message");
+            log::info!("软件路径:{:?}",cpath);
+            log::info!("软件路径1:{:?}",spath);
+
+
+            let handle = app.handle();
+            log::info!("创建数据库");
+            let db = connection::init_database().expect("Database initialize should succeed");
+            log::info!("创建完毕");
 
             Ok(())
         })

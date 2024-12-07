@@ -1,4 +1,3 @@
-
 pub const BANNER1: &str = "
 
     // | |                               //   ) )   //
@@ -79,5 +78,13 @@ pub const DATABASE_URL_KEY: &str = "DATABASE_URL";
 
 /// 数据库默认连接
 pub const DATABASE_DEFAULT_LINK: &str = "db/sqlite.db";
+
+/// 数据库名称
+pub const DATABASE_NAME: &str = "sqlite.db";
+pub const DATABASE_PATH: &str = "db";
+
 /// 日志输出路径
 pub const LOG_PATH: &str = "/path/to/tauri-logs";
+
+/// 当前数据库版本
+pub const CURRENT_DB_VERSION: u32 = 1;

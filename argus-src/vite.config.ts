@@ -21,6 +21,7 @@ export default defineConfig(({ command, mode }) => {
       rollupOptions: {
         input: './index.html', // 指定唯一的入口文件
       },
+      assetsDir: './src/assets', // 指定静态资源目录
     },
     
     plugins: [

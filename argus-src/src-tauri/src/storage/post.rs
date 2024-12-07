@@ -22,9 +22,13 @@ pub fn get_all_post(connection: &mut SqliteConnection) -> Vec<Post> {
 pub fn insert_post(conn: &mut SqliteConnection, title: &str, body: &str) -> Post {
     let new_post = NewPost { title, body };
 
-    diesel::insert_into(posts::table())
+    let result = diesel::insert_into(posts::table())
         .values(&new_post)
         .returning(Post::as_returning())
-        .get_result(conn)
-        .expect("Error loading posts")
+        .get_result(conn);
+    result.unwrap_or_else(|err| {
+        log::error!("Error adding new post11 {:?}", err);
+        panic!("Error creating post {}", title)
+    })
+    
 }

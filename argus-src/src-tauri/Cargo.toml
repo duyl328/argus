@@ -5,6 +5,10 @@ description = "A Tauri App"
 authors = ["yuanll"]
 edition = "2021"
 
+[profile.release]
+debug = true
+panic = "abort"
+
 # 查看更多键及其定义： https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [lib]

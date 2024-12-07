@@ -30,6 +30,7 @@
     "fs:allow-remove",
     "fs:allow-write-text-file",
     "fs:scope-download-recursive",
+    "fs:allow-create",
     "fs:scope-resource-recursive",
     {
       "identifier": "fs:allow-read-file",
@@ -39,6 +40,9 @@
     },
     "sql:default",
     "sql:allow-execute",
+    "sql:allow-load",
+    "sql:allow-select",
+    "sql:allow-close",
     "log:default"
   ]
 }
