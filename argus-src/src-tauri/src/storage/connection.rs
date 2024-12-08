@@ -59,6 +59,7 @@ pub fn establish_connection() -> SqliteConnection {
 /// 初始化数据库
 fn init_databases(){
     let mut connection = establish_connection();
+    // todo: 2024/12/8 10:33 配置管理数据库升级
     SqliteConnection::batch_execute(&mut connection, "
     create table __diesel_schema_migrations
 (
