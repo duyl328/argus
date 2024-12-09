@@ -95,7 +95,8 @@ pub fn run() {
 
             let handle = app.handle();
             log::info!("创建数据库");
-            let db = connection::init_database().expect("Database initialize should succeed");
+            // let db = connection::init_database().expect("Database initialize should succeed");
+            let db = connection::run_migrations().expect("Database initialize should succeed");
             log::info!("创建完毕");
 
             Ok(())

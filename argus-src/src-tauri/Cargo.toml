@@ -40,5 +40,6 @@ diesel              = { version = "2.2.0", features = ["sqlite", "returning_clau
 dotenvy             = "0.15"
 tauri-plugin-log    = "2"
 log                 = "0.4"
+diesel_migrations   = "2.2.0"
 
 #cargo add reqwest

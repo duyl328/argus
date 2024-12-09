@@ -88,3 +88,6 @@ pub const LOG_PATH: &str = "/path/to/tauri-logs";
 
 /// 当前数据库版本
 pub const CURRENT_DB_VERSION: u32 = 1;
+
+/// 默认 `db_version` 元素的 `id` 因为只能由一个，ID 唯一
+pub const BASE_DB_VERSION_ITEM_ID: u32 = 1;

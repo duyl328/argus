@@ -23,13 +23,11 @@ dir = "D:\\argus\\argus-src\\src-tauri\\migrations"
 #
 #Options:
 #--database-url <DATABASE_URL>
-#Specifies the database URL to connect to. Falls back to the DATABASE_URL environment variable if unspecified.
-#
+#指定要连接的数据库 URL。如果未指定，则回退到 DATABASE_URL 环境变量。
 #--config-file <CONFIG_FILE>
-#The location of the configuration file to use. Falls back to the `DIESEL_CONFIG_FILE` environment variable if unspecified. Defaults to `diesel.toml` in your project root. See diesel.rs/guides/configuring-diesel-cli for documentation on this file.
-#
+#要使用的配置文件的位置。如果未指定，则回退到“DIESEL_CONFIG_FILE”环境变量。默认为项目根目录中的“diesel.toml”。有关此文件的文档，请参阅diesel.rs/guides/configuring-diesel-cli。#
 #--locked-schema
-#When `print_schema.file` is specified in your config file, this flag will cause Diesel CLI to error if any command would result in changes to that file. It is recommended that you use this flag when running migrations in CI or production.
+#当您的配置文件中指定了“print_schema.file”时，如果任何命令会导致该文件发生更改，则此标志将导致 Diesel CLI 出错。建议您在 CI 或生产中运行迁移时使用此标志。
 #
 #-h, --help
 #Print help (see a summary with '-h')
@@ -37,4 +35,4 @@ dir = "D:\\argus\\argus-src\\src-tauri\\migrations"
 #-V, --version
 #Print version
 #
-#You can also run `diesel SUBCOMMAND -h` to get more information about that subcommand.
+#您还可以运行“diesel SUBCOMMAND -h”来获取有关该子命令的更多信息。

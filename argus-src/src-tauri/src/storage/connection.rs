@@ -1,10 +1,36 @@
-use diesel::{Connection, SqliteConnection};
-
+use diesel::{Connection, QueryResult, RunQueryDsl};
+use diesel::sqlite::SqliteConnection;
+use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 use dotenvy::dotenv;
 use once_cell::sync::Lazy;
 use std::{env, fs};
 use diesel::connection::SimpleConnection;
-use crate::utils::file_util;
+use crate::utils::{db_init_util, file_util};
+
+/// 获取所有的数据库迁移
+pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!();
+
+pub fn run_migrations() -> Result<(), Box<dyn std::error::Error>> {
+    init_path().expect("数据库路径初始化失败!");
+    let lazy = DATABASE_URL.as_str();
+    let mut connection = SqliteConnection::establish(lazy)?;
+    connection.run_pending_migrations(MIGRATIONS).expect("TODO: panic message");
+    Ok(())
+}
+
+/// 验证指定表是否存在
+pub fn does_table_exist(conn: &mut SqliteConnection, table_name: &str) -> Result<bool, diesel::result::Error> {
+    let query = format!(
+        "SELECT EXISTS (SELECT 1 FROM sqlite_master WHERE type='table' AND name='{}')",
+        table_name
+    );
+    let exists:QueryResult<bool> = diesel::dsl::sql::<diesel::sql_types::Bool>(
+        &*query
+    ).get_result(conn);
+    log::info!("query ans : {:?}", exists);
+    
+    Ok(exists?)
+}
 
 /// 全局惰性变量
 pub static DATABASE_URL: Lazy<String> = Lazy::new(|| {
@@ -18,12 +44,10 @@ pub static DATABASE_URL: Lazy<String> = Lazy::new(|| {
     let string = format!("{}/{}/{}", cpath.to_string_lossy(), crate::constant::DATABASE_PATH, crate::constant::DATABASE_NAME);
     log::info!("Using database url: {:?}", string);
     string
-    // init_database(&establish_connection());
-    // database_url
 });
 
-pub fn init_database() -> Result<(), rusqlite::Error> {
-
+/// 初始化数据库路径
+pub fn init_path() -> Result<(), rusqlite::Error> {
     // 使用 Tauri 提供的路径 API 确保数据库文件存放在用户目录下
     let cpath = env::current_dir().expect("TODO: panic message");
     let app_dir = format!("{}/{}", cpath.to_string_lossy(), crate::constant::DATABASE_PATH);
@@ -32,14 +56,13 @@ pub fn init_database() -> Result<(), rusqlite::Error> {
     let exists = file_util::file_exists(&app_dir);
     if exists {
         log::info!("Found existing database url: {}", app_dir);
-        return Ok(());
+    }else {
+        log::info!("Creating database directory: {}", app_dir);
+        // 获取推荐的数据库路径
+        fs::create_dir_all(&app_dir).expect("The app data directory should be created.");
     }
-    log::info!("Creating database directory: {}", app_dir);
-    // 获取推荐的数据库路径
-    fs::create_dir_all(&app_dir).expect("The app data directory should be created.");
-    
+
     log::info!("Initializing database connection");
-    init_databases();
     Ok(())
 }
 
@@ -56,9 +79,34 @@ pub fn establish_connection() -> SqliteConnection {
         .unwrap_or_else(|err| panic!("Error connecting to {:?}: {:?}", *DATABASE_URL, err))
 }
 
-/// 初始化数据库
+
+/// 删除指定表
+pub fn drop_table(conn: &mut SqliteConnection, table_name: &str) -> Result<(), diesel::result::Error> {
+    let query = format!("DROP TABLE IF EXISTS {}", table_name);
+    diesel::sql_query(query).execute(conn)?;
+    Ok(())
+}
+
+
+/// 初始化数据库【未使用】
 fn init_databases(){
+    let vec = db_init_util::get_init_sql_list();
     let mut connection = establish_connection();
+    for x in vec {
+        let is_exist = does_table_exist(&mut connection, &*x.name).unwrap();
+        // 如果不存在则创建对应数据库
+        if !is_exist {
+            let result = diesel::sql_query(x.sql).execute(&mut connection);
+            if !result.is_ok() { 
+                log::error!("Failed to create table: {:?}", x.name);
+                panic!("Failed to create table: {:?}", x.name);
+            }
+        }
+    }
+    // 为数据库字段插入数据
+       
+    
+    return;
     // todo: 2024/12/8 10:33 配置管理数据库升级
     SqliteConnection::batch_execute(&mut connection, "
     create table __diesel_schema_migrations
