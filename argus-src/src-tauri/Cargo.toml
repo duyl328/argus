@@ -24,22 +24,35 @@ tauri-build = { version = "2", features = [] }
 [dependencies]
 tauri               = { version = "2", features = ["protocol-asset"] }
 tauri-plugin-shell  = "2"
+# 序列化和反序列化
 serde               = { version = "1", features = ["derive"] }
+# json 处理
 serde_json          = "1"
 tauri-plugin-fs     = "2"
+# 提示窗口
 tauri-plugin-dialog = "2.0.3"
+# base64 处理
 base64              = "0.22.1"
+# sql 处理插件
 tauri-plugin-sql    = { version = "2", features = ["sqlite"] }
+# Sqlite
 rusqlite            = "0.32.1"
 once_cell           = "1.20.2"
+# 数据库操作
 diesel              = { version = "2.2.0", features = ["sqlite", "returning_clauses_for_sqlite_3_35"] }
 # 作为构建过程的一部分构建 libpq 和 openssl
 # 如果遇到设置问题，请取消注释这些行
 # pq-sys            = { version = "0.6", features = ["bundled"] }
 # openssl-sys       = { version = "0.9.100", features = ["vendored"] }
+# 读取本地配置
 dotenvy             = "0.15"
+# 日志
 tauri-plugin-log    = "2"
+# 日志记录
 log                 = "0.4"
+# 数据库版本迁移
 diesel_migrations   = "2.2.0"
+# 自定义错误
+thiserror           = "2.0.6"
 
 #cargo add reqwest
