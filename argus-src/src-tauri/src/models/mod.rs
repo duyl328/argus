@@ -1,3 +1,3 @@
 pub mod post;
-mod db_version;
-mod basic_setting;
+pub mod db_version;
+pub mod basic_setting;

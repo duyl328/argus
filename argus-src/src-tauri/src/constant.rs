@@ -91,3 +91,9 @@ pub const CURRENT_DB_VERSION: u32 = 1;
 
 /// 默认 `db_version` 元素的 `id` 因为只能由一个，ID 唯一
 pub const BASE_DB_VERSION_ITEM_ID: u32 = 1;
+
+/// 时间默认格式
+pub const TIME_BASIC_FMT: &str = "%Y-%m-%d %H:%M:%S";
+
+/// 基础设置 ID 
+pub const BASIC_SETTING_ID: i32 = 1;

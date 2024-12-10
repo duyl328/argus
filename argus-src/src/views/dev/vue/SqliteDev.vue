@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import Database from '@tauri-apps/plugin-sql'
-import { getAllPost, insertPost } from '@/services/storageService'
+import { getAllPost, getBasicSetting, insertPost } from '@/services/storageService'
 
 async function getAllPost1() {
   // 初始化数据库连接
@@ -28,6 +28,13 @@ async function getAllPost1() {
 function insertPostBase() {
   insertPost("标题1","内容1")
 }
+function getBasicSetting1() {
+  let basicSetting = getBasicSetting()
+  basicSetting.then((res) => {
+    let parse = JSON.parse(res)
+    console.log("parse",parse);
+  })
+}
 </script>
 
 <template>
@@ -35,6 +42,7 @@ function insertPostBase() {
   <br>
   <el-button @click="getAllPost1">获取所有数据</el-button>
   <el-button @click="insertPostBase">插入数据</el-button>
+  <el-button @click="getBasicSetting1">获取基础设置</el-button>
 </template>
 
 <style scoped></style>

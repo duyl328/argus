@@ -43,13 +43,18 @@ impl JsonUtil {
 
 #[cfg(test)]
 mod test {
+    use std::collections::HashSet;
     use serde_json::Error;
     use crate::utils::json_util::JsonUtil;
 
     #[test]
     fn test_parse_arg() {
         let vec = vec!["arg1", "arg2"];
-        let result = JsonUtil::stringify(&vec);
+        let mut x:HashSet < String > = HashSet::new();
+        x.insert("1".to_string());
+        x.insert("2".to_string());
+        x.insert("3".to_string());
+        let result = JsonUtil::stringify(&x);
         log::info!("ans data: {:?}", result);
         assert!(result.is_ok());
         let string = result.unwrap();

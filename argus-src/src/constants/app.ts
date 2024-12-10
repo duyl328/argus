@@ -9,7 +9,6 @@
  *     c'est de voir le monde tel qu'il est et de l'aimer.
  */
 
-
 const app = {
   /**
    * 生产
@@ -18,7 +17,17 @@ const app = {
   /**
    * 开发
    */
-  DEVELOPMENT: 'development'
+  DEVELOPMENT: 'development',
+
+  /**
+   * 是否是生产环境【默认是】
+   */
+  IS_PRODUCTION: true,
+
+  /**
+   * 是否展示生成路由
+   */
+  IS_SHOW_GENERATE_ROUTER: false
 }
 
 export default app

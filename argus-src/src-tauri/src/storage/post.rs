@@ -1,8 +1,5 @@
 use crate::models::post::{NewPost, Post};
-use crate::storage::connection;
-use crate::storage::connection::establish_connection;
 use crate::storage::schema::posts::dsl::posts;
-use crate::storage::schema::posts::published;
 use diesel::associations::HasTable;
 use diesel::prelude::*;
 

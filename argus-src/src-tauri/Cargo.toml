@@ -54,5 +54,7 @@ log                 = "0.4"
 diesel_migrations   = "2.2.0"
 # 自定义错误
 thiserror           = "2.0.6"
+# 时间处理
+chrono              = "0.4.39"
 
 #cargo add reqwest

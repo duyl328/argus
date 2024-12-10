@@ -84,6 +84,7 @@ pub fn run() {
             commands::post_command::get_all_post,
             commands::post_command::insert_post,
             commands::log_command::log_logs,
+            commands::basic_setting_command::get_basic_setting
         ])
         .setup(|app| {
             log::info!(" =============================== 程序启动！==============================");
