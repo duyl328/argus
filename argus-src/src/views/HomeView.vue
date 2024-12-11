@@ -1,28 +1,105 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-import type { TabsInstance } from 'element-plus'
-
 // 切换主题
 import { toggleDark } from '@/utils/darkUtil'
+// import setting from '@/components/setting/Index.vue'
+import { ref } from 'vue'
+import {
+  Document,
+  Menu as IconMenu,
+  Location,
+  Setting,
+  ArrowLeft,
+  ArrowRight
+} from '@element-plus/icons-vue'
 
 function getSwitch() {
   toggleDark()
 }
 
 // region tab 项
-const tabPosition = ref<TabsInstance['tabPosition']>('left')
 
-// endregion
+const isCollapse = ref(true)
+const handleOpen = (key: string, keyPath: string[]) => {
+  console.log(key, keyPath)
+}
+const handleClose = (key: string, keyPath: string[]) => {
+  console.log(key, keyPath)
+}
 </script>
 
 <template>
   <main>
-    <ElButton @click="getSwitch">切换主题</ElButton>
-    <el-tabs :tab-position="tabPosition" style="height: 200px" class="demo-tabs">
-      <el-tab-pane label="User">User</el-tab-pane>
-      <el-tab-pane label="Config">Config</el-tab-pane>
-      <el-tab-pane label="Role">Role</el-tab-pane>
-      <el-tab-pane label="Task">Task</el-tab-pane>
-    </el-tabs>
+    <ElButton @click="getSwitch" v-show="false">切换主题</ElButton>
+    <el-container class="app">
+<!--      控制列表展示状态-->
+      <el-radio-group v-model="isCollapse" style="margin-bottom: 20px">
+        <el-radio-button v-if="isCollapse" :value="false">
+          <el-icon>
+            <ArrowRight />
+          </el-icon>
+        </el-radio-button>
+        <el-radio-button v-else :value="true">
+          <el-icon>
+            <ArrowLeft />
+          </el-icon>
+        </el-radio-button>
+      </el-radio-group>
+
+<!--      列表展示-->
+      <el-menu
+        default-active="2"
+        class="el-menu-vertical-demo"
+        :collapse="isCollapse"
+        @open="handleOpen"
+        @close="handleClose"
+      >
+        <el-sub-menu index="1">
+          <template #title>
+            <el-icon>
+              <location />
+            </el-icon>
+            <span>Navigator One</span>
+          </template>
+          <el-menu-item-group>
+            <template #title><span>Group One</span></template>
+            <el-menu-item index="1-1">item one</el-menu-item>
+            <el-menu-item index="1-2">item two</el-menu-item>
+          </el-menu-item-group>
+          <el-menu-item-group title="Group Two">
+            <el-menu-item index="1-3">item three</el-menu-item>
+          </el-menu-item-group>
+          <el-sub-menu index="1-4">
+            <template #title><span>item four</span></template>
+            <el-menu-item index="1-4-1">item one</el-menu-item>
+          </el-sub-menu>
+        </el-sub-menu>
+        <el-menu-item index="2">
+          <el-icon>
+            <icon-menu />
+          </el-icon>
+          <template #title>Navigator Two</template>
+        </el-menu-item>
+        <el-menu-item index="3" disabled>
+          <el-icon>
+            <document />
+          </el-icon>
+          <template #title>
+            <span>Navigator Three</span>
+            <span class="ml-12 mr-12">500</span>
+          </template>
+        </el-menu-item>
+        <el-menu-item index="4">
+          <el-icon>
+            <setting />
+          </el-icon>
+          <template #title>Navigator Four</template>
+        </el-menu-item>
+      </el-menu>
+
+<!--      主窗口展示-->
+      <div class="border-gray-100">
+        <h1>argus</h1>
+      </div>
+    </el-container>
   </main>
 </template>

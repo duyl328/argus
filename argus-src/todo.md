@@ -22,10 +22,13 @@
 - [x] 增加基础设置配置
 - [x] 增加页面黑暗模式
 
+2024年12月11日
+- [ ] 使用面包屑作为路由确认
+- https://element-plus.org/zh-CN/component/breadcrumb.html#breadcrumb-%E9%9D%A2%E5%8C%85%E5%B1%91
+- [ ] 通知：
+- https://element-plus.org/zh-CN/component/notification.html
 
-
-
-
+- [ ] 搜索历史与搜索提示
 
 
 
