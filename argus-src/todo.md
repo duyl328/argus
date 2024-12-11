@@ -29,6 +29,7 @@
 - https://element-plus.org/zh-CN/component/notification.html
 
 - [ ] 搜索历史与搜索提示
+- [ ] 基础设置图像路径维护
 
 
 

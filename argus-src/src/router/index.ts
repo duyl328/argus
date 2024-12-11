@@ -11,6 +11,7 @@ import PathUtils from '@/utils/pathUtils'
 import NotFound from '@/views/NotFound.vue'
 import AboutView from '@/views/AboutView.vue'
 import SettingView from '@/views/SettingView.vue'
+import BasicSetting from '@/components/setting/BasicSetting.vue'
 
 // 导入所有 .vue 文件
 const routes = import.meta.glob('@/views/dev/**/*.vue')
@@ -35,16 +36,6 @@ const devPageViews: RouteRecordRaw[] = Object.keys(routes)
 
 console.log('自动生成路由', devPageViews)
 
-const children: RouteRecordRaw[] = [
-  {
-    path: '/', // 捕获所有其他路径
-    component: NotFound // 任何其他路径都跳转到默认页面
-  },
-  {
-    path: 'setting',
-    component: SettingView
-  }
-]
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -55,13 +46,32 @@ const router = createRouter({
       // component: HomeView,
       // children: children,
       // 重定向到主页
-      redirect:"/home"
+      redirect: '/home'
     },
     {
       path: '/home',
       name: 'home',
       component: HomeView,
-      children: children
+      children: [
+        {
+          path: '/', // 捕获所有其他路径
+          component: NotFound // 任何其他路径都跳转到默认页面
+        },
+        {
+          path: 'setting',
+          component: SettingView,
+          children: [
+            {
+              path:"",
+              redirect:"/home/setting/basic-setting"
+            },
+            {
+              path: 'basic-setting',
+              component: BasicSetting
+            }
+          ]
+        }
+      ]
     },
 
     {

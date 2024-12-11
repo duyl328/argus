@@ -15,8 +15,8 @@ import { useRoute } from 'vue-router'
 function getSwitch() {
   toggleDark()
 }
-const route = useRoute()
 
+const route = useRoute()
 // region tab 项
 
 const isCollapse = ref(true)
@@ -57,7 +57,7 @@ const handleClose = (key: string, keyPath: string[]) => {
         <el-menu
           router
           class=""
-          default-active="2"
+          :default-active="route.path"
           :collapse="isCollapse"
           @open="handleOpen"
           @close="handleClose"
@@ -97,11 +97,11 @@ const handleClose = (key: string, keyPath: string[]) => {
               <!--              <span class="ml-12 mr-12">500</span>-->
             </template>
           </el-menu-item>
-          <el-menu-item  index="/home/setting">
+          <el-menu-item index="/home/setting">
             <el-icon>
               <setting />
             </el-icon>
-            <template #title> 设置 </template>
+            <template #title> 设置</template>
           </el-menu-item>
         </el-menu>
       </div>
