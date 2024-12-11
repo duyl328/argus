@@ -44,10 +44,10 @@ export default defineConfig(({ command, mode }) => {
     // 2. tauri 需要一个固定端口，如果该端口不可用则失败
     // 默认启动端口
     server: {
-      // host: '0.0.0.0',
+      host: '0.0.0.0',
       port: 3133,
       strictPort: true,
-      host: host || false,
+      // host: host || false,
       hmr: host
         ? {
           protocol: 'ws',

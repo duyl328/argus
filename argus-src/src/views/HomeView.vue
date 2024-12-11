@@ -1,7 +1,6 @@
 <script setup lang="ts">
 // 切换主题
 import { toggleDark } from '@/utils/darkUtil'
-// import setting from '@/components/setting/Index.vue'
 import { ref } from 'vue'
 import {
   Document,
@@ -11,10 +10,12 @@ import {
   ArrowLeft,
   ArrowRight
 } from '@element-plus/icons-vue'
+import { useRoute } from 'vue-router'
 
 function getSwitch() {
   toggleDark()
 }
+const route = useRoute()
 
 // region tab 项
 
@@ -28,78 +29,98 @@ const handleClose = (key: string, keyPath: string[]) => {
 </script>
 
 <template>
-  <main>
-    <ElButton @click="getSwitch" v-show="false">切换主题</ElButton>
-    <el-container class="app">
-<!--      控制列表展示状态-->
-      <el-radio-group v-model="isCollapse" style="margin-bottom: 20px">
-        <el-radio-button v-if="isCollapse" :value="false">
-          <el-icon>
-            <ArrowRight />
-          </el-icon>
-        </el-radio-button>
-        <el-radio-button v-else :value="true">
-          <el-icon>
-            <ArrowLeft />
-          </el-icon>
-        </el-radio-button>
-      </el-radio-group>
-
-<!--      列表展示-->
-      <el-menu
-        default-active="2"
-        class="el-menu-vertical-demo"
-        :collapse="isCollapse"
-        @open="handleOpen"
-        @close="handleClose"
-      >
-        <el-sub-menu index="1">
-          <template #title>
+  <div class="flex w-full h-full flex-col">
+    <!--    顶部内容【功能区】-->
+    <div class="flex-shrink-0 whitespace-nowrap" v-if="false">
+      <ElButton @click="getSwitch">切换主题</ElButton>
+      <button class="button">你好</button>
+    </div>
+    <!--    底部主要内容-->
+    <div class="flex-1 flex overflow-auto">
+      <!--    左侧 tab 栏展示-->
+      <div class="flex-shrink-0 overflow-hidden border-r">
+        <!--      控制列表展示状态-->
+        <el-radio-group v-model="isCollapse" class="mt-3 w-full" style="margin-bottom: 20px">
+          <el-radio-button class="ml-auto mr-2" v-if="isCollapse" :value="false">
             <el-icon>
-              <location />
+              <ArrowRight />
             </el-icon>
-            <span>Navigator One</span>
-          </template>
-          <el-menu-item-group>
-            <template #title><span>Group One</span></template>
-            <el-menu-item index="1-1">item one</el-menu-item>
-            <el-menu-item index="1-2">item two</el-menu-item>
-          </el-menu-item-group>
-          <el-menu-item-group title="Group Two">
-            <el-menu-item index="1-3">item three</el-menu-item>
-          </el-menu-item-group>
-          <el-sub-menu index="1-4">
-            <template #title><span>item four</span></template>
-            <el-menu-item index="1-4-1">item one</el-menu-item>
-          </el-sub-menu>
-        </el-sub-menu>
-        <el-menu-item index="2">
-          <el-icon>
-            <icon-menu />
-          </el-icon>
-          <template #title>Navigator Two</template>
-        </el-menu-item>
-        <el-menu-item index="3" disabled>
-          <el-icon>
-            <document />
-          </el-icon>
-          <template #title>
-            <span>Navigator Three</span>
-            <span class="ml-12 mr-12">500</span>
-          </template>
-        </el-menu-item>
-        <el-menu-item index="4">
-          <el-icon>
-            <setting />
-          </el-icon>
-          <template #title>Navigator Four</template>
-        </el-menu-item>
-      </el-menu>
+          </el-radio-button>
+          <el-radio-button v-else :value="true" class="ml-auto mr-2">
+            <el-icon>
+              <ArrowLeft />
+            </el-icon>
+          </el-radio-button>
+        </el-radio-group>
 
-<!--      主窗口展示-->
-      <div class="border-gray-100">
-        <h1>argus</h1>
+        <!--        tab 展示-->
+        <el-menu
+          router
+          class=""
+          default-active="2"
+          :collapse="isCollapse"
+          @open="handleOpen"
+          @close="handleClose"
+        >
+          <el-sub-menu index="/">
+            <template #title>
+              <el-icon>
+                <location />
+              </el-icon>
+              <span>Navigator One</span>
+            </template>
+            <el-menu-item-group>
+              <template #title><span>Group One</span></template>
+              <el-menu-item index="/">item one</el-menu-item>
+              <el-menu-item index="/">item two</el-menu-item>
+            </el-menu-item-group>
+            <el-menu-item-group title="Group Two">
+              <el-menu-item index="/">item three</el-menu-item>
+            </el-menu-item-group>
+            <el-sub-menu index="/">
+              <template #title><span>item four</span></template>
+              <el-menu-item index="/">item one</el-menu-item>
+            </el-sub-menu>
+          </el-sub-menu>
+          <el-menu-item index="/">
+            <el-icon>
+              <icon-menu />
+            </el-icon>
+            <template #title>Navigator Two</template>
+          </el-menu-item>
+          <el-menu-item index="/" disabled>
+            <el-icon>
+              <document />
+            </el-icon>
+            <template #title>
+              <span>Navigator Three</span>
+              <!--              <span class="ml-12 mr-12">500</span>-->
+            </template>
+          </el-menu-item>
+          <el-menu-item  index="/home/setting">
+            <el-icon>
+              <setting />
+            </el-icon>
+            <template #title> 设置 </template>
+          </el-menu-item>
+        </el-menu>
       </div>
-    </el-container>
-  </main>
+      <!--    右侧主要内容展示-->
+      <main class="flex-1 overflow-auto">
+        <router-view />
+      </main>
+    </div>
+  </div>
 </template>
+
+<style scoped lang="scss">
+// 取消 element-plus tab 栏右侧边框展示
+.el-menu {
+  border: none;
+}
+
+// 使用 tailwindcss
+.button {
+  @apply bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-700;
+}
+</style>
