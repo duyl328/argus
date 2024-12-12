@@ -12,6 +12,7 @@ import NotFound from '@/views/NotFound.vue'
 import AboutView from '@/views/AboutView.vue'
 import SettingView from '@/views/SettingView.vue'
 import BasicSetting from '@/components/setting/BasicSetting.vue'
+import LibraryView from '@/views/LibraryView.vue'
 
 // 导入所有 .vue 文件
 const routes = import.meta.glob('@/views/dev/**/*.vue')
@@ -68,9 +69,14 @@ const router = createRouter({
             {
               path: 'basic-setting',
               component: BasicSetting
-            }
+            },
           ]
-        }
+        },
+        {
+          path: 'library',
+          name: 'library',
+          component: LibraryView,
+        },
       ]
     },
 

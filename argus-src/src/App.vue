@@ -82,7 +82,7 @@ if (nodeenv !== undefined && !StringUtils.isBlank(nodeenv) && nodeenv === app.DE
     <hr v-if="isShowGenerateRouter" />
 
     <!--  展示主要内容-->
-    <div class="overflow-y-auto flex-1">
+    <div class="overflow-hidden flex-1">
       <router-view />
     </div>
   </div>

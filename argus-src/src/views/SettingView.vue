@@ -27,7 +27,7 @@ const handleSelect = (key: string, keyPath: string[]) => {
       </el-menu>
     </div>
     <!--  内容展示-->
-    <div class="flex-1 flex overflow-auto">
+    <div class="flex-1 flex ">
       <router-view />
     </div>
   </div>

@@ -36,7 +36,7 @@ const handleClose = (key: string, keyPath: string[]) => {
       <button class="button">你好</button>
     </div>
     <!--    底部主要内容-->
-    <div class="flex-1 flex overflow-auto">
+    <div class="flex-1 flex overflow-hidden">
       <!--    左侧 tab 栏展示-->
       <div class="flex-shrink-0 overflow-hidden border-r">
         <!--      控制列表展示状态-->
@@ -103,10 +103,16 @@ const handleClose = (key: string, keyPath: string[]) => {
             </el-icon>
             <template #title> 设置</template>
           </el-menu-item>
+          <el-menu-item index="/home/library">
+            <el-icon>
+              <setting />
+            </el-icon>
+            <template #title> 资料库</template>
+          </el-menu-item>
         </el-menu>
       </div>
       <!--    右侧主要内容展示-->
-      <main class="flex-1 overflow-auto">
+      <main class="flex-1 overflow-hidden">
         <router-view />
       </main>
     </div>
