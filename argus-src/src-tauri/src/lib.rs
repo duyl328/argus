@@ -53,24 +53,23 @@ pub fn run() {
         )).build();
 
 
-    let migrations = vec![
-        Migration {
-            version: 1,
-            description: "create users table",
-            sql: "CREATE TABLE IF NOT EXISTS users (
-                id INTEGER PRIMARY KEY AUTOINCREMENT,
-                name TEXT NOT NULL,
-                email TEXT
-            )",
-            kind: MigrationKind::Up,
-        }
-    ];
+    // let migrations = vec![
+    //     Migration {
+    //         version: 1,
+    //         description: "create users table",
+    //         sql: "CREATE TABLE IF NOT EXISTS users (
+    //             id INTEGER PRIMARY KEY AUTOINCREMENT,
+    //             name TEXT NOT NULL,
+    //             email TEXT
+    //         )",
+    //         kind: MigrationKind::Up,
+    //     }
+    // ];
 
 
     tauri::Builder::default()
         .plugin(log_plugin)
         .plugin(tauri_plugin_sql::Builder::new()
-            .add_migrations("sqlite:testsqlite.db", migrations)
             .build()
         )
         .plugin(tauri_plugin_dialog::init())
@@ -84,7 +83,7 @@ pub fn run() {
             commands::post_command::get_all_post,
             commands::post_command::insert_post,
             commands::log_command::log_logs,
-            commands::basic_setting_command::get_basic_setting
+            commands::photo_storage_command::get_basic_setting
         ])
         .setup(|app| {
             log::info!(" =============================== 程序启动！==============================");

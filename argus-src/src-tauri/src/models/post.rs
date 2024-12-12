@@ -6,7 +6,7 @@ use diesel::prelude::*;
 #[diesel(table_name = crate::storage::schema::posts)]
 #[diesel(check_for_backend(diesel::sqlite::Sqlite))]
 pub struct Post {
-    // 默认不推荐使用嵌套结构，暂无更好解决方案，使用展平结构 2024年12月6日 15点03分
+    // 默认不推荐使用嵌套结构，暂无更好解决方案，使用展平结构 【2024年12月6日 15点03分】
     // #[diesel(embed)] // 嵌套结构需要使用 embed
     // pub base: BaseModel,
     pub id: i32,
