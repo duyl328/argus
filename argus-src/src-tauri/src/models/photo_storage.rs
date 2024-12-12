@@ -1,8 +1,8 @@
 use diesel::{Insertable, Queryable, Selectable};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use crate::utils::time_util::TimeUtils;
 
-#[derive(Queryable, Selectable, Insertable, Debug,Serialize)]
+#[derive(Queryable, Selectable, Insertable, Debug, Serialize, Deserialize)]
 #[diesel(table_name = crate::storage::schema::photo_storages)]
 #[diesel(check_for_backend(diesel::sqlite::Sqlite))]
 pub struct PhotoStorage {
@@ -21,10 +21,10 @@ impl PhotoStorage {
         Self {
             img_paths: String::from(""),
             id: crate::constant::BASIC_SETTING_ID, // 假设默认 ID 是 1，你可能需要确保唯一性
-            is_enable:false,
+            is_enable: false,
             create_time: TimeUtils::current_timestamp(),
             update_time: TimeUtils::current_timestamp(),
-            is_delete:false
+            is_delete: false,
         }
     }
 }

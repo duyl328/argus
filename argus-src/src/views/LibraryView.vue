@@ -1,19 +1,18 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue'
 import { Plus } from '@element-plus/icons-vue'
-import { getBasicSetting } from '@/services/storageService'
-import type { basicSettingType } from '@/types/basicSetting.type'
+import type { photoStorageType } from '@/types/photoStorage.type'
 import { open } from '@tauri-apps/plugin-dialog'
-import { readImageAsBase64 } from '@/services/imgService'
+import { addPhotoStorage, getAllLibrary } from '@/services/libraryService'
 
 // 输入框输入的值
 const input = ref('')
 
 // 页面挂在后，查询所有路径
 onMounted(() => {
-  let basicSetting = getBasicSetting()
+  let basicSetting = getAllLibrary()
   basicSetting.then((res) => {
-    let parse: basicSettingType = JSON.parse(res)
+    let parse: photoStorageType = JSON.parse(res)
     console.log(parse)
   })
 })
@@ -21,21 +20,45 @@ onMounted(() => {
 async function selectFolder() {
   try {
     const selectedFile = await open({
-      multiple: true, // 设置是否允许多选
-      directory: true, // 设置为 true 以选择文件夹
-    });
+      multiple: false, // 设置是否允许多选
+      directory: true // 设置为 true 以选择文件夹
+    })
 
     if (selectedFile) {
-      console.log('选中的文件:', selectedFile);
+      console.log('选中的文件夹:', selectedFile)
+      input.value = selectedFile
     } else {
-      console.log('用户取消了选择');
+      console.log('用户取消了选择')
     }
   } catch (error) {
-    console.error('文件选择失败:', error);
+    console.error('文件选择失败:', error)
   }
 }
-const checkList = ref(['Value selected and disabled', 'Value A'])
 
+/**
+ * 添加文件路径
+ */
+function addFolder() {
+  let item: photoStorageType = {
+    id: 0,
+    img_paths: input.value,
+    is_enable: true,
+    is_delete: false,
+    create_time: 0,
+    update_time: 0
+  }
+  console.log("123123123123");
+  let stringPromise = addPhotoStorage(item)
+  stringPromise
+    .then((value) => {
+      console.log(value)
+    })
+    .catch((err) => {
+      console.error(err)
+    })
+}
+
+const checkList = ref(['Value selected and disabled', 'Value A'])
 </script>
 
 <template>
@@ -50,11 +73,11 @@ const checkList = ref(['Value selected and disabled', 'Value A'])
           </template>
         </el-input>
 
-        <el-button class="ml-2 w-40" type="primary" size="large">
+        <el-button class="ml-2 w-40" @click="addFolder" type="primary" size="large">
           <el-icon style="vertical-align: middle">
             <Plus />
           </el-icon>
-          <span style="vertical-align: middle"> 添加 </span>
+          <span style="vertical-align: middle" > 添加 </span>
         </el-button>
       </div>
 
@@ -64,9 +87,7 @@ const checkList = ref(['Value selected and disabled', 'Value A'])
           <el-checkbox label="Option A" value="Value A" />
           <el-checkbox label="Option B" value="Value B" />
           <el-checkbox label="Option C" value="Value C" />
-
         </el-checkbox-group>
-
       </div>
 
       <!--  图像路径启用-->

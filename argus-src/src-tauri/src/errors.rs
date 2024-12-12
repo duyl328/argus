@@ -1,6 +1,7 @@
 use thiserror::Error;
 use std::fmt;
 use tauri::Error;
+use tauri::ipc::InvokeError;
 
 #[derive(Error, Debug)]
 pub enum AppError {
@@ -13,16 +14,28 @@ pub enum AppError {
     #[error("Parse error: {0}")]
     ParseError(String),
 
-    #[error("默认错误!")]
-    Error()
+    #[error("Default error {0}")]
+    Error(#[from] diesel::result::Error),
+
+    #[error("数据库错误: {0}")]
+    SqlError(#[from] SqlError),
 }
+
+
+// 实现 Into<InvokeError>
+impl Into<InvokeError> for AppError {
+    fn into(self) -> InvokeError {
+        InvokeError::from(self.to_string())
+    }
+}
+
 
 #[derive(Error, Debug)]
 pub enum JsonError {
     /// 序列化失败
     #[error("序列化失败!")]
     SerializationFailed(),
-    
+
     #[error("Default error {0}")]
     Error(#[from] serde_json::error::Error),
 
@@ -30,8 +43,9 @@ pub enum JsonError {
     ParseError(String),
 }
 
+
 #[derive(Error, Debug)]
-pub enum SqlError{
+pub enum SqlError {
     #[error("Default error {0}")]
     Error(#[from] diesel::result::Error),
 
@@ -42,6 +56,5 @@ pub enum SqlError{
     TooMuchValidData(String),
 
     #[error("未查询到指定数据!")]
-    NotFound()
+    NotFound(),
 }
-

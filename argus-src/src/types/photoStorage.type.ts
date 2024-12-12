@@ -12,13 +12,11 @@
 /**
  * 基础设置
  */
-export type basicSettingType = {
-  create_time: bigint
+export type photoStorageType = {
   id: number
-  /**
-   * 图片路径
-   */
-  img_paths: string
-  update_time: bigint
-  path: string
+  img_paths: String
+  is_enable: boolean
+  is_delete: boolean
+  create_time: number
+  update_time: number
 }

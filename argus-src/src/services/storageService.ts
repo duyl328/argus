@@ -1,5 +1,5 @@
 import { invoke } from '@tauri-apps/api/core'
-import { getAllPostCommand, getBasicSettingCommand, insertPostCommand } from '@/command'
+import { getAllPostCommand, insertPostCommand } from '@/command'
 
 /**
  * Time:2024/12/5 10:15 12
@@ -18,8 +18,4 @@ export function getAllPost() {
 
 export function insertPost(title: string, body: string) {
   invoke(insertPostCommand, { title, body })
-}
-
-export function getBasicSetting():Promise<string> {
-  return invoke<string>(getBasicSettingCommand)
 }

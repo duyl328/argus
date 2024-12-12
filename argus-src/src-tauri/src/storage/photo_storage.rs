@@ -1,37 +1,43 @@
 use crate::errors::SqlError;
 use crate::models::photo_storage::PhotoStorage;
 use crate::storage::schema::photo_storages::dsl::photo_storages;
-use crate::storage::schema::posts::is_delete;
 use crate::utils::time_util::TimeUtils;
 use diesel::associations::HasTable;
 use diesel::prelude::*;
+use crate::storage::schema::photo_storages::is_delete;
 
 /// 获取数据
 pub fn get_all_photo_path(connection: &mut SqliteConnection) -> Result<Vec<PhotoStorage>, SqlError> {
     // 尝试加载所有数据
+    // let results = photo_storages::table
+    //     .select(PhotoStorage::as_select()).filter(is_delete.eq(false))
+    //     .load(connection)?;
     let results = photo_storages
-        .select(PhotoStorage::as_select()).filter(is_delete.eq(false))
-        .load(connection)?;
+        .filter(is_delete.eq(false)) // 过滤条件
+        .load::<PhotoStorage>(connection)?;
 
     Ok(results)
 }
 
 /// 插入元素
-pub fn insert_basic_setting(connection: &mut SqliteConnection, item: &mut PhotoStorage) -> Result<(), SqlError> {
+pub fn insert_basic_setting(connection: &mut SqliteConnection, item: &PhotoStorage) -> Result<(), SqlError> {
     let result = get_all_photo_path(connection)?;
     let photo_path = item.img_paths.trim();
     for x in result {
-        // 路径为空不能添加、路径重复不能添加
-        if photo_path.is_empty() || x.img_paths.eq(&photo_path)  {
+        if photo_path.is_empty() || x.img_paths.eq(photo_path) {
             return Err(SqlError::InsertError(String::from("Empty photo storage")));
         }
     }
-    // 到这里数据合法，为必要数据重新赋值
-    item.img_paths = photo_path.to_owned();
+
     let timestamp = TimeUtils::current_timestamp();
-    item.create_time = timestamp;
-    item.update_time = timestamp;
-    item.is_enable = true;
+    let item = PhotoStorage{
+        id: 0,
+        img_paths: photo_path.to_owned(),
+        is_enable: true,
+        is_delete: false,
+        create_time: timestamp,
+        update_time: timestamp
+    };
 
     let result = diesel::insert_into(photo_storages::table())
         .values(item)
@@ -43,6 +49,9 @@ pub fn insert_basic_setting(connection: &mut SqliteConnection, item: &mut PhotoS
         Err(SqlError::Error(result.unwrap_err()))
     }
 }
+
+
+
 pub fn update_photo_storages(
     connection: &mut SqliteConnection,
     item: &mut PhotoStorage,
