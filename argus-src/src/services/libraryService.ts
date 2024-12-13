@@ -23,7 +23,6 @@ export function getAllLibrary() {
 /**
  * 添加一个地址
  */
-export function addPhotoStorage(imgPath: photoStorageType) {
-  console.log(imgPath);
-  return invoke<string>(addPhotoStorageCommand, { imgath: imgPath })
+export function addPhotoStorage(path: string, is_enable: boolean = true) {
+  return invoke<string>(addPhotoStorageCommand, { img2path: path, isEnable:is_enable })
 }

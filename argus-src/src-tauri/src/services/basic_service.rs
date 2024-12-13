@@ -22,9 +22,10 @@ pub fn update_basic_setting_img_path(mut photo_path: PhotoStorage) -> Result<(),
     let result = storage::photo_storage::update_photo_storages(&mut conn, &mut photo_path)?;
     Ok(())
 }
+
 /// 添加一个图片路径
-pub fn add_basic_setting_img_path(mut photo_path: PhotoStorage) -> Result<(), SqlError> {
+pub fn add_img_path(img_path: String, is_enable: bool) -> Result<(), SqlError> {
     let mut conn = establish_connection();
-    storage::photo_storage::insert_basic_setting(&mut conn, &mut photo_path)?;
+    storage::photo_storage::insert_img_path(&mut conn, img_path, is_enable)?;
     Ok(())
 }

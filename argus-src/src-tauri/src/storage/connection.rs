@@ -68,9 +68,6 @@ pub fn init_path() -> Result<(), rusqlite::Error> {
 
 /// 创建数据库链接
 pub fn establish_connection() -> SqliteConnection {
-    log::info!("Establishing database connection");
-    
-
     SqliteConnection::establish(&DATABASE_URL).unwrap_or_else(|err| {
         log::error!("Error connecting to {:?}: {:?}", *DATABASE_URL, err);
         panic!("Error connecting to {:?}: {:?}", *DATABASE_URL, err)

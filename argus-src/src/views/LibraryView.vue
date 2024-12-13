@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, type Ref, ref } from 'vue'
 import { Plus } from '@element-plus/icons-vue'
 import type { photoStorageType } from '@/types/photoStorage.type'
 import { open } from '@tauri-apps/plugin-dialog'
@@ -7,16 +7,29 @@ import { addPhotoStorage, getAllLibrary } from '@/services/libraryService'
 
 // 输入框输入的值
 const input = ref('')
+// 所有的路径展示
+const folders: Ref<photoStorageType[]> = ref([])
 
 // 页面挂在后，查询所有路径
 onMounted(() => {
-  let basicSetting = getAllLibrary()
-  basicSetting.then((res) => {
-    let parse: photoStorageType = JSON.parse(res)
-    console.log(parse)
-  })
+  getAllData()
 })
 
+/**
+ * 获取所有路径数据
+ */
+function getAllData() {
+  let basicSetting = getAllLibrary()
+  basicSetting.then((res) => {
+    let parse: photoStorageType[] = JSON.parse(res)
+    folders.value = parse
+    console.log(parse)
+  })
+}
+
+/**
+ * 选择文件夹
+ */
 async function selectFolder() {
   try {
     const selectedFile = await open({
@@ -39,19 +52,12 @@ async function selectFolder() {
  * 添加文件路径
  */
 function addFolder() {
-  let item: photoStorageType = {
-    id: 0,
-    img_paths: input.value,
-    is_enable: true,
-    is_delete: false,
-    create_time: 0,
-    update_time: 0
-  }
-  console.log("123123123123");
-  let stringPromise = addPhotoStorage(item)
+  let stringPromise = addPhotoStorage(input.value)
   stringPromise
     .then((value) => {
       console.log(value)
+      // 更新路径
+      getAllData()
     })
     .catch((err) => {
       console.error(err)
@@ -77,16 +83,19 @@ const checkList = ref(['Value selected and disabled', 'Value A'])
           <el-icon style="vertical-align: middle">
             <Plus />
           </el-icon>
-          <span style="vertical-align: middle" > 添加 </span>
+          <span style="vertical-align: middle"> 添加 </span>
         </el-button>
       </div>
 
       <!--  图像路径展示-->
       <div>
         <el-checkbox-group v-model="checkList">
-          <el-checkbox label="Option A" value="Value A" />
-          <el-checkbox label="Option B" value="Value B" />
-          <el-checkbox label="Option C" value="Value C" />
+          <el-checkbox
+            v-for="item in folders"
+            :key="item.id"
+            :label="item.img_paths"
+            :value="item.img_paths"
+          />
         </el-checkbox-group>
       </div>
 

@@ -1,5 +1,5 @@
 use crate::errors::SqlError;
-use crate::models::photo_storage::PhotoStorage;
+use crate::models::photo_storage::{NewPhotoStorage, PhotoStorage};
 use crate::storage::schema::photo_storages::dsl::photo_storages;
 use crate::utils::time_util::TimeUtils;
 use diesel::associations::HasTable;
@@ -20,23 +20,25 @@ pub fn get_all_photo_path(connection: &mut SqliteConnection) -> Result<Vec<Photo
 }
 
 /// 插入元素
-pub fn insert_basic_setting(connection: &mut SqliteConnection, item: &PhotoStorage) -> Result<(), SqlError> {
+pub fn insert_img_path(connection: &mut SqliteConnection, img_path: String, is_enable: bool) -> Result<(), SqlError> {
     let result = get_all_photo_path(connection)?;
-    let photo_path = item.img_paths.trim();
+    let photo_path = img_path.trim();
     for x in result {
-        if photo_path.is_empty() || x.img_paths.eq(photo_path) {
-            return Err(SqlError::InsertError(String::from("Empty photo storage")));
+        if photo_path.is_empty() {
+            return Err(SqlError::InsertError(String::from("Empty photo storage!")));
+        }
+        if x.img_paths.eq(photo_path) {
+            return Err(SqlError::InsertError(String::from("选择路径重复! ")));
         }
     }
 
     let timestamp = TimeUtils::current_timestamp();
-    let item = PhotoStorage{
-        id: 0,
-        img_paths: photo_path.to_owned(),
-        is_enable: true,
-        is_delete: false,
-        create_time: timestamp,
-        update_time: timestamp
+    let item = NewPhotoStorage {
+        img_paths: &photo_path.to_owned(),
+        is_enable: &is_enable,
+        is_delete: &false,
+        create_time: &timestamp,
+        update_time: &timestamp,
     };
 
     let result = diesel::insert_into(photo_storages::table())
@@ -49,7 +51,6 @@ pub fn insert_basic_setting(connection: &mut SqliteConnection, item: &PhotoStora
         Err(SqlError::Error(result.unwrap_err()))
     }
 }
-
 
 
 pub fn update_photo_storages(

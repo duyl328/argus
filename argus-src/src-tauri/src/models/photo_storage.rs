@@ -29,6 +29,17 @@ impl PhotoStorage {
     }
 }
 
+#[derive(Insertable)]
+#[diesel(table_name = crate::storage::schema::photo_storages)]
+pub struct NewPhotoStorage<'a> {
+    /// 图像路径存储
+    pub img_paths: &'a String,
+    pub is_enable: &'a bool,
+    pub is_delete: &'a bool,
+    pub create_time: &'a i64,
+    pub update_time: &'a i64,
+}
+
 // #[derive(Insertable)]
 // #[diesel(table_name = crate::storage::schema::photo_storages)]
 // pub struct NewBasicSetting<'a> {

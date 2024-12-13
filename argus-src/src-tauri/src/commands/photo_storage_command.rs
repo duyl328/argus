@@ -16,12 +16,10 @@ pub fn get_photo_storage() -> String {
 pub fn update_photo_storage(img_path: PhotoStorage) {
     services::basic_service::update_basic_setting_img_path(img_path).expect("基础设置图像地址更新失败!");
 }
+
 #[tauri::command]
-pub fn add_photo_storage(imgath: PhotoStorage) -> Result<String, AppError> {
-    log::info!("ans ssqweqweqwe");
-    let img = JsonUtil::stringify(&imgath).expect("");
-    log::info!("ans ss{}",img);
-    let result = services::basic_service::add_basic_setting_img_path(imgath);
+pub fn add_photo_storage(img2path: String, is_enable: bool) -> Result<String, AppError> {
+    let result = services::basic_service::add_img_path(img2path, is_enable);
     if result.is_err() {
         Err(AppError::SqlError(result.unwrap_err()))
     } else {
