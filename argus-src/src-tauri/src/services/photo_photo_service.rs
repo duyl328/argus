@@ -29,3 +29,8 @@ pub fn add_img_path(img_path: String, is_enable: bool) -> Result<(), SqlError> {
     storage::photo_storage::insert_img_path(&mut conn, img_path, is_enable)?;
     Ok(())
 }
+pub fn delete_img_path(id: i32) -> Result<(), SqlError> {
+    let mut conn = establish_connection();
+    storage::photo_storage::delete_img_path(&mut conn, id)?;
+    Ok(())
+}

@@ -52,7 +52,7 @@ pub fn insert_img_path(connection: &mut SqliteConnection, img_path: String, is_e
     }
 }
 
-
+/// 更新图像存储路径
 pub fn update_photo_storages(
     connection: &mut SqliteConnection,
     item: &mut PhotoStorage,
@@ -63,6 +63,28 @@ pub fn update_photo_storages(
             photo_storages::img_paths.eq(&item.img_paths),
             photo_storages::update_time.eq(TimeUtils::current_timestamp()),
             photo_storages::is_enable.eq(item.is_enable),
+        ))
+        .execute(connection);
+
+    match result {
+        Ok(rows_updated) => {
+            if rows_updated > 0 {
+                Ok(())
+            } else {
+                Err(SqlError::NotFound())
+            }
+        }
+        Err(err) => Err(SqlError::Error(err)),
+    }
+}
+
+/// 删除一个图像路径
+pub fn delete_img_path(connection: &mut SqliteConnection,id:i32) -> Result<(), SqlError> {
+    use crate::storage::schema::photo_storages;
+    let result = diesel::update(photo_storages::table.filter(photo_storages::id.eq(id)))
+        .set((
+            photo_storages::update_time.eq(TimeUtils::current_timestamp()),
+            photo_storages::is_delete.eq(true),
         ))
         .execute(connection);
 

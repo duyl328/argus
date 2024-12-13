@@ -10,7 +10,13 @@
  */
 
 import { invoke } from '@tauri-apps/api/core'
-import { addPhotoStorageCommand, getPhotoStorageCommand, logLogsCommand } from '@/command'
+import {
+  addPhotoStorageCommand,
+  deletePhotoStorageCommand,
+  getPhotoStorageCommand,
+  logLogsCommand,
+  updatePhotoStorageCommand
+} from '@/command'
 import type { photoStorageType } from '@/types/photoStorage.type'
 
 /**
@@ -24,5 +30,19 @@ export function getAllLibrary() {
  * 添加一个地址
  */
 export function addPhotoStorage(path: string, is_enable: boolean = true) {
-  return invoke<string>(addPhotoStorageCommand, { img2path: path, isEnable:is_enable })
+  return invoke<string>(addPhotoStorageCommand, { img2path: path, isEnable: is_enable })
+}
+
+/**
+ * 更新一个地址
+ */
+export function updatePhotoStorage(img_path: photoStorageType) {
+  return invoke<string>(updatePhotoStorageCommand, { imgPath: img_path })
+}
+
+/**
+ * 删除一个地址
+ */
+export function deletePhotoStorage(id: number) {
+  return invoke<string>(deletePhotoStorageCommand, { id })
 }

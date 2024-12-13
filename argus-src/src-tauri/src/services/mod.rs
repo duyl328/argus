@@ -1,2 +1,2 @@
 pub mod post_service;
-pub mod basic_service;
+pub mod photo_photo_service;

@@ -28,3 +28,5 @@ export const getPhotoStorageCommand = 'get_photo_storage'
  * 插入图像地址
  */
 export const addPhotoStorageCommand = 'add_photo_storage'
+export const updatePhotoStorageCommand = 'update_photo_storage'
+export const deletePhotoStorageCommand = 'delete_photo_storage'

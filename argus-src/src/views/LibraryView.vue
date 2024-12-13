@@ -1,14 +1,21 @@
 <script setup lang="ts">
-import { onMounted, type Ref, ref } from 'vue'
-import { Plus } from '@element-plus/icons-vue'
+import { onMounted, type Reactive, type Ref, reactive, ref } from 'vue'
+import { Delete, Plus } from '@element-plus/icons-vue'
 import type { photoStorageType } from '@/types/photoStorage.type'
 import { open } from '@tauri-apps/plugin-dialog'
-import { addPhotoStorage, getAllLibrary } from '@/services/libraryService'
+import {
+  addPhotoStorage,
+  deletePhotoStorage,
+  getAllLibrary,
+  updatePhotoStorage
+} from '@/services/libraryService'
+import { updatePhotoStorageCommand } from '@/command'
 
 // 输入框输入的值
 const input = ref('')
 // 所有的路径展示
-const folders: Ref<photoStorageType[]> = ref([])
+let folders: Reactive<photoStorageType[]> = reactive([])
+const checkList = ref([])
 
 // 页面挂在后，查询所有路径
 onMounted(() => {
@@ -22,8 +29,8 @@ function getAllData() {
   let basicSetting = getAllLibrary()
   basicSetting.then((res) => {
     let parse: photoStorageType[] = JSON.parse(res)
-    folders.value = parse
-    console.log(parse)
+    folders.length = 0
+    folders.push(...parse)
   })
 }
 
@@ -58,13 +65,49 @@ function addFolder() {
       console.log(value)
       // 更新路径
       getAllData()
+      // 清空添加
+      input.value = ''
     })
     .catch((err) => {
       console.error(err)
     })
 }
 
-const checkList = ref(['Value selected and disabled', 'Value A'])
+/**
+ * 删除指定路径
+ */
+function deletePhotoPath(id: number) {
+  deletePhotoStorage(id)
+    .then(() => {
+      console.log('删除成功')
+      const index = folders.findIndex((folder) => folder.id === id)
+      if (index !== -1) {
+        folders.splice(index, 1)
+      }
+      console.log(folders)
+    })
+    .catch((err) => {
+      console.error('删除失败:', err)
+    })
+}
+
+/**
+ * 更新选中状态
+ */
+function pathSelectChange(items: photoStorageType) {
+  items.is_enable = !items.is_enable
+  updatePhotoStorage(items)
+    .then((res) => {
+      console.log('更新成功')
+      const index = folders.findIndex((folder) => folder.id === items.id)
+      if (index !== -1) {
+        folders[index] = { ...folders[index], is_enable: !folders[index].is_enable }
+      }
+    })
+    .catch((err) => {
+      console.error(err)
+    })
+}
 </script>
 
 <template>
@@ -89,22 +132,33 @@ const checkList = ref(['Value selected and disabled', 'Value A'])
 
       <!--  图像路径展示-->
       <div>
-        <el-checkbox-group v-model="checkList">
-          <el-checkbox
-            v-for="item in folders"
-            :key="item.id"
-            :label="item.img_paths"
-            :value="item.img_paths"
-          />
-        </el-checkbox-group>
+        <!--  图像路径启用-->
+        <el-checkbox
+          @change="pathSelectChange(item)"
+          class="mt-4"
+          size="large"
+          border
+          v-for="item in folders"
+          :key="item.id"
+          :label="item.img_paths"
+          :value="item.img_paths"
+          :checked="item.is_enable"
+        >
+          <template #default>
+            <span>
+              {{ item.img_paths }}
+            </span>
+            <el-popconfirm @confirm="deletePhotoPath(item.id)" title="Are you sure to delete this?">
+              <template #reference>
+                <el-button size="small" class="ml-5 mr-1" type="info" :icon="Delete" circle />
+              </template>
+            </el-popconfirm>
+          </template>
+        </el-checkbox>
       </div>
-
-      <!--  图像路径启用-->
-      <!--  图像路径获取-->
-      <h1>测试</h1>
     </div>
     <el-divider border-style="dotted" />
   </div>
 </template>
 
-<style scoped></style>
+<style scoped lang="scss"></style>
