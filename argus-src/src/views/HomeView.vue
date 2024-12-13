@@ -8,7 +8,9 @@ import {
   Location,
   Setting,
   ArrowLeft,
-  ArrowRight
+  ArrowRight,
+  Folder,
+  FolderOpened, Files
 } from '@element-plus/icons-vue'
 import { useRoute } from 'vue-router'
 
@@ -97,6 +99,12 @@ const handleClose = (key: string, keyPath: string[]) => {
               <!--              <span class="ml-12 mr-12">500</span>-->
             </template>
           </el-menu-item>
+          <el-menu-item index="/home/folder">
+            <el-icon>
+              <FolderOpened />
+            </el-icon>
+            <template #title> 文件夹</template>
+          </el-menu-item>
           <el-menu-item index="/home/setting">
             <el-icon>
               <setting />
@@ -105,7 +113,7 @@ const handleClose = (key: string, keyPath: string[]) => {
           </el-menu-item>
           <el-menu-item index="/home/library">
             <el-icon>
-              <setting />
+              <Files />
             </el-icon>
             <template #title> 资料库</template>
           </el-menu-item>

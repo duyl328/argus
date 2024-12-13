@@ -13,6 +13,7 @@ import AboutView from '@/views/AboutView.vue'
 import SettingView from '@/views/SettingView.vue'
 import BasicSetting from '@/components/setting/BasicSetting.vue'
 import LibraryView from '@/views/LibraryView.vue'
+import FolderView from '@/views/FolderView.vue'
 
 // 导入所有 .vue 文件
 const routes = import.meta.glob('@/views/dev/**/*.vue')
@@ -76,6 +77,11 @@ const router = createRouter({
           path: 'library',
           name: 'library',
           component: LibraryView,
+        },
+        {
+          path: 'folder',
+          name: 'folder',
+          component: FolderView,
         },
       ]
     },
