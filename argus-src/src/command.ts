@@ -30,3 +30,7 @@ export const getPhotoStorageCommand = 'get_photo_storage'
 export const addPhotoStorageCommand = 'add_photo_storage'
 export const updatePhotoStorageCommand = 'update_photo_storage'
 export const deletePhotoStorageCommand = 'delete_photo_storage'
+/**
+ * 获取指定路径所有子路径的第一张图片，没有图片则不返回内容
+ */
+export const getDirAllSubfoldersFirstImgCommand = 'get_dir_all_subfolders_first_img'

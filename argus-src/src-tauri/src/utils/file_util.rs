@@ -2,6 +2,7 @@ use std::fs::{self, File};
 use std::io::{self, Read, Write};
 use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
+use glob::glob;
 
 /// 读取文本文件内容
 pub fn read_text_file(file_path: &str) -> Result<String, String> {
@@ -74,7 +75,7 @@ pub fn move_file(src_path: &str, dest_path: &str) -> Result<(), String> {
 }
 
 /// 获取所有指定文件夹的子目录
-pub fn get_all_subfolders(path:&str) -> Vec<PathBuf> {
+pub fn get_all_subfolders(path: &str) -> Vec<PathBuf> {
     WalkDir::new(path)
         .min_depth(1) // 忽略起始目录本身
         .into_iter()
@@ -83,6 +84,56 @@ pub fn get_all_subfolders(path:&str) -> Vec<PathBuf> {
         .map(|entry| entry.path().to_path_buf()) // 转换为 PathBuf
         .collect()
 }
+
+/// 获取指定路径的第一张图片
+pub fn get_all_img(path: &str) {
+    let vec = get_all_subfolders(path);
+
+    for x in vec {
+        let display = x.display().to_string();
+        get_all_dir_img(&*display, Some(1));
+        // println!("{}", display);
+    }
+}
+
+/// 获取指定路径下所有图片
+/// * `path` 指定路径
+/// * `img_num` 获取多少张图片，如果是0直接返回，如果为负数则获取所有图片
+pub fn get_all_dir_img(path: &str, img_num: Option<i32>) -> Vec<String> {
+    let mut i = 0;
+    // 默认张数
+    let nums = img_num.unwrap_or(-1);
+    if nums == 0 { return [].to_vec(); }
+    let valid_extensions = ["jpg", "png", "gif", "jpeg"]; // 图片文件扩展名
+
+    // 数据返回合集
+    let mut all_img: Vec<String> = vec![];
+
+    if let Ok(entries) = fs::read_dir(path) {
+        for entry in entries {
+            if let Ok(entry) = entry {
+                let path = entry.path();
+                if path.is_file() {
+                    if let Some(extension) = path.extension() {
+                        if valid_extensions.contains(&extension.to_str().unwrap_or_default()) {
+                            i += 1;
+                            let x = i >= nums;
+                            // println!("Found image: {:?} ,{},{}, {}", path, i, nums, x);
+                            all_img.push(String::from(path.to_str().unwrap()));
+                            if x {
+                                break;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    } else {
+        eprintln!("Failed to read directory.");
+    }
+    return all_img;
+}
+
 
 #[cfg(test)]
 mod tests {
