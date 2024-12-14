@@ -65,7 +65,7 @@ if (nodeenv !== undefined && !StringUtils.isBlank(nodeenv) && nodeenv === app.DE
 </script>
 
 <template>
-  <div class="overflow-hidden flex flex-col h-dvh">
+  <div class="flex flex-col h-dvh">
     <!--    路由导航-->
     <ul class="mr-20 top-0 sticky hidden lg:flex" v-if="isShowGenerateRouter">
       <li
@@ -82,7 +82,7 @@ if (nodeenv !== undefined && !StringUtils.isBlank(nodeenv) && nodeenv === app.DE
     <hr v-if="isShowGenerateRouter" />
 
     <!--  展示主要内容-->
-    <div class="overflow-hidden flex-1">
+    <div class="flex-1">
       <router-view />
     </div>
   </div>

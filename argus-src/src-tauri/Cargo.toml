@@ -15,11 +15,11 @@ panic = "abort"
 # `_lib` 后缀可能看起来多余，但它是必要的`
 # 使 lib 名称唯一并且不会与 bin 名称冲突.
 # 这似乎只是 Windows 上的问题，请参阅 https://github.com/rust-lang/cargo/issues/8519
-name = "argus_src_lib"
-crate-type = ["staticlib", "cdylib", "rlib"]
+name                = "argus_src_lib"
+crate-type          = ["staticlib", "cdylib", "rlib"]
 
 [build-dependencies]
-tauri-build = { version = "2", features = [] }
+tauri-build         = { version = "2", features = [] }
 
 [dependencies]
 tauri               = { version = "2", features = ["protocol-asset"] }
@@ -56,5 +56,9 @@ diesel_migrations   = "2.2.0"
 thiserror           = "2.0.6"
 # 时间处理
 chrono              = "0.4.39"
+# 文件处理
+walkdir             = "2.5.0"
+# 匹配文件扩展名
+glob                = "0.3.1"
 
 #cargo add reqwest

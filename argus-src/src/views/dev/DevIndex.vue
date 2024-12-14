@@ -139,7 +139,7 @@ function jumpToHome () {
           <!--          </span>-->
         </li>
       </ul>
-      <main class="content flex mt-5 flex-column m-auto">
+      <main class="content flex mt-5 overflow-y-auto flex-column m-auto">
         <router-view />
       </main>
     </div>

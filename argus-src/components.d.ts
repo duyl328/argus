@@ -8,6 +8,8 @@ export {}
 declare module 'vue' {
   export interface GlobalComponents {
     BasicSetting: typeof import('./src/components/setting/BasicSetting.vue')['default']
+    CommandManager: typeof import('./src/components/dev/CommandManager.vue')['default']
+    CommandMannager: typeof import('./src/components/dev/CommandManager.vue')['default']
     ElAside: typeof import('element-plus/es')['ElAside']
     ElBadge: typeof import('element-plus/es')['ElBadge']
     ElButton: typeof import('element-plus/es')['ElButton']

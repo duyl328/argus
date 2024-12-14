@@ -1,5 +1,5 @@
 use crate::utils::base64_util::base64_encode;
-use crate::utils::file_util::{file_exists, read_binary_file};
+use crate::utils::file_util::{file_exists, get_all_subfolders, read_binary_file};
 use base64::encode;
 use base64::engine::general_purpose::STANDARD;
 use base64::Engine;
@@ -8,6 +8,7 @@ use std::io::Cursor;
 use std::io::Read;
 use std::path::{Path, PathBuf};
 use std::slice::RChunksExactMut;
+use crate::utils::json_util::JsonUtil;
 
 /// 返回图像绝对路径
 #[tauri::command]
@@ -38,4 +39,11 @@ pub fn read_image_as_base64(directory: String) -> Result<String, String> {
         }
         Err(err) => return Err(err.to_string()),
     }
+}
+
+/// 获取所有目录
+#[tauri::command]
+pub fn get_all_sub_dir(path: String) -> String {
+    let vec = get_all_subfolders(&*path);
+    JsonUtil::stringify(&vec).expect("JSON 转换失败")
 }

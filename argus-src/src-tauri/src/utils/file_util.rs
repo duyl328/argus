@@ -1,6 +1,7 @@
 use std::fs::{self, File};
 use std::io::{self, Read, Write};
 use std::path::{Path, PathBuf};
+use walkdir::WalkDir;
 
 /// 读取文本文件内容
 pub fn read_text_file(file_path: &str) -> Result<String, String> {
@@ -70,6 +71,17 @@ pub fn copy_file(src_path: &str, dest_path: &str) -> Result<(), String> {
 pub fn move_file(src_path: &str, dest_path: &str) -> Result<(), String> {
     copy_file(src_path, dest_path)?;
     delete_file(src_path)
+}
+
+/// 获取所有指定文件夹的子目录
+pub fn get_all_subfolders(path:&str) -> Vec<PathBuf> {
+    WalkDir::new(path)
+        .min_depth(1) // 忽略起始目录本身
+        .into_iter()
+        .filter_map(|entry| entry.ok()) // 忽略无效条目
+        .filter(|entry| entry.file_type().is_dir()) // 只保留文件夹
+        .map(|entry| entry.path().to_path_buf()) // 转换为 PathBuf
+        .collect()
 }
 
 #[cfg(test)]

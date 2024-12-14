@@ -39,11 +39,11 @@ console.log(width)
   <!--  顶部状态展示-->
   <h1>路径图片展示</h1>
 
-<!--  sm md lg xl 2xl-->
+  <!--  sm md lg xl 2xl-->
 
   <!--  图像展示-->
   <div
-    class="grid gap-4 grid-cols-1 m-2 sm:grid-cols-3  md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 2xl:grid-cols-8"
+    class="grid gap-4 p-5 grid-cols-3 sm:grid-cols-4 md:grid-cols-5 lg:grid-cols-6 xl:grid-cols-7 2xl:grid-cols-9"
   >
     <img
       v-for="item in imgPaths"

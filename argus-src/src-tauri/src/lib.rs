@@ -80,6 +80,7 @@ pub fn run() {
             commands::file_command::get_image_absolute_path,
             commands::file_command::check_directory_access,
             commands::file_command::read_image_as_base64,
+            commands::file_command::get_all_sub_dir,
             commands::post_command::get_all_post,
             commands::post_command::insert_post,
             commands::log_command::log_logs,
