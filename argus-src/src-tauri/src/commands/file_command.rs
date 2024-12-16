@@ -9,7 +9,7 @@ use std::io::Read;
 use std::path::{Path, PathBuf};
 use std::slice::RChunksExactMut;
 use serde::{Deserialize, Serialize};
-use crate::utils::img_util::image_to_base64;
+use crate::utils::img_util::image_compression;
 use crate::utils::json_util::JsonUtil;
 
 /// 返回图像绝对路径

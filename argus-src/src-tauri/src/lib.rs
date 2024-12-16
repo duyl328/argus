@@ -5,6 +5,7 @@ mod services;
 mod storage;
 mod utils;
 mod errors;
+mod explore;
 
 use tauri::{Emitter, Listener, Manager, State};
 use tauri_plugin_sql::{Migration, MigrationKind};
