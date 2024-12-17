@@ -1,0 +1,47 @@
+<script setup lang="ts">
+import { listen } from '@tauri-apps/api/event'
+import CommandManager from '@/components/dev/CommandManager.vue'
+import type { CommandType } from '@/types/command.type'
+import { addListener } from '@/services/emits/base'
+import emitOrder from '@/constants/emitOrder'
+
+// 注册监听器，统一处理图片数据
+// async function startImageListener() {
+//   await listen('download-started', (event) => {
+//     const batch = event.payload // 批量图片数据
+//     console.log(batch)
+//     // console.log('Received images 后端返回emit数据:', batch)
+//   })
+// }
+
+
+addListener(emitOrder.downloadStartedCommand,(event) => {
+  console.log(event);
+  console.log(event);
+})
+
+const commands: CommandType[] = [
+  {
+    name: 'emit_send_test',
+    description: 'emit 触发测试',
+    params: [
+      {
+        name: 'param',
+        label: '测试参数（字符串）',
+        type: 'text',
+        value: '世界',
+        placeholder: ''
+      }
+    ],
+    result: null
+  }
+]
+// startImageListener()
+</script>
+
+<template>
+  <h1>Emit</h1>
+  <CommandManager :pro="commands"></CommandManager>
+</template>
+
+<style scoped></style>

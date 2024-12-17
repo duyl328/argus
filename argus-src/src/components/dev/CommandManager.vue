@@ -1,32 +1,34 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue'
+import { onMounted, type Ref, ref } from 'vue'
 import { baseInvoke } from '@/utils/commandUtil.js'
 import type { CommandType } from '@/types/command.type'
+import { logN } from '@/utils/logHelper/logUtils'
 
 // 传递参数
-let props =defineProps({
+let props = defineProps({
   pro: Array<CommandType>
 })
 // 使用 ref 使数据变成响应式数据
-const modules = ref([...props.pro])
+const modules: Ref<CommandType[]> = ref([...(props.pro || [])])
 
 /**
  * 指令触发
  * @param module
  */
-const invokeCommand = async (module) => {
+const invokeCommand = async (module: CommandType) => {
   const params = Object.fromEntries(module.params.map((param) => [param.name, param.value]))
-  console.log(params)
+  logN.success('前端发送的参数', module.name, params)
+
   try {
     let s = baseInvoke(module.name, params)
     s.then((res) => {
-      console.log(res)
+      logN.warning('后端返回的参数', module.name, res)
       module.result = JSON.stringify(res, null, 2)
     }).catch((err) => {
       module.result = `Error: ${err.message}`
     })
   } catch (error) {
-    module.result = `Error: ${error.message}`
+    module.result = `Error: ${error}`
   }
 }
 </script>
@@ -64,16 +66,17 @@ const invokeCommand = async (module) => {
               type="checkbox"
               class="rounded"
             />
-            <select
-              v-if="param.type === 'select'"
-              :id="`${module.name}-${param.name}`"
-              v-model="param.value"
-              class="w-full px-3 py-2 border border-gray-300 rounded-md"
-            >
-              <option v-for="option in param.options" :value="option" :key="option">
-                {{ option }}
-              </option>
-            </select>
+            <!--            传递到后端的数据基本都是字符、数字、布尔，所以几乎不需要 Select -->
+            <!--            <select-->
+            <!--              v-if="param.type === 'select'"-->
+            <!--              :id="`${module.name}-${param.name}`"-->
+            <!--              v-model="param.value"-->
+            <!--              class="w-full px-3 py-2 border border-gray-300 rounded-md"-->
+            <!--            >-->
+            <!--              <option v-for="option in param.options" :value="option" :key="option">-->
+            <!--                {{ option }}-->
+            <!--              </option>-->
+            <!--            </select>-->
           </div>
         </div>
 

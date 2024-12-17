@@ -1,5 +1,5 @@
 import { invoke } from '@tauri-apps/api/core'
-import { getAllPostCommand, insertPostCommand } from '@/command'
+import { getAllPostCommand, insertPostCommand } from '@/constants/command'
 
 /**
  * Time:2024/12/5 10:15 12

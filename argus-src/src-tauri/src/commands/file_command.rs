@@ -117,43 +117,6 @@ pub async fn get_dir_all_subfolders_first_img(path: String, width: u32, height: 
     let guard = result.lock().await;
     guard.clone()
 }
-// pub async fn get_dir_all_subfolders_first_img(path: String) -> Vec<FolderImage> {
-//     // 使用 spawn_blocking 将同步函数包装成异步
-//     let vec = task::spawn_blocking(move || get_all_subfolders(&path))
-//         .await
-//         .expect("Failed to get subfolders");
-//
-//     let mut result: Vec<FolderImage> = Vec::new();
-//
-//     // 使用并发处理文件夹
-//     let mut tasks = vec![];
-//
-//     for x in &vec {
-//         let display = x.display().to_string();
-//
-//         // 对于每个文件夹，使用 spawn_blocking 获取文件夹中的图像路径
-//         // let task = task::spawn_blocking(move || get_all_dir_img(&display, Some(1)));
-//         let vec1 = get_all_dir_img(&display, Some(1)); // 获取文件夹中的图像路径
-//         if !vec1.is_empty() {
-//
-//             let ans = task::spawn_blocking(move || image_to_base64(&*vec1[0].clone(), 0.4).expect("报错了"));
-//             // let base64 = image_to_base64(&*vec1[0].clone(), 0.4).expect("报错了");
-//             tasks.push(ans);
-//         }
-//     }
-//
-//     // 等待所有任务完成并处理结果
-//     let dir_imgs = futures::future::join_all(tasks).await;
-//
-//     for (folder, vec1) in vec.into_iter().zip(dir_imgs.into_iter()) {
-//         result.push(FolderImage {
-//             folder_path: folder.display().to_string(),
-//             image_path_as_base64: vec1.expect("报错了"),
-//         });
-//     }
-//
-//     result
-// }
 
 #[derive(Serialize, Deserialize, Debug,Clone)]  // 需要加上这些
 pub struct FolderImage {

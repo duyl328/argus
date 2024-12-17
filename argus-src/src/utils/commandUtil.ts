@@ -1,5 +1,5 @@
 import { invoke } from '@tauri-apps/api/core'
-import { greetCommand } from '@/command'
+import { greetCommand } from '@/constants/command'
 
 /**
  * Time:2024/12/14 12:21 30

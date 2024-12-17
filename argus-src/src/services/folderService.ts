@@ -1,5 +1,5 @@
 import { invoke } from '@tauri-apps/api/core'
-import { getDirAllSubfoldersFirstImgCommand, insertPostCommand } from '@/command'
+import { getDirAllSubfoldersFirstImgCommand, insertPostCommand } from '@/constants/command'
 import type { FolderImage } from '@/types/rusts/FolderImage'
 
 /**

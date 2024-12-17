@@ -9,7 +9,7 @@
  *     c'est de voir le monde tel qu'il est et de l'aimer.
  */
 import { invoke } from '@tauri-apps/api/core'
-import { logLogsCommand } from '@/command'
+import { logLogsCommand } from '@/constants/command'
 
 export function logLogs() {
   invoke(logLogsCommand)

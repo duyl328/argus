@@ -1,6 +1,6 @@
 import {invoke} from "@tauri-apps/api/core";
 
-import {greetCommand} from '@/command';
+import {greetCommand} from '@/constants/command';
 
 /**
  * 问候

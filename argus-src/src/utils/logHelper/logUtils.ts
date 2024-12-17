@@ -55,7 +55,6 @@ const createLog = <T extends any[]> (
 }
 
 const nsLog = (type: Color, ns: string, msg: string, ...args: any[]) => {
-  console.log(args.length)
   const color = getColor(type)
   console.log(
     `%c ${ns} %c ${msg} %c ${args.length ? '%o' : ''}`,

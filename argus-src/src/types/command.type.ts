@@ -26,7 +26,7 @@ export type CommandType = {
       // 提示字段，如：【输入名称】
       placeholder: string
     }
-  ]
+  ] | []
   // 返回结果
   result: null | string | number | boolean | object
 }

@@ -9,7 +9,7 @@ import {
   getAllLibrary,
   updatePhotoStorage
 } from '@/services/libraryService'
-import { updatePhotoStorageCommand } from '@/command'
+import { updatePhotoStorageCommand } from '@/constants/command'
 
 // 输入框输入的值
 const input = ref('')

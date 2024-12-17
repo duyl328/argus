@@ -61,7 +61,9 @@ function getMaxImgWidth() {
 onMounted(() => {
   let maxImgWidth = getMaxImgWidth()
   console.log(maxImgWidth)
-  // let dirAllSubfoldersFirstImg = getDirAllSubfoldersFirstImg('E:\\整合\\niannian 125套\\年年（vip套图）')
+  // let dirAllSubfoldersFirstImg = getDirAllSubfoldersFirstImg('E:\\整合\\niannian 125套\\年年（vip套图）',    Math.round(maxImgWidth),
+  //   2400
+  // )
   let dirAllSubfoldersFirstImg = getDirAllSubfoldersFirstImg(
     'D:\\argus\\img',
     Math.round(maxImgWidth),

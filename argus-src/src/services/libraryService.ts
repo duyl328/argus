@@ -16,7 +16,7 @@ import {
   getPhotoStorageCommand,
   logLogsCommand,
   updatePhotoStorageCommand
-} from '@/command'
+} from '@/constants/command'
 import type { photoStorageType } from '@/types/photoStorage.type'
 
 /**

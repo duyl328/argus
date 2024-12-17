@@ -6,7 +6,12 @@ import type { subRoute, subRouteList } from '@/types/views/dev/DevIndex.type'
 import app from '@/constants/app'
 import { ref } from 'vue'
 
+import {emitInit} from "@/services/emits/base"
+
 const router = useRouter()
+
+// 初始化后端监听器
+emitInit()
 
 // 是否展示生成路由
 const isShowGenerateRouter = ref(false)

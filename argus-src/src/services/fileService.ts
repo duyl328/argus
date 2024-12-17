@@ -1,5 +1,5 @@
 import {invoke} from "@tauri-apps/api/core";
-import {checkDirectoryAccessCommand} from '@/command';
+import {checkDirectoryAccessCommand} from '@/constants/command';
 
 type ans = {
     ans: boolean

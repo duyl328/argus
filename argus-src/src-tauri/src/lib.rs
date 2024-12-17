@@ -87,6 +87,7 @@ pub fn run() {
             commands::post_command::get_all_post,
             commands::post_command::insert_post,
             commands::log_command::log_logs,
+            commands::emit_test::emit_send_test,
             commands::photo_storage_command::get_photo_storage,
             commands::photo_storage_command::add_photo_storage,
             commands::photo_storage_command::delete_photo_storage,
