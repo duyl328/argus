@@ -19,29 +19,54 @@ const distributeImages = () => {
   columnImages.push(...cols)
 }
 
-// 每列合适的大小
-const updateColumns = () => {
-  const width = window.innerWidth
-  if (width >= 2400)
-    columns.value = 11 // 2xl
-  else if (width >= 1536)
-    columns.value = 9 // 2xl
-  else if (width >= 1280)
-    columns.value = 7 // xl
-  else if (width >= 1024)
-    columns.value = 6 // lg
-  else if (width >= 768)
-    columns.value = 5 // md
-  else if (width >= 640)
-    columns.value = 4 // sm
-  else columns.value = 3 // 默认
+// 屏幕宽度判断
+const colJudgement = [
+  { width: 2400, col: 13 },
+  { width: 1536, col: 9 },
+  { width: 1280, col: 7 },
+  { width: 1024, col: 6 },
+  { width: 768, col: 5 },
+  { width: 640, col: 4 },
+  { width: -1, col: 3 }
+]
 
-  distributeImages()
+// 计算图片最宽的宽度
+function updateColumns() {
+  const width = window.innerWidth
+  for (let i = 0; i < colJudgement.length; i++) {
+    let item = colJudgement[i]
+    if (width >= item.width) {
+      console.log(width, item.width);
+      distributeImages()
+      columns.value = item.col
+      return
+    }
+  }
+}
+
+// 寻找最宽的图片大小
+function getMaxImgWidth() {
+  let ans = 0
+  colJudgement.forEach((image, index) => {
+    if (image.width <= 0) return ans
+    let result = image.width / image.col
+    console.log(result)
+    if (result > ans) {
+      ans = result
+    }
+  })
+  return ans
 }
 
 onMounted(() => {
+  let maxImgWidth = getMaxImgWidth()
+  console.log(maxImgWidth)
   // let dirAllSubfoldersFirstImg = getDirAllSubfoldersFirstImg('E:\\整合\\niannian 125套\\年年（vip套图）')
-  let dirAllSubfoldersFirstImg = getDirAllSubfoldersFirstImg('D:\\argus\\img')
+  let dirAllSubfoldersFirstImg = getDirAllSubfoldersFirstImg(
+    'D:\\argus\\img',
+    Math.round(maxImgWidth),
+    2400
+  )
   dirAllSubfoldersFirstImg.then((res) => {
     console.log(res)
     images.value = [...res]

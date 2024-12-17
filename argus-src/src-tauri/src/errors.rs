@@ -14,6 +14,12 @@ pub enum AppError {
     #[error("Parse error: {0}")]
     ParseError(String),
 
+    #[error("文件路径不存在: {0}")]
+    InvalidPath(String),
+
+    #[error("文件保存失败: {0}")]
+    FileSaveError(String),
+
     #[error("Default error {0}")]
     Error(#[from] diesel::result::Error),
 

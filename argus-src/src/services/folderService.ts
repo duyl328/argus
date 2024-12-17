@@ -16,8 +16,8 @@ import type { FolderImage } from '@/types/rusts/FolderImage'
 /**
  * 获取指定路径所有子路径的第一张图片，没有图片则不返回内容
  */
-export function getDirAllSubfoldersFirstImg(path: string) {
-  return invoke<FolderImage[]>(getDirAllSubfoldersFirstImgCommand, { path })
+export function getDirAllSubfoldersFirstImg(path: string,width:number,height:number) {
+  return invoke<FolderImage[]>(getDirAllSubfoldersFirstImgCommand, { path ,width ,height })
 }
 /*
 

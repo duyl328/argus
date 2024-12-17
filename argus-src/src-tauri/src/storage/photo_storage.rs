@@ -99,3 +99,24 @@ pub fn delete_img_path(connection: &mut SqliteConnection,id:i32) -> Result<(), S
         Err(err) => Err(SqlError::Error(err)),
     }
 }
+
+
+#[test]
+/// 在内存中使用数据库测试【未测试】
+fn test_with_memory_db() {
+    use rusqlite::{Connection};
+    // let conn = Connection::open_in_memory().unwrap();
+    // conn.execute(
+    //     "CREATE TABLE test (id INTEGER PRIMARY KEY, name TEXT NOT NULL)",None
+    // ).unwrap();
+    //
+    // conn.execute(
+    //     "INSERT INTO test (name) VALUES (?1)",
+    //     &[&"test_name"],
+    // ).unwrap();
+    //
+    // let mut stmt = conn.prepare("SELECT name FROM test WHERE id = 1").unwrap();
+    // let name: String = stmt.query_row(None, |row| row.get(0)).unwrap();
+    //
+    // assert_eq!(name, "test_name");
+}

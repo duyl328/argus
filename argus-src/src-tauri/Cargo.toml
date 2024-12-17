@@ -67,5 +67,19 @@ tokio               = { version="1.42.0", features = ["macros", "rt-multi-thread
 # 错误类型处理
 anyhow              = "1.0.94"
 futures             = "0.3.31"
+# 获取系统状态
+sysinfo             = "0.33.0"
+# 函数调用堆栈信息获取
+criterion           = "0.5.1"
+# 标准 log 实现
+env_logger          = "0.11.5"
+# 临时测试目录
+tempfile            = "3.14.0"
+
+
+[dev-dependencies]
+log                 = "0.4"
+env_logger          = "0.11.5"
+
 
 #cargo add reqwest
