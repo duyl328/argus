@@ -1,3 +1,4 @@
+use std::env;
 use std::fs::{self, File};
 use std::io::{self, Read, Write};
 use std::path::{Path, PathBuf};
@@ -77,7 +78,7 @@ pub fn move_file(src_path: &str, dest_path: &str) -> Result<(), String> {
 /// 获取所有指定文件夹的子目录
 pub fn get_all_subfolders(path: &str) -> Vec<PathBuf> {
     WalkDir::new(path)
-        .min_depth(1) // 忽略起始目录本身
+        .min_depth(0) // 忽略起始目录本身
         .into_iter()
         .filter_map(|entry| entry.ok()) // 忽略无效条目
         .filter(|entry| entry.file_type().is_dir()) // 只保留文件夹
@@ -105,7 +106,6 @@ pub fn get_all_dir_img(path: &str, img_num: Option<i32>) -> Vec<String> {
     let nums = img_num.unwrap_or(-1);
     if nums == 0 { return [].to_vec(); }
     let valid_extensions = ["jpg", "png", "gif", "jpeg"]; // 图片文件扩展名
-
     // 数据返回合集
     let mut all_img: Vec<String> = vec![];
 
@@ -117,7 +117,7 @@ pub fn get_all_dir_img(path: &str, img_num: Option<i32>) -> Vec<String> {
                     if let Some(extension) = path.extension() {
                         if valid_extensions.contains(&extension.to_str().unwrap_or_default()) {
                             i += 1;
-                            let x = i >= nums;
+                            let x = i == nums;
                             // println!("Found image: {:?} ,{},{}, {}", path, i, nums, x);
                             all_img.push(String::from(path.to_str().unwrap()));
                             if x {
@@ -132,6 +132,36 @@ pub fn get_all_dir_img(path: &str, img_num: Option<i32>) -> Vec<String> {
         eprintln!("Failed to read directory.");
     }
     return all_img;
+}
+
+/// 创建指定的文件夹
+pub fn create_folder(base_dir: Option<&str>, relative_path: &str) -> Result<String, String> {
+    // 获取基础路径，默认为当前 EXE 所在目录
+    let base_path = if let Some(dir) = base_dir {
+        PathBuf::from(dir)
+    } else {
+        let buf = std::env::current_exe()
+            .map_err(|e| format!("Failed to get exe path: {}", e))?;
+        buf
+            .parent()
+            .ok_or("Failed to get exe directory")?
+            .to_path_buf()
+    };
+    // 拼接目标路径
+    let target_path = base_path.join(relative_path);
+    // 检查是否已经存在同名文件
+    if target_path.exists() && target_path.is_file() {
+        return Err(format!(
+            "A file with the same name already exists: {}",
+            target_path.display()
+        ));
+    }
+
+    // 创建目录
+    fs::create_dir_all(&target_path)
+        .map_err(|e| format!("Failed to create folder: {}", e))?;
+
+    Ok(target_path.to_string_lossy().to_string())
 }
 
 

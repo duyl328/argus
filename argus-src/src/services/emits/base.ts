@@ -10,28 +10,19 @@
  */
 import { type Event, listen } from '@tauri-apps/api/event'
 import EmitOrder from '@/constants/emitOrder'
-import { inputNumberEmits } from 'element-plus'
-
-/**
- * emit 数组
- */
-const emitList: string[] = ['download-started']
-
-type FuncCount= (event: Event<unknown>) => void
-type StringCount = { [key: string]: FuncCount[] }
-type EmitOrderTypes = (typeof EmitOrder)[keyof typeof EmitOrder]
+import type { EmitListenerArrayType, EmitListenerType, EmitOrderTypes } from '@/types/emit.type'
 
 /**
  * emit 函数数组
  */
-let emitFuncList: StringCount = {}
+let emitFuncList: EmitListenerArrayType = {}
 
 /**
  * 添加监听器
  * @param type
  * @param listener
  */
-export function addListener(type: EmitOrderTypes, listener: FuncCount) {
+export function addListener(type: EmitOrderTypes, listener: EmitListenerType) {
   if (!emitFuncList[type]) {
     emitFuncList[type] = []
   }
@@ -44,8 +35,10 @@ export function addListener(type: EmitOrderTypes, listener: FuncCount) {
  */
 export async function emitInit() {
   for (let emitOrderKey in EmitOrder) {
-    await listen(emitOrderKey, (event) => {
-      emit(emitOrderKey, event)
+    const key = emitOrderKey as keyof typeof EmitOrder; // 显式转换类型
+    let emitOrderElement = EmitOrder[key]
+    await listen(emitOrderElement, (event) => {
+      emit(emitOrderElement, event)
     })
   }
   emitFuncList = {}
@@ -56,7 +49,7 @@ export async function emitInit() {
  * @param type
  * @param listener
  */
-export function removeListener(type: string, listener: FuncCount): void {
+export function removeListener(type: string, listener: EmitListenerType): void {
   if (!emitFuncList[type]) return
 
   const index = emitFuncList[type].indexOf(listener)

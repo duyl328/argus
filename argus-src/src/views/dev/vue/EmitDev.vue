@@ -2,7 +2,7 @@
 import { listen } from '@tauri-apps/api/event'
 import CommandManager from '@/components/dev/CommandManager.vue'
 import type { CommandType } from '@/types/command.type'
-import { addListener } from '@/services/emits/base'
+import { addListener, clearListeners } from '@/services/emits/base'
 import emitOrder from '@/constants/emitOrder'
 
 // 注册监听器，统一处理图片数据
@@ -10,14 +10,13 @@ import emitOrder from '@/constants/emitOrder'
 //   await listen('download-started', (event) => {
 //     const batch = event.payload // 批量图片数据
 //     console.log(batch)
-//     // console.log('Received images 后端返回emit数据:', batch)
 //   })
 // }
 
 
 addListener(emitOrder.downloadStartedCommand,(event) => {
   console.log(event);
-  console.log(event);
+  console.log(event.payload);
 })
 
 const commands: CommandType[] = [
@@ -36,7 +35,6 @@ const commands: CommandType[] = [
     result: null
   }
 ]
-// startImageListener()
 </script>
 
 <template>

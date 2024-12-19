@@ -1,5 +1,9 @@
 import { invoke } from '@tauri-apps/api/core'
-import { getDirAllSubfoldersFirstImgCommand, insertPostCommand } from '@/constants/command'
+import {
+  getDirAllSubfoldersFirstImgCommand,
+  getNeedDisplayImageInfoCommand,
+  insertPostCommand
+} from '@/constants/command'
 import type { FolderImage } from '@/types/rusts/FolderImage'
 
 /**
@@ -19,6 +23,16 @@ import type { FolderImage } from '@/types/rusts/FolderImage'
 export function getDirAllSubfoldersFirstImg(path: string,width:number,height:number) {
   return invoke<FolderImage[]>(getDirAllSubfoldersFirstImgCommand, { path ,width ,height })
 }
+
+/**
+ * 获取文件夹目录需要展示的图片和信息
+ * @param path
+ */
+export function getNeedDisplayImageInfo(path: string) {
+  return invoke<FolderImage[]>(getNeedDisplayImageInfoCommand, { path  })
+}
+
+
 /*
 
 

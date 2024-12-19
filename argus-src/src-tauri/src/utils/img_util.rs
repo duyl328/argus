@@ -75,13 +75,13 @@ pub struct ImageOperate {
     }
 
     /// 保存图像到磁盘
-    pub async fn save_image(path: String, image: DynamicImage) -> Result<()> {
+    pub async fn save_image(path: String, image: DynamicImage,image_format:ImageFormat) -> Result<()> {
         let output_path = format!("{}_compressed.jpg", Path::new(&path).file_stem().unwrap().to_str().unwrap());
         let output_path = PathBuf::from(output_path);
 
         let start_time = Instant::now();
         task::spawn_blocking(move || {
-            image.save_with_format(output_path, ImageFormat::Jpeg)
+            image.save_with_format(output_path, image_format)
         }).await??;
 
         println!("保存文件: {:?} 完成", start_time.elapsed());
@@ -116,7 +116,7 @@ async fn test_async_function() {
             // 压缩
             let compressed = image.compression(0.3).await?;
             // 保存
-            ImageOperate::save_image(image.img_path, compressed).await?;
+            ImageOperate::save_image(image.img_path, compressed,ImageFormat::Jpeg).await?;
             Ok::<(), anyhow::Error>(())
         });
     }
@@ -168,7 +168,7 @@ async fn test_async_function() {
     // 消费者：保存任务
     let saver = tokio::spawn(async move {
         while let Some((path, image)) = rx_compress_to_save.recv().await {
-            if let Err(e) = ImageOperate::save_image(path, image).await {
+            if let Err(e) = ImageOperate::save_image(path, image,ImageFormat::Jpeg).await {
                 eprintln!("保存错误: {}", e);
             }
         }

@@ -6,10 +6,13 @@ mod storage;
 mod utils;
 mod errors;
 mod explore;
+mod structs;
 
 use tauri::{Emitter, Listener, Manager, State};
 use tauri_plugin_sql::{Migration, MigrationKind};
 use crate::storage::connection;
+use crate::structs::config;
+use crate::utils::file_util::create_folder;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -92,6 +95,7 @@ pub fn run() {
             commands::photo_storage_command::add_photo_storage,
             commands::photo_storage_command::delete_photo_storage,
             commands::photo_storage_command::update_photo_storage,
+            commands::folder_show_command::get_need_display_image_info
         ])
         .setup(|app| {
             log::info!(" =============================== 程序启动！==============================");
@@ -108,6 +112,14 @@ pub fn run() {
             let db = connection::run_migrations().expect("Database initialize should succeed");
             log::info!("创建完毕");
 
+            // 创建指定目录
+            let lazy = &constant::THUMBNAIL_STORAGE_DIRECTORY;
+            println!("输出的路径：{:?}", lazy.as_str());
+
+            // 初始化配置文件
+            config::load_config().expect("配置初始化失败!");
+            
+            
             Ok(())
         })
         .run(tauri::generate_context!())

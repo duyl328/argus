@@ -11,6 +11,7 @@ use std::slice::RChunksExactMut;
 use std::sync::Arc;
 use image::imageops::FilterType;
 use serde::{Deserialize, Serialize};
+use tauri::{AppHandle, Emitter};
 use tokio::sync::{Mutex, Semaphore};
 use tokio::task::JoinSet;
 use crate::utils::img_util::ImageOperate;
@@ -63,7 +64,7 @@ pub fn get_all_imgs(path: String) -> String {
 
 /// 获取指定路径下所有子文件夹的第一张图片
 #[tauri::command]
-pub async fn get_dir_all_subfolders_first_img(path: String, width: u32, height: u32) -> Vec<FolderImage> {
+pub async fn get_dir_all_subfolders_first_img(app: AppHandle, path: String, width: u32, height: u32) -> Vec<FolderImage> {
     // 使用 spawn_blocking 将同步函数包装成异步
     let vec = get_all_subfolders(&path);
     // let mut result: Vec<FolderImage> = Vec::new();
@@ -79,31 +80,38 @@ pub async fn get_dir_all_subfolders_first_img(path: String, width: u32, height: 
         let display = x.display().to_string();
 
         // 对于每个文件夹，使用 spawn_blocking 获取文件夹中的图像路径
-        let vec1 = get_all_dir_img(&display, Some(1)); // 获取文件夹中的图像路径
-        if !vec1.is_empty() {
-            // let input = &*vec1[0].clone();
-            // let input = &*vec1[0].clone(); // 这里克隆元素，而不是借用
-            let input = vec1[0].clone(); // 克隆元素，获取值的所有权
-            rs.push((display, input));
+        let vec1 = get_all_dir_img(&display, Some(-1)); // 获取文件夹中的图像路径
+        for x in vec1 {
+            rs.push((display.clone(), x.clone()));
         }
+        // if !vec1.is_empty() {
+        //     // let input = &*vec1[0].clone();
+        //     // let input = &*vec1[0].clone(); // 这里克隆元素，而不是借用
+        //     let input = vec1[0].clone(); // 克隆元素，获取值的所有权
+        //     rs.push((display, input));
+        // }
     }
 
     for (dir_path, path) in rs {
+        let app_hl = app.clone();
         let permit = semaphore.clone().acquire_owned().await.unwrap();
         let result = result.clone(); // 克隆 Arc，传递到异步任务中
         join_set.spawn(async move {
             // 读取
             let image = ImageOperate::read_image(&path).await?;
             // 压缩
-            let compressed = image.compression_with_size(width,height,FilterType::Triangle).await;
+            let compressed = image.compression_with_size(width, height, FilterType::Triangle).await;
             // Base64 转换
             let b64 = ImageOperate::get_base64(compressed).await?;
 
             let mut result = result.lock().await;
-            result.push(FolderImage {
+
+            let image1 = FolderImage {
                 folder_path: dir_path,
                 image_path_as_base64: b64,
-            });
+            };
+            app_hl.emit("folder-view-image-show", image1).unwrap();
+            // result.push(image1);
             Ok::<(), anyhow::Error>(())
         });
     }
@@ -118,7 +126,7 @@ pub async fn get_dir_all_subfolders_first_img(path: String, width: u32, height: 
     guard.clone()
 }
 
-#[derive(Serialize, Deserialize, Debug,Clone)]  // 需要加上这些
+#[derive(Serialize, Deserialize, Debug, Clone)]  // 需要加上这些
 pub struct FolderImage {
     pub folder_path: String,
     pub image_path_as_base64: String,

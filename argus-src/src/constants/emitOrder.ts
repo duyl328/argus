@@ -14,8 +14,11 @@ const EmitOrder = {
    * 下载开始
    */
   downloadStartedCommand: 'download-started',
-  downloadStartedCommand1: 'download-started',
-  downloadStartedCommand2: 'download-started',
-} as const;
+
+  /**
+   * 文件夹展示 - 图像压缩完成
+   */
+  folderViewImageShow:"folder-view-image-show"
+} as const
 
 export default EmitOrder

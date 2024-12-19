@@ -1,15 +1,17 @@
 <script setup lang="ts">
-import { ref, reactive, onMounted, watch } from 'vue'
-import { getDirAllSubfoldersFirstImg } from '@/services/folderService'
+import { ref, reactive, onMounted, watch, type Directive } from 'vue'
+import { getDirAllSubfoldersFirstImg, getNeedDisplayImageInfo } from '@/services/folderService'
 import type { FolderImage } from '@/types/rusts/FolderImage'
+import { addListener } from '@/services/emits/base'
+import EmitOrder from '@/constants/emitOrder'
 
 const images = ref<FolderImage[]>([])
 
 const columns = ref<number>(3) // 默认列数
 const columnImages = reactive<FolderImage[][]>([]) // 每列的图片内容
-
 // 动态分配图片到列
 const distributeImages = () => {
+  console.log('重新分配')
   // 初始化列数组
   const cols = Array.from({ length: columns.value }, () => [] as FolderImage[])
   images.value.forEach((image, index) => {
@@ -30,13 +32,11 @@ const colJudgement = [
   { width: -1, col: 3 }
 ]
 
-// 计算图片最宽的宽度
 function updateColumns() {
   const width = window.innerWidth
   for (let i = 0; i < colJudgement.length; i++) {
     let item = colJudgement[i]
     if (width >= item.width) {
-      console.log(width, item.width);
       distributeImages()
       columns.value = item.col
       return
@@ -64,24 +64,53 @@ onMounted(() => {
   // let dirAllSubfoldersFirstImg = getDirAllSubfoldersFirstImg('E:\\整合\\niannian 125套\\年年（vip套图）',    Math.round(maxImgWidth),
   //   2400
   // )
-  let dirAllSubfoldersFirstImg = getDirAllSubfoldersFirstImg(
-    'D:\\argus\\img',
-    Math.round(maxImgWidth),
-    2400
+
+  let dirAllSubfoldersFirstImg = getNeedDisplayImageInfo(
+    // 'D:\\CHARLATANS\\OneDrive',
+    // 'D:\\argus\\img\\jpg',
+    'D:\\argus\\img\\jpg'
+    // 'D:\\argus\\img\\png',
+    // 'D:\\CHARLATANS\\OneDrive\\Pictures\\Camera',
+    // Math.round(maxImgWidth),
+    // 2400
   )
   dirAllSubfoldersFirstImg.then((res) => {
     console.log(res)
-    images.value = [...res]
+    // images.value = [...res]
     updateColumns() // 初始化时计算列数
   })
   window.addEventListener('resize', updateColumns) // 监听窗口变化
+
+  addListener(EmitOrder.folderViewImageShow, (event) => {
+    console.log(event.payload)
+    images.value.push(event.payload as FolderImage)
+
+    // images.value = [...images.value]
+    // updateColumns() // 初始化时计算列数
+    // console.log(event.payload);
+  })
 })
 
 watch(columns, distributeImages) // 列数变化时重新分配图片
+
+// 懒加载
+const lazyLoadDirective: Directive = {
+  mounted(el, binding) {
+    const observer = new IntersectionObserver(([entry]) => {
+      if (entry.isIntersecting) {
+        el.src = binding.value; // 替换为真实图片地址
+        observer.unobserve(el); // 停止观察
+      }
+    });
+    observer.observe(el);
+  },
+};
 </script>
 
 <template>
   <div>
+    <img src="file://D:\argus\img\jpg\局部\3f160e3827ea5aa149f3301a56b4f0a5.jpg" alt="Thumbnail">
+
     <!-- 瀑布流主容器 -->
     <div class="grid p-5" :style="{ gridTemplateColumns: `repeat(${columns}, 1fr)` }">
       <!-- 每列的内容 -->
@@ -97,6 +126,7 @@ watch(columns, distributeImages) // 列数变化时重新分配图片
             class="w-full rounded-lg object-cover shadow"
           />
           <span>{{ image.folder_path }}</span>
+          <span>循环展示内容</span>
         </div>
       </div>
     </div>

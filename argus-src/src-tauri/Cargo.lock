@@ -206,6 +206,7 @@ dependencies = [
  "rusqlite",
  "serde",
  "serde_json",
+ "sha2",
  "sysinfo",
  "tauri",
  "tauri-build",
@@ -217,6 +218,7 @@ dependencies = [
  "tempfile",
  "thiserror 2.0.6",
  "tokio",
+ "toml 0.8.19",
  "walkdir",
 ]
 

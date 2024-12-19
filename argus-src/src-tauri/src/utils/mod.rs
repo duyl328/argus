@@ -5,3 +5,6 @@ pub mod json_util;
 pub mod time_util;
 pub mod img_util;
 mod system_state_util;
+mod hash_util;
+mod file_hash_util;
+mod compressed_util;

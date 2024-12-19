@@ -75,6 +75,10 @@ criterion           = "0.5.1"
 env_logger          = "0.11.5"
 # 临时测试目录
 tempfile            = "3.14.0"
+# 进行 Hash 计算
+sha2                = "0.10.8"
+# 配置文件处理
+toml                = "0.8.19"
 
 
 [dev-dependencies]
