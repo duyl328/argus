@@ -4,6 +4,7 @@ use std::fs;
 use std::path::PathBuf;
 use tokio::fs::File;
 use tokio::io::{self, AsyncReadExt};
+use anyhow::Result;
 
 pub struct FileHashUtils;
 
@@ -45,11 +46,31 @@ impl FileHashUtils {
     }
 
     /// Hash 文件路径生成
-    pub fn get_hash_dir(sha: &str) -> PathBuf {
-        // 目录级别【】
+    pub async fn get_hash_dir(sha: &str) -> Result<PathBuf> {
+        // 目录级别【3级】（3级已可覆盖百分级别文件）
+        let string = FileHashUtils::sha256_async(sha).await?;
 
         todo!()
     }
+
+    fn hash_to_file_path(hash: &str, base_path: &str) -> PathBuf {
+        // 定义目录分级层数
+        let depth = 3;
+        let mut path = PathBuf::from(base_path);
+
+        // 将 hash 分割为多级目录
+        for i in 0..depth {
+            let part = &hash[i * 2..(i + 1) * 2]; // 每级目录使用两个字符
+            path.push(part);
+        }
+
+        // 将剩余的 hash 用作文件名
+        path.push(format!("{}.dat", hash));
+
+        path
+    }
+
+
 }
 
 #[test]

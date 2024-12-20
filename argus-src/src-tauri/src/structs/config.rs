@@ -10,19 +10,19 @@ use toml::{from_str, to_string_pretty};
 
 #[derive(Serialize, Deserialize, Debug)]
 pub struct Config {
-    DATABASE_URL: String,
+    database_url: String,
     #[serde(default)] // 如果配置文件中缺少该字段，使用默认值
-    DATABASE_PATH: String,
-    LOG_PATH: String,
+    database_path: String,
+    log_path: String,
     #[serde(default = "default_log_path")] // 自定义默认值
-    LOG_LEVEL: String,
+    log_level: String,
     #[serde(flatten)] // 收集多余的字段
     extra: HashMap<String, String>,
 }
 
 impl Config {
     pub fn update_database_url(&mut self, new_url: &str) {
-        self.DATABASE_URL = new_url.to_string();
+        self.database_url = new_url.to_string();
     }
 
     pub fn add_extra_field(&mut self, key: String, value: String) {
@@ -31,10 +31,10 @@ impl Config {
 
     pub fn default() -> Config {
         Config {
-            DATABASE_URL: "postgres://user:password@localhost/dbname".to_string(),
-            DATABASE_PATH: "db".to_string(),
-            LOG_PATH: "/var/log/app".to_string(),
-            LOG_LEVEL: "".to_string(),
+            database_url: "postgres://user:password@localhost/dbname".to_string(),
+            database_path: "db".to_string(),
+            log_path: "/var/log/app".to_string(),
+            log_level: "".to_string(),
             extra: HashMap::new(),
         }
     }
@@ -70,8 +70,8 @@ fn default_log_path() -> String {
 fn main() -> Result<(), Box<dyn std::error::Error>> {
     // 模拟从文件读取配置内容
     let config_str = r#"
-    DATABASE_URL = "postgres://user:password@localhost/dbname"
-    LOG_PATH = "/var/log/app"
+    database_url = "postgres://user:password@localhost/dbname"
+    log_path = "/var/log/app"
     "#;
 
     // 反序列化配置文件

@@ -134,6 +134,8 @@ pub fn get_all_dir_img(path: &str, img_num: Option<i32>) -> Vec<String> {
     return all_img;
 }
 
+/// 获取运行环境文件路径根目录
+
 /// 创建指定的文件夹
 pub fn create_folder(base_dir: Option<&str>, relative_path: &str) -> Result<String, String> {
     // 获取基础路径，默认为当前 EXE 所在目录
