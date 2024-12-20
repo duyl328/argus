@@ -1,9 +1,11 @@
+use anyhow::Result;
+use glob::glob;
+use sha2::digest::typenum::op;
 use std::env;
 use std::fs::{self, File};
 use std::io::{self, Read, Write};
 use std::path::{Path, PathBuf};
 use walkdir::WalkDir;
-use glob::glob;
 
 /// 读取文本文件内容
 pub fn read_text_file(file_path: &str) -> Result<String, String> {
@@ -104,9 +106,11 @@ pub fn get_all_dir_img(path: &str, img_num: Option<i32>) -> Vec<String> {
     let mut i = 0;
     // 默认张数
     let nums = img_num.unwrap_or(-1);
-    if nums == 0 { return [].to_vec(); }
+    if nums == 0 {
+        return [].to_vec();
+    }
     let valid_extensions = ["jpg", "png", "gif", "jpeg"]; // 图片文件扩展名
-    // 数据返回合集
+                                                          // 数据返回合集
     let mut all_img: Vec<String> = vec![];
 
     if let Ok(entries) = fs::read_dir(path) {
@@ -135,6 +139,14 @@ pub fn get_all_dir_img(path: &str, img_num: Option<i32>) -> Vec<String> {
 }
 
 /// 获取运行环境文件路径根目录
+pub fn get_root_folder() -> Result<PathBuf> {
+    // 获取基础路径，默认为当前 EXE 所在目录
+    let buf = std::env::current_exe()?
+        .parent()
+        .expect("父文件夹读取失败")
+        .to_path_buf();
+    Ok(buf)
+}
 
 /// 创建指定的文件夹
 pub fn create_folder(base_dir: Option<&str>, relative_path: &str) -> Result<String, String> {
@@ -142,17 +154,18 @@ pub fn create_folder(base_dir: Option<&str>, relative_path: &str) -> Result<Stri
     let base_path = if let Some(dir) = base_dir {
         PathBuf::from(dir)
     } else {
-        let buf = std::env::current_exe()
-            .map_err(|e| format!("Failed to get exe path: {}", e))?;
-        buf
-            .parent()
-            .ok_or("Failed to get exe directory")?
-            .to_path_buf()
+        get_root_folder().unwrap()
     };
+    log::info!("创建指定的目录{}", base_path.display());
+
     // 拼接目标路径
     let target_path = base_path.join(relative_path);
+    if target_path.exists() {
+        log::info!("文件或目录已存在! ");
+        return Ok(target_path.to_str().unwrap().to_string());
+    }
     // 检查是否已经存在同名文件
-    if target_path.exists() && target_path.is_file() {
+    if target_path.is_file() {
         return Err(format!(
             "A file with the same name already exists: {}",
             target_path.display()
@@ -160,12 +173,10 @@ pub fn create_folder(base_dir: Option<&str>, relative_path: &str) -> Result<Stri
     }
 
     // 创建目录
-    fs::create_dir_all(&target_path)
-        .map_err(|e| format!("Failed to create folder: {}", e))?;
+    fs::create_dir_all(&target_path).map_err(|e| format!("Failed to create folder: {}", e))?;
 
     Ok(target_path.to_string_lossy().to_string())
 }
-
 
 #[cfg(test)]
 mod tests {

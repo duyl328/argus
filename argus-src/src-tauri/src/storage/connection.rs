@@ -5,6 +5,7 @@ use dotenvy::dotenv;
 use once_cell::sync::Lazy;
 use std::{env, fs};
 use diesel::connection::SimpleConnection;
+use crate::structs::config::SYS_CONFIG;
 use crate::utils::{db_init_util, file_util};
 
 /// 获取所有的数据库迁移
@@ -34,23 +35,29 @@ pub fn does_table_exist(conn: &mut SqliteConnection, table_name: &str) -> Result
 
 /// 全局惰性变量
 pub static DATABASE_URL: Lazy<String> = Lazy::new(|| {
-    dotenv().ok(); 
+    dotenv().ok();
+    // 获取数据库保存路径
+    let database_path = SYS_CONFIG.database_default_link.clone().unwrap();
+    // 数据库路径
+    let db_dir = SYS_CONFIG.database_path.clone().unwrap();
+    let db_name = SYS_CONFIG.database_name.clone().unwrap();
     // 运行时根据环境变量计算
     let database_url = env::var(crate::constant::DATABASE_URL_KEY)
-        .unwrap_or_else(|_| crate::constant::DATABASE_DEFAULT_LINK.parse().unwrap());
-    let cpath = env::current_dir().expect("TODO: panic message");
+        .unwrap_or_else(|_| database_path.parse().unwrap());
+    let cpath = file_util::get_root_folder().expect("根路径读取失败！ ");
 
     log::info!("Using database url: {:?},{}", cpath,database_url);
-    let string = format!("{}/{}/{}", cpath.to_string_lossy(), crate::constant::DATABASE_PATH, crate::constant::DATABASE_NAME);
-    log::info!("Using database url: {:?}", string);
+    let string = format!("{}/{}/{}", cpath.to_string_lossy(), db_dir, db_name);
+    log::info!("Using database - url: {:?}", string);
     string
 });
 
 /// 初始化数据库路径
 pub fn init_path() -> Result<(), rusqlite::Error> {
+    let db_dir = SYS_CONFIG.database_path.clone().unwrap();
     // 使用 Tauri 提供的路径 API 确保数据库文件存放在用户目录下
-    let cpath = env::current_dir().expect("TODO: panic message");
-    let app_dir = format!("{}/{}", cpath.to_string_lossy(), crate::constant::DATABASE_PATH);
+    let cpath = file_util::get_root_folder().expect("TODO: panic message");
+    let app_dir = format!("{}/{}", cpath.to_string_lossy(), db_dir);
 
     // 如果文件不存在，创建文件，反之无动作
     let exists = file_util::file_exists(&app_dir);

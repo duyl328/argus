@@ -1,18 +1,19 @@
 mod commands;
 mod constant;
+mod errors;
+mod explore;
 mod models;
 mod services;
 mod storage;
-mod utils;
-mod errors;
-mod explore;
 mod structs;
+mod utils;
 
-use tauri::{Emitter, Listener, Manager, State};
-use tauri_plugin_sql::{Migration, MigrationKind};
 use crate::storage::connection;
 use crate::structs::config;
+use crate::structs::config::SYS_CONFIG;
 use crate::utils::file_util::create_folder;
+use tauri::{Emitter, Listener, Manager, State};
+use tauri_plugin_sql::{Migration, MigrationKind};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -42,10 +43,10 @@ pub fn run() {
             // tauri_plugin_log::TargetKind::Webview,
             // 保存到文件
             /*
-        Linux      {configDir}/{bundleIdentifier}                    /home/alice/.config/com.tauri.dev
-        macOS      {homeDir}/Library/Logs/{bundleIdentifier}         /Users/Alice/Library/Logs/com.tauri.dev
-        窗户	       {FOLDERID_LocalAppData}/{bundleIdentifier}/logs   C:\Users\Alice\AppData\Local\com.tauri.dev\logs
-            */
+            Linux      {configDir}/{bundleIdentifier}                    /home/alice/.config/com.tauri.dev
+            macOS      {homeDir}/Library/Logs/{bundleIdentifier}         /Users/Alice/Library/Logs/com.tauri.dev
+            窗户	       {FOLDERID_LocalAppData}/{bundleIdentifier}/logs   C:\Users\Alice\AppData\Local\com.tauri.dev\logs
+                */
             // tauri_plugin_log::TargetKind::LogDir {
             //     file_name: Some("logs".to_string()),
             // },
@@ -54,8 +55,8 @@ pub fn run() {
                 path: std::path::PathBuf::from(constant::LOG_PATH),
                 file_name: None,
             },
-        )).build();
-
+        ))
+        .build();
 
     // let migrations = vec![
     //     Migration {
@@ -70,12 +71,9 @@ pub fn run() {
     //     }
     // ];
 
-
     tauri::Builder::default()
         .plugin(log_plugin)
-        .plugin(tauri_plugin_sql::Builder::new()
-            .build()
-        )
+        .plugin(tauri_plugin_sql::Builder::new().build())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_shell::init())
@@ -100,26 +98,20 @@ pub fn run() {
         .setup(|app| {
             log::info!(" =============================== 程序启动！==============================");
             log::info!("{}", constant::BANNER4);
-            let cpath = std::env::current_dir().expect("TODO: panic message");
-            let spath = std::env::current_exe().expect("TODO: panic message");
-            log::info!("软件路径:{:?}",cpath);
-            log::info!("软件路径1:{:?}",spath);
+            // 初始化配置文件
+            let configs = config::init_config();
 
+            let cpath = std::env::current_dir().expect("软件路径获取");
+            log::info!("软件路径:{:?}", cpath);
 
-            let handle = app.handle();
             log::info!("创建数据库");
-            // let db = connection::init_database().expect("Database initialize should succeed");
             let db = connection::run_migrations().expect("Database initialize should succeed");
             log::info!("创建完毕");
 
             // 创建指定目录
-            let lazy = &constant::THUMBNAIL_STORAGE_DIRECTORY;
-            println!("输出的路径：{:?}", lazy.as_str());
+            let lazy = configs.thumbnail_storage_path.unwrap();
+            println!("输出的路径：{}", lazy);
 
-            // 初始化配置文件
-            config::load_config().expect("配置初始化失败!");
-            
-            
             Ok(())
         })
         .run(tauri::generate_context!())

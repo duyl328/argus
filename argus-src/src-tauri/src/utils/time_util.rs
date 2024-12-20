@@ -1,6 +1,6 @@
 extern crate chrono;
-use crate::constant::TIME_BASIC_FMT;
 pub use chrono::{DateTime, NaiveDateTime, TimeZone, Utc};
+use crate::structs::config::SYS_CONFIG;
 
 pub struct TimeUtils;
 
@@ -22,20 +22,23 @@ impl TimeUtils {
 
     /// 将时间戳（秒）转换为 `String` 格式的日期
     pub fn timestamp_to_string(timestamp: i64, fmt: Option<&str>) -> String {
+        let time_fmt = SYS_CONFIG.time_basic_fmt.clone().unwrap();
         let naive = TimeUtils::timestamp_to_naive_date_time(timestamp);
-        let fmt = fmt.unwrap_or(TIME_BASIC_FMT);
+        let fmt = fmt.unwrap_or(&*time_fmt);
         naive.format(fmt).to_string()
     }
 
     /// 获取当前时间的 `String` 格式的日期
     pub fn current_datetime_string(fmt: Option<&str>) -> String {
-        let fmt = fmt.unwrap_or(TIME_BASIC_FMT);
+        let time_fmt = SYS_CONFIG.time_basic_fmt.clone().unwrap();
+        let fmt = fmt.unwrap_or(&*time_fmt);
         Utc::now().format(fmt).to_string()
     }
 
     /// 将格式化日期字符串转换为 `NaiveDateTime`
     pub fn string_to_naive_date_time(date_str: &str, fmt: Option<&str>) -> Option<NaiveDateTime> {
-        let fmt = fmt.unwrap_or(TIME_BASIC_FMT);
+        let time_fmt = SYS_CONFIG.time_basic_fmt.clone().unwrap();
+        let fmt = fmt.unwrap_or(&*time_fmt);
         NaiveDateTime::parse_from_str(date_str, fmt).ok()
     }
 }
