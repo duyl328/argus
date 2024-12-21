@@ -30,6 +30,8 @@ pub struct Config {
 
     /// 时间默认格式
     pub time_basic_fmt: Option<String>,
+    /// 目录界别
+    pub directory_level: Option<u32>,
 
     #[serde(flatten)] // 收集多余的字段
     extra: HashMap<String, String>,
@@ -49,6 +51,7 @@ impl Config {
             cache_path: Some("cache".to_string()),
             thumbnail_storage_path: None,
             time_basic_fmt: Some("%Y-%m-%d %H:%M:%S".to_string()),
+            directory_level:Some(3),
             extra: HashMap::new(),
         }
     }
@@ -63,6 +66,7 @@ impl PartialEq for Config {
             && self.cache_path == other.cache_path
             && self.thumbnail_storage_path == other.thumbnail_storage_path
             && self.time_basic_fmt == other.time_basic_fmt
+            && self.directory_level == other.directory_level
             && self.extra == other.extra
     }
 }
@@ -150,6 +154,11 @@ fn load_config() -> Result<Config, Box<dyn std::error::Error>> {
             default_config.time_basic_fmt
         } else {
             config_clone.time_basic_fmt
+        },
+        directory_level:if config_clone.directory_level == None{
+            default_config.directory_level
+        }else{
+            config_clone.directory_level
         },
         extra: Default::default(),
     };

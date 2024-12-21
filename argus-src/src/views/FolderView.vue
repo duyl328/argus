@@ -4,11 +4,25 @@ import { getDirAllSubfoldersFirstImg, getNeedDisplayImageInfo } from '@/services
 import type { FolderImage } from '@/types/rusts/FolderImage'
 import { addListener } from '@/services/emits/base'
 import EmitOrder from '@/constants/emitOrder'
+import { generateSaveThumbnail } from '@/services/imageService'
+import { convertFileSrc } from '@tauri-apps/api/core'
 
 const images = ref<FolderImage[]>([])
 
 const columns = ref<number>(3) // 默认列数
 const columnImages = reactive<FolderImage[][]>([]) // 每列的图片内容
+let target = [
+  // "target\\debug\\cache\\compress\\5b\\1c\\c5\\5b1cc505e9b5365e6d6160aaa7df37082b110447fa901cdf6e75a0de639bbab2\\256.webp",
+  // "target\\debug\\cache\\compress\\5b\\1c\\c5\\5b1cc505e9b5365e6d6160aaa7df37082b110447fa901cdf6e75a0de639bbab2\\128.webp",
+  // "target\\debug\\cache\\compress\\5b\\1c\\c5\\5b1cc505e9b5365e6d6160aaa7df37082b110447fa901cdf6e75a0de639bbab2\\512.webp"
+]
+const columnImages1 = reactive<string[]>([])
+target.forEach((column) => {
+
+  let s = convertFileSrc(column)
+  columnImages1.push(s)
+})
+
 // 动态分配图片到列
 const distributeImages = () => {
   console.log('重新分配')
@@ -20,6 +34,15 @@ const distributeImages = () => {
   columnImages.length = 0
   columnImages.push(...cols)
 }
+
+let stringPromise = generateSaveThumbnail(['D:\\argus\\img\\jpg\\局部\\1'], '333')
+stringPromise.then((image) => {
+  image.forEach((image, index) => {
+    let s = convertFileSrc(image)
+    columnImages1.push(s)
+  })
+  console.log('image1231232 columnImages1 ', columnImages1)
+})
 
 // 屏幕宽度判断
 const colJudgement = [
@@ -98,36 +121,33 @@ const lazyLoadDirective: Directive = {
   mounted(el, binding) {
     const observer = new IntersectionObserver(([entry]) => {
       if (entry.isIntersecting) {
-        el.src = binding.value; // 替换为真实图片地址
-        observer.unobserve(el); // 停止观察
+        el.src = binding.value // 替换为真实图片地址
+        observer.unobserve(el) // 停止观察
       }
-    });
-    observer.observe(el);
-  },
-};
+    })
+    observer.observe(el)
+  }
+}
 </script>
 
 <template>
   <div>
-    <img src="file://D:\argus\img\jpg\局部\3f160e3827ea5aa149f3301a56b4f0a5.jpg" alt="Thumbnail">
-
+    <img
+      src="file://D:\argus\argus-src\src-tauri\target\debug\cache\compress\5b\1c\c5\5b1cc505e9b5365e6d6160aaa7df37082b110447fa901cdf6e75a0de639bbab2\512.webp"
+      alt="Thumbnail"
+    />
     <!-- 瀑布流主容器 -->
-    <div class="grid p-5" :style="{ gridTemplateColumns: `repeat(${columns}, 1fr)` }">
+    <div  :style="{ gridTemplateColumns: `repeat(${columns}, 1fr)` }">
       <!-- 每列的内容 -->
       <div
-        v-for="(col, index) in columnImages"
+        v-for="(col, index) in columnImages1"
         :key="index"
         class="flex flex-col gap-4 m-2 rounded-lg shadow"
       >
-        <div v-for="(image, idx) in col" :key="idx">
-          <img
-            :src="'data:image/jpeg;base64,' + image.image_path_as_base64"
-            alt="Image"
-            class="w-full rounded-lg object-cover shadow"
-          />
-          <span>{{ image.folder_path }}</span>
-          <span>循环展示内容</span>
-        </div>
+<!--        <img :src="'file://' + col" alt="Image" class="w-full rounded-lg object-cover shadow" />-->
+        <img :src=" col" alt="Image" class=" rounded-lg object-cover shadow" />
+        <span>{{ col }}</span>
+        <span>循环展示内容</span>
       </div>
     </div>
   </div>

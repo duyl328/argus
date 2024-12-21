@@ -17,62 +17,62 @@ use tauri_plugin_sql::{Migration, MigrationKind};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
+    let mut builder = tauri::Builder::default();
+
+    #[cfg(debug_assertions)]
+    {
+        let devtools = tauri_plugin_devtools::init();
+        builder = builder.plugin(devtools);
+        // builder = builder.plugin(tauri_plugin_devtools::init()).plugin(tauri_plugin_devtools_app::init());
+    }
+
     std::env::set_var("RUST_BACKTRACE", "1");
-    let log_plugin = tauri_plugin_log::Builder::new()
-        // 设置文件大小
-        .max_file_size(50_000)
-        .rotation_strategy(tauri_plugin_log::RotationStrategy::KeepAll)
-        .level(log::LevelFilter::Info)
-        // 仅对命令模块进行动词日志
-        .level_for("commands::log_command", log::LevelFilter::Info)
-        // 日志格式
-        .format(|out, message, record| {
-            out.finish(format_args!(
-                "[{} {}] - {}",
-                record.level(),
-                record.target(),
-                message
+    // 非生产环境，使用外部日志
+    #[cfg(not(debug_assertions))]
+    {
+        let log_plugin = tauri_plugin_log::Builder::new()
+            // 设置文件大小
+            .max_file_size(50_000)
+            .rotation_strategy(tauri_plugin_log::RotationStrategy::KeepAll)
+            .level(log::LevelFilter::Info)
+            // 仅对命令模块进行动词日志
+            .level_for("commands::log_command", log::LevelFilter::Info)
+            // 日志格式
+            .format(|out, message, record| {
+                out.finish(format_args!(
+                    "[{} {}] - {}",
+                    record.level(),
+                    record.target(),
+                    message
+                ))
+            })
+            // 使用本机时间格式化日期
+            .timezone_strategy(tauri_plugin_log::TimezoneStrategy::UseLocal)
+            .target(tauri_plugin_log::Target::new(
+                // 将日志打印到终端
+                // tauri_plugin_log::TargetKind::Stdout,
+                // 记录到 webView
+                // tauri_plugin_log::TargetKind::Webview,
+                // 保存到文件
+                /*
+                Linux      {configDir}/{bundleIdentifier}                    /home/alice/.config/com.tauri.dev
+                macOS      {homeDir}/Library/Logs/{bundleIdentifier}         /Users/Alice/Library/Logs/com.tauri.dev
+                窗户	       {FOLDERID_LocalAppData}/{bundleIdentifier}/logs   C:\Users\Alice\AppData\Local\com.tauri.dev\logs
+                    */
+                // tauri_plugin_log::TargetKind::LogDir {
+                //     file_name: Some("logs".to_string()),
+                // },
+                // 写入自定义位置
+                tauri_plugin_log::TargetKind::Folder {
+                    path: std::path::PathBuf::from(constant::LOG_PATH),
+                    file_name: None,
+                },
             ))
-        })
-        // 使用本机时间格式化日期
-        .timezone_strategy(tauri_plugin_log::TimezoneStrategy::UseLocal)
-        .target(tauri_plugin_log::Target::new(
-            // 将日志打印到终端
-            // tauri_plugin_log::TargetKind::Stdout,
-            // 记录到 webView
-            // tauri_plugin_log::TargetKind::Webview,
-            // 保存到文件
-            /*
-            Linux      {configDir}/{bundleIdentifier}                    /home/alice/.config/com.tauri.dev
-            macOS      {homeDir}/Library/Logs/{bundleIdentifier}         /Users/Alice/Library/Logs/com.tauri.dev
-            窗户	       {FOLDERID_LocalAppData}/{bundleIdentifier}/logs   C:\Users\Alice\AppData\Local\com.tauri.dev\logs
-                */
-            // tauri_plugin_log::TargetKind::LogDir {
-            //     file_name: Some("logs".to_string()),
-            // },
-            // 写入自定义位置
-            tauri_plugin_log::TargetKind::Folder {
-                path: std::path::PathBuf::from(constant::LOG_PATH),
-                file_name: None,
-            },
-        ))
-        .build();
+            .build();
+        builder = builder.plugin(log_plugin)
+    }
 
-    // let migrations = vec![
-    //     Migration {
-    //         version: 1,
-    //         description: "create users table",
-    //         sql: "CREATE TABLE IF NOT EXISTS users (
-    //             id INTEGER PRIMARY KEY AUTOINCREMENT,
-    //             name TEXT NOT NULL,
-    //             email TEXT
-    //         )",
-    //         kind: MigrationKind::Up,
-    //     }
-    // ];
-
-    tauri::Builder::default()
-        .plugin(log_plugin)
+    builder
         .plugin(tauri_plugin_sql::Builder::new().build())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
@@ -93,11 +93,16 @@ pub fn run() {
             commands::photo_storage_command::add_photo_storage,
             commands::photo_storage_command::delete_photo_storage,
             commands::photo_storage_command::update_photo_storage,
-            commands::folder_show_command::get_need_display_image_info
+            commands::folder_show_command::get_need_display_image_info,
+            commands::image_command::get_compress_image_address,
+            commands::image_command::generate_save_thumbnail,
         ])
         .setup(|app| {
             log::info!(" =============================== 程序启动！==============================");
-            log::info!("{}", constant::BANNER4);
+            #[cfg(debug_assertions)]
+            {
+                log::info!("{}", constant::BANNER4);
+            }
             // 初始化配置文件
             let configs = config::init_config();
 
@@ -111,6 +116,14 @@ pub fn run() {
             // 创建指定目录
             let lazy = configs.thumbnail_storage_path.unwrap();
             println!("输出的路径：{}", lazy);
+
+            // 打开控制台
+            #[cfg(debug_assertions)] // 仅在调试版本中包含此代码
+            {
+                let window = app.get_webview_window("main").unwrap();
+                window.open_devtools();
+                window.close_devtools();
+            }
 
             Ok(())
         })

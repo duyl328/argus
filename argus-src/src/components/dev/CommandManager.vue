@@ -35,18 +35,16 @@ const invokeCommand = async (module: CommandType) => {
 
 <template>
   <div class="p-6 font-sans">
-    <h1 class="text-2xl font-bold text-center mb-8">后端命令测试管理页面</h1>
-
     <div class="flex flex-wrap gap-6 w-full justify-center">
       <div v-for="(module, index) in modules" :key="index" class="w-full p-4 shadow-md rounded-md">
         <h2 class="text-lg font-semibold mb-2">{{ module.name }}</h2>
         <p class="text-gray-600 mb-4">{{ module.description }}</p>
 
-        <div class="space-y-4 w-full flex flex-row">
+        <div class="w-full flex flex-row">
           <div
             v-for="(param, paramIndex) in module.params"
             :key="paramIndex"
-            class="space-y-1 w-full"
+            class="space-y-1 w-full m-2"
           >
             <label :for="`${module.name}-${param.name}`" class="block font-bold text-red-400">
               {{ param.label }}

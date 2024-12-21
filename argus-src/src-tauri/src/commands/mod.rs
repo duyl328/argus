@@ -5,4 +5,4 @@ pub mod log_command;
 pub mod photo_storage_command;
 pub mod emit_test;
 pub mod folder_show_command;
-mod image_command;
+pub mod image_command;

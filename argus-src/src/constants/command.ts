@@ -38,3 +38,8 @@ export const getDirAllSubfoldersFirstImgCommand = 'get_dir_all_subfolders_first_
  * 获取 `文件夹` 需要展示的图片
  */
 export const getNeedDisplayImageInfoCommand = 'get_need_display_image_info'
+
+/**
+ * 生成保存压缩缩略图
+ */
+export const generateSaveThumbnailCommand  = "generate_save_thumbnail"

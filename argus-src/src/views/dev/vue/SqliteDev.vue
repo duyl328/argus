@@ -31,8 +31,8 @@ function insertPostBase() {
 function getBasicSetting1() {
   let basicSetting = getAllPost()
   basicSetting.then((res) => {
-    let parse = JSON.parse(res)
-    console.log("parse",parse);
+    // let parse = JSON.parse(res)
+    // console.log("parse",parse);
   })
 }
 </script>

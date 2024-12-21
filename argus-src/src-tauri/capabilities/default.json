@@ -38,6 +38,9 @@
         "*/**"
       ]
     },
+    "fs:allow-exists",
+    "fs:read-all",
+    "fs:write-all",
     "sql:default",
     "sql:allow-execute",
     "sql:allow-load",

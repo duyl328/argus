@@ -22,7 +22,7 @@ crate-type          = ["staticlib", "cdylib", "rlib"]
 tauri-build         = { version = "2", features = [] }
 
 [dependencies]
-tauri               = { version = "2", features = ["protocol-asset"] }
+tauri               = { version = "2", features = ["protocol-asset", "devtools"] }
 tauri-plugin-shell  = "2"
 # 序列化和反序列化
 serde               = { version = "1", features = ["derive"] }
@@ -63,7 +63,7 @@ glob                = "0.3.1"
 # 图像处理
 image               = "0.25.5"
 # 异步框架
-tokio               = { version="1.42.0", features = ["macros", "rt-multi-thread"]}
+tokio               = { version="1.42.0", features = ["macros", "rt-multi-thread"] }
 # 错误类型处理
 anyhow              = "1.0.94"
 futures             = "0.3.31"
@@ -79,6 +79,8 @@ tempfile            = "3.14.0"
 sha2                = "0.10.8"
 # 配置文件处理
 toml                = "0.8.19"
+# 调试
+tauri-plugin-devtools = "2.0.0"
 
 
 [dev-dependencies]
