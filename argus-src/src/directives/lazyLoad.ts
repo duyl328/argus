@@ -1,5 +1,5 @@
 import type { Directive } from 'vue'
-import { getImageThumbnail, getImageThumbnailPath } from '@/services/imageService'
+import { getImageThumbnail } from '@/services/imageService'
 import { convertFileSrc } from '@tauri-apps/api/core'
 
 /**
@@ -18,14 +18,19 @@ export const lazyLoadDirective: Directive = {
     const observer = new IntersectionObserver(([entry]) => {
       if (entry.isIntersecting) {
         let imageThumbnailPath = getImageThumbnail(binding.value)
+        console.log(el.childNodes);
+        // el.childNodes.forEach((ele) => {
+        //   ele.class
+        // })
         imageThumbnailPath
           .then((res) => {
             el.src = convertFileSrc(res)
+            el.classList.remove('img-load')
           })
           .catch((err) => {
-            // img_example_not_exist.png
             console.error("获取失败!",err);
-            el.src = ""
+            el.src = '/src/assets/images/img_example_not_exist.png'
+            el.classList.add('img-load')
             el.alt = '图像获取失败: ' + err.toString()
           })
           .finally(() => {

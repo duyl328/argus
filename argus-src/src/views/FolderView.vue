@@ -7,13 +7,16 @@ import EmitOrder from '@/constants/emitOrder'
 import { convertFileSrc } from '@tauri-apps/api/core'
 import { Picture as IconPicture } from '@element-plus/icons-vue'
 import { getImageThumbnail } from '@/services/imageService'
+import LazyImage from '@/components/LazyImage.vue'
+import { ImageShowInfo } from '@/models/ImageShowInfo'
 
-const images = ref<string[]>([])
+const images = ref<ImageShowInfo[]>([])
 const columns = ref<number>(3) // 默认列数
 
 // 屏幕宽度判断
 const colJudgement = [
-  { width: 2400, col: 11 },
+  { width: 2400, col: 9 },
+  { width: 1900, col: 8 },
   { width: 1536, col: 7 },
   { width: 1280, col: 5 },
   { width: 1024, col: 4 },
@@ -35,25 +38,53 @@ function updateColumns() {
 
 onMounted(() => {
   let dirAllSubfoldersFirstImg = getDirAllSubfoldersFirstImg(
+    // 'D:\\argus\\img\\jpg\\局部'
     'D:\\argus\\img\\jpg'
     // 'E:\\整合\\niannian 125套\\年年（vip套图）',
   )
 
   dirAllSubfoldersFirstImg.then((res) => {
-    images.value = [...res]
+    res.forEach((item) => {
+      let imageShowInfo = new ImageShowInfo(item)
+      images.value.push(imageShowInfo)
+    })
   })
+
   window.addEventListener('resize', updateColumns) // 监听窗口变化
 })
-updateColumns()
 
-async function getImg(imgPath: string) {
-  try {
-    let imageThumbnailPath = await getImageThumbnail(imgPath)
-    return convertFileSrc(imageThumbnailPath)
-  } catch (err) {
-    return ''
+const setItemRef = (info: ImageShowInfo) => (el: Element) => {
+  if (info.isWhether) return undefined
+  info.isWhether = true
+  if (el) {
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          getImageThumbnail(info.imgPath)
+            .then((res) => {
+              info.isLoading = false
+              info.compressedPath = convertFileSrc(res)
+            })
+            .catch((err) => {
+              info.isLoading = false
+              info.isError = true
+              info.errorMsg = err.toString()
+              console.error(err)
+            })
+            .finally(() => {
+              observer.unobserve(el)
+            })
+        }
+      },
+      {
+        threshold: [0] // 当元素至少有 0 进入视口时触发回调
+      }
+    )
+    observer.observe(el)
   }
+  return undefined
 }
+updateColumns()
 </script>
 
 <template>
@@ -64,28 +95,52 @@ async function getImg(imgPath: string) {
       <div
         v-for="(col, index) in images"
         :key="index"
-        class="flex bg-blue-400 flex-col gap-4 m-2 rounded-lg shadow overflow-hidden"
+        :ref="setItemRef(col)"
+        class="flex flex-col gap-4 p-1 m-2 rounded-lg shadow overflow-hidden"
       >
+        <!--        Loading-->
         <!-- 使用 aspect-ratio 保证容器是方形的 -->
-        <div class="relative w-full bg-green-400" style="padding-top: 100%">
-
-
-
+        <div v-if="col.isLoading" class="relative w-full" style="padding-top: 100%">
           <!-- 通过 padding-top 设置容器比例 -->
-
           <img
-            v-argus-lazy="col"
             src="@/assets/images/img_example.png"
             alt="Image"
-            class="absolute top-0 left-0 w-full h-full object-cover rounded-lg shadow"
+            class="absolute top-0 left-0 w-full h-full object-cover rounded-t-lg img-load"
+          />
+        </div>
+        <!--        失败-->
+        <div v-else-if="col.isError" class="relative w-full" style="padding-top: 100%">
+          <img
+            src="@/assets/images/img_example_not_exist.png"
+            alt="Image"
+            class="absolute top-0 left-0 w-full h-full object-cover rounded-t-lg img-load"
+          />
+        </div>
+        <!--        成功-->
+        <div v-else class="relative w-full" style="padding-top: 100%">
+          <img
+            :src="col.compressedPath"
+            alt="Image"
+            class="absolute top-0 left-0 w-full h-full object-cover rounded-t-lg"
           />
         </div>
 
+        <span>{{ col.imgPath }}</span>
         <span>{{ col }}</span>
       </div>
     </div>
   </div>
 </template>
+
+<style scoped lang="scss">
+// 图片加载失败
+.img-load {
+  width: 40%;
+  height: 40%;
+  transform: translate(60%, 60%);
+  @apply rounded-lg;
+}
+</style>
 
 <!-- ======================== TODO【Masonry 使用示例 】 ===================================== -->
 
