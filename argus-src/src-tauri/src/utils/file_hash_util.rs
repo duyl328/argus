@@ -21,9 +21,8 @@ impl FileHashUtils {
     }
 
     pub async fn sha256_async(file_path: &str) -> io::Result<String> {
-        log::warn!("FileHashUtils::sha256 {}",file_path);
+        log::debug!("FileHashUtils::sha256 {}",file_path);
         let metadata = tokio::fs::metadata(file_path).await?;
-        log::warn!("FileHashUtils::sha2561231231");
         let file_size = metadata.len();
 
         // 缓冲区大小根据文件大小动态选择
@@ -39,9 +38,7 @@ impl FileHashUtils {
 
         let mut hasher = Sha256::new();
 
-        log::warn!("123123123123123123123123");
         let mut file = File::open(file_path).await?; // 异步打开文件
-        log::warn!("File::open(file_path).await");
         let mut buffer = vec![0u8; buffer_size];
 
         // let mut buffer = fs::read(file_path)?;
@@ -55,74 +52,6 @@ impl FileHashUtils {
         }
 
         Ok(format!("{:x}", hasher.finalize())) // 返回最终哈希值
-    }
-
-
-    // pub async fn sha256_async(file_path: &str) -> io::Result<String> {
-    //     log::warn!("FileHashUtils::sha256_sync");
-    //
-    //     // 打开文件并创建 BufReader
-    //     let file = File::open(file_path)?;
-    //     let metadata = file.metadata()?;
-    //     let file_size = metadata.len();
-    //
-    //     // 缓冲区大小根据文件大小动态选择
-    //     let m10 = 10 * 1024 * 1024; // 10 MB
-    //     let m100 = 100 * 1024 * 1024; // 100 MB
-    //     let buffer_size = if file_size < m10 {
-    //         16 * 1024 // 小于等于 10MB，用 16KB 缓冲
-    //     } else if file_size < m100 {
-    //         64 * 1024 // 10MB 到 100MB 用 64KB
-    //     } else {
-    //         256 * 1024 // 超过 100MB，用 256KB 缓冲
-    //     };
-    //
-    //     let mut hasher = Sha256::new();
-    //     let mut reader = BufReader::new(file);
-    //     let mut buffer = vec![0u8; buffer_size];
-    //
-    //     log::warn!("开始读取文件并计算哈希值");
-    //     loop {
-    //         let bytes_read = reader.read(&mut buffer)?;
-    //         if bytes_read == 0 {
-    //             break; // 文件读取完毕
-    //         }
-    //         hasher.update(&buffer[..bytes_read]); // 更新哈希计算
-    //     }
-    //
-    //     Ok(format!("{:x}", hasher.finalize())) // 返回最终哈希值
-    // }
-
-
-    // pub async fn sha256_async(file_path: &str) -> Result<String, String> {
-    //     task::spawn_blocking(move || {
-    //         let file = File::open(&file_path).map_err(|e| format!("Failed to open file: {}", e));
-    //         let mut reader = BufReader::new(file);
-    //         let mut hasher = Sha256::new();
-    //         let mut buffer = vec![0u8; 8192];
-    //
-    //         loop {
-    //             let bytes_read = reader.read(&mut buffer).map_err(|e| format!("Failed to read file: {}", e))?;
-    //             if bytes_read == 0 {
-    //                 break;
-    //             }
-    //             hasher.update(&buffer[..bytes_read]);
-    //         }
-    //
-    //         let hash_result = hasher.finalize();
-    //         Ok(format!("{:x}", hash_result))
-    //     })
-    //         .await
-    //         .map_err(|e| format!("Failed to calculate hash: {}", e))?
-    // }
-
-
-    /// Hash 文件路径生成
-    pub async fn get_hash_dir(sha: &str) -> Result<PathBuf> {
-        // 目录级别【3级】（3级已可覆盖百分级别文件）
-        // let string = FileHashUtils::sha256_async(sha).await?;
-
-        todo!()
     }
 
     /// 获取 Hash 文件路径

@@ -1,57 +1,24 @@
 <script setup lang="ts">
-import { ref, reactive, onMounted, watch, type Directive } from 'vue'
-import { getDirAllSubfoldersFirstImg, getNeedDisplayImageInfo } from '@/services/folderService'
+import { ref, reactive, onMounted, watch } from 'vue'
+import { getDirAllSubfoldersFirstImg } from '@/services/folderService'
 import type { FolderImage } from '@/types/rusts/FolderImage'
 import { addListener } from '@/services/emits/base'
 import EmitOrder from '@/constants/emitOrder'
-import { generateSaveThumbnail } from '@/services/imageService'
 import { convertFileSrc } from '@tauri-apps/api/core'
+import { Picture as IconPicture } from '@element-plus/icons-vue'
+import { getImageThumbnail } from '@/services/imageService'
 
-const images = ref<FolderImage[]>([])
-
+const images = ref<string[]>([])
 const columns = ref<number>(3) // 默认列数
-const columnImages = reactive<FolderImage[][]>([]) // 每列的图片内容
-let target = [
-  // "target\\debug\\cache\\compress\\5b\\1c\\c5\\5b1cc505e9b5365e6d6160aaa7df37082b110447fa901cdf6e75a0de639bbab2\\256.webp",
-  // "target\\debug\\cache\\compress\\5b\\1c\\c5\\5b1cc505e9b5365e6d6160aaa7df37082b110447fa901cdf6e75a0de639bbab2\\128.webp",
-  // "target\\debug\\cache\\compress\\5b\\1c\\c5\\5b1cc505e9b5365e6d6160aaa7df37082b110447fa901cdf6e75a0de639bbab2\\512.webp"
-]
-const columnImages1 = reactive<string[]>([])
-target.forEach((column) => {
-
-  let s = convertFileSrc(column)
-  columnImages1.push(s)
-})
-
-// 动态分配图片到列
-const distributeImages = () => {
-  console.log('重新分配')
-  // 初始化列数组
-  const cols = Array.from({ length: columns.value }, () => [] as FolderImage[])
-  images.value.forEach((image, index) => {
-    cols[index % columns.value].push(image) // 分配到列中
-  })
-  columnImages.length = 0
-  columnImages.push(...cols)
-}
-
-let stringPromise = generateSaveThumbnail(['D:\\argus\\img\\jpg\\局部\\1'], '333')
-stringPromise.then((image) => {
-  image.forEach((image, index) => {
-    let s = convertFileSrc(image)
-    columnImages1.push(s)
-  })
-  console.log('image1231232 columnImages1 ', columnImages1)
-})
 
 // 屏幕宽度判断
 const colJudgement = [
-  { width: 2400, col: 13 },
-  { width: 1536, col: 9 },
-  { width: 1280, col: 7 },
-  { width: 1024, col: 6 },
-  { width: 768, col: 5 },
-  { width: 640, col: 4 },
+  { width: 2400, col: 11 },
+  { width: 1536, col: 7 },
+  { width: 1280, col: 5 },
+  { width: 1024, col: 4 },
+  { width: 768, col: 3 },
+  { width: 640, col: 3 },
   { width: -1, col: 3 }
 ]
 
@@ -60,94 +27,61 @@ function updateColumns() {
   for (let i = 0; i < colJudgement.length; i++) {
     let item = colJudgement[i]
     if (width >= item.width) {
-      distributeImages()
       columns.value = item.col
       return
     }
   }
 }
 
-// 寻找最宽的图片大小
-function getMaxImgWidth() {
-  let ans = 0
-  colJudgement.forEach((image, index) => {
-    if (image.width <= 0) return ans
-    let result = image.width / image.col
-    console.log(result)
-    if (result > ans) {
-      ans = result
-    }
-  })
-  return ans
-}
-
 onMounted(() => {
-  let maxImgWidth = getMaxImgWidth()
-  console.log(maxImgWidth)
-  // let dirAllSubfoldersFirstImg = getDirAllSubfoldersFirstImg('E:\\整合\\niannian 125套\\年年（vip套图）',    Math.round(maxImgWidth),
-  //   2400
-  // )
-
-  let dirAllSubfoldersFirstImg = getNeedDisplayImageInfo(
-    // 'D:\\CHARLATANS\\OneDrive',
-    // 'D:\\argus\\img\\jpg',
+  let dirAllSubfoldersFirstImg = getDirAllSubfoldersFirstImg(
     'D:\\argus\\img\\jpg'
-    // 'D:\\argus\\img\\png',
-    // 'D:\\CHARLATANS\\OneDrive\\Pictures\\Camera',
-    // Math.round(maxImgWidth),
-    // 2400
+    // 'E:\\整合\\niannian 125套\\年年（vip套图）',
   )
+
   dirAllSubfoldersFirstImg.then((res) => {
-    console.log(res)
-    // images.value = [...res]
-    updateColumns() // 初始化时计算列数
+    images.value = [...res]
   })
   window.addEventListener('resize', updateColumns) // 监听窗口变化
-
-  addListener(EmitOrder.folderViewImageShow, (event) => {
-    console.log(event.payload)
-    images.value.push(event.payload as FolderImage)
-
-    // images.value = [...images.value]
-    // updateColumns() // 初始化时计算列数
-    // console.log(event.payload);
-  })
 })
+updateColumns()
 
-watch(columns, distributeImages) // 列数变化时重新分配图片
-
-// 懒加载
-const lazyLoadDirective: Directive = {
-  mounted(el, binding) {
-    const observer = new IntersectionObserver(([entry]) => {
-      if (entry.isIntersecting) {
-        el.src = binding.value // 替换为真实图片地址
-        observer.unobserve(el) // 停止观察
-      }
-    })
-    observer.observe(el)
+async function getImg(imgPath: string) {
+  try {
+    let imageThumbnailPath = await getImageThumbnail(imgPath)
+    return convertFileSrc(imageThumbnailPath)
+  } catch (err) {
+    return ''
   }
 }
 </script>
 
 <template>
   <div>
-    <img
-      src="file://D:\argus\argus-src\src-tauri\target\debug\cache\compress\5b\1c\c5\5b1cc505e9b5365e6d6160aaa7df37082b110447fa901cdf6e75a0de639bbab2\512.webp"
-      alt="Thumbnail"
-    />
     <!-- 瀑布流主容器 -->
-    <div  :style="{ gridTemplateColumns: `repeat(${columns}, 1fr)` }">
+    <div :style="{ gridTemplateColumns: `repeat(${columns}, 1fr)` }" class="grid">
       <!-- 每列的内容 -->
       <div
-        v-for="(col, index) in columnImages1"
+        v-for="(col, index) in images"
         :key="index"
-        class="flex flex-col gap-4 m-2 rounded-lg shadow"
+        class="flex bg-blue-400 flex-col gap-4 m-2 rounded-lg shadow overflow-hidden"
       >
-<!--        <img :src="'file://' + col" alt="Image" class="w-full rounded-lg object-cover shadow" />-->
-        <img :src=" col" alt="Image" class=" rounded-lg object-cover shadow" />
+        <!-- 使用 aspect-ratio 保证容器是方形的 -->
+        <div class="relative w-full bg-green-400" style="padding-top: 100%">
+
+
+
+          <!-- 通过 padding-top 设置容器比例 -->
+
+          <img
+            v-argus-lazy="col"
+            src="@/assets/images/img_example.png"
+            alt="Image"
+            class="absolute top-0 left-0 w-full h-full object-cover rounded-lg shadow"
+          />
+        </div>
+
         <span>{{ col }}</span>
-        <span>循环展示内容</span>
       </div>
     </div>
   </div>

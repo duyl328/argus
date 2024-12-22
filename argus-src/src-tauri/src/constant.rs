@@ -102,7 +102,7 @@ pub const IMAGE_COMPRESSION_RATIO: [ImageSize; 3] = [
 pub const IMAGE_COMPRESSION_STORAGE_FORMAT: ImageFormat = ImageFormat::WebP;
 
 /// 默认缩略图大小
-pub const DEFAULT_THUMBNAIL_SIZE: u32 = 256;
+pub const DEFAULT_THUMBNAIL_SIZE: u32 = IMAGE_COMPRESSION_RATIO[2].size;
 
 /// 默认配置文件名称
 pub const DEFAULT_PROFILE_NAME: &str = "conf-argus.toml";

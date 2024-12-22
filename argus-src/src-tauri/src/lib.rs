@@ -96,6 +96,8 @@ pub fn run() {
             commands::folder_show_command::get_need_display_image_info,
             commands::image_command::get_compress_image_address,
             commands::image_command::generate_save_thumbnail,
+            commands::image_command::get_image_thumbnail_path,
+            commands::image_command::get_image_thumbnail,
         ])
         .setup(|app| {
             log::info!(" =============================== 程序启动！==============================");

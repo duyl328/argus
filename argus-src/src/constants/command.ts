@@ -1,3 +1,5 @@
+import { getImageThumbnailPath } from '@/services/imageService'
+
 /**
  * 获取图片绝对路径
  */
@@ -34,12 +36,16 @@ export const deletePhotoStorageCommand = 'delete_photo_storage'
  * 获取指定路径所有子路径的第一张图片，没有图片则不返回内容
  */
 export const getDirAllSubfoldersFirstImgCommand = 'get_dir_all_subfolders_first_img'
-/**
- * 获取 `文件夹` 需要展示的图片
- */
-export const getNeedDisplayImageInfoCommand = 'get_need_display_image_info'
 
 /**
  * 生成保存压缩缩略图
  */
 export const generateSaveThumbnailCommand  = "generate_save_thumbnail"
+/**
+ * 获取指定的压缩图片地址
+ */
+export const getImageThumbnailPathCommand  = "get_image_thumbnail_path"
+/**
+ * 获取指定图片的缩略图【如果不存在，直接创建】
+ */
+export const getImageThumbnailCommand  = "get_image_thumbnail"

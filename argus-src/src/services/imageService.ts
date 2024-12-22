@@ -11,7 +11,7 @@
 import {invoke} from "@tauri-apps/api/core";
 import {
   generateSaveThumbnailCommand,
-  getImageAbsolutePathCommand,
+  getImageAbsolutePathCommand, getImageThumbnailCommand, getImageThumbnailPathCommand,
   readImageAsBase64Command
 } from '@/constants/command'
 
@@ -20,4 +20,15 @@ import {
  */
 export  function generateSaveThumbnail (imagePath:string[], emitCommand:string) {
   return invoke<string[]>(generateSaveThumbnailCommand,{imagePath, emitCommand});
+}
+
+/**
+ * 获取指定的压缩图片地址
+ * @param imagePath
+ */
+export function getImageThumbnailPath(imagePath:string) {
+  return invoke<string>(getImageThumbnailPathCommand,{imagePath});
+}
+export function getImageThumbnail(imagePath:string) {
+  return invoke<string>(getImageThumbnailCommand,{imagePath});
 }

@@ -1,27 +1,28 @@
-use std::fs;
 use crate::constant;
-use crate::errors::AppError;
+use crate::errors::{AError, AppError};
 use crate::structs::config::SYS_CONFIG;
+use crate::structs::image_size::ImageSize;
 use crate::utils::base64_util::base64_encode;
 use crate::utils::file_hash_util::FileHashUtils;
 use crate::utils::file_util::file_exists;
 use crate::utils::system_state_util::get_memory_as_percentage;
 use crate::utils::{file_util, image_format_util};
-use anyhow::{Context, Result};
+use anyhow::{anyhow, Context, Result};
 use env_logger::Target;
 use image::{imageops, DynamicImage, GenericImageView, ImageError, ImageFormat};
 use image::{imageops::FilterType, io::Reader as ImageReader};
 use log::{error, info, warn};
+use std::fs;
 use std::io::Cursor;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::Instant;
+use image::io::Reader;
 use tokio::sync::{mpsc, Mutex};
 use tokio::task;
 use tokio::task::JoinSet;
-use crate::structs::image_size::ImageSize;
 
-#[derive(Debug,Clone)]
+#[derive(Debug, Clone)]
 pub struct ImageOperate {
     /// 文件路径
     img_path: String,
@@ -35,9 +36,11 @@ impl ImageOperate {
         let start_resize = Instant::now();
         // 检测文件是否存在
         if !file_exists(image_path) {
-            return Err(AppError::InvalidPath(image_path.to_string()).into());
+            return Err(anyhow!(AError::SpecifiedFileDoesNotExist.message()));
         };
-        let result = image::open(image_path)?;
+        // 猜测文件类型并打开
+        let result = image::ImageReader::open(image_path)?.with_guessed_format()?.decode()?;
+
         let rs = ImageOperate {
             img_path: String::from(image_path),
             data: result,
@@ -140,10 +143,10 @@ impl ImageOperate {
 
         // 读取图片
         // let img = ImageOperate::read_image(dir).await?;
-        let img = Arc::new(ImageOperate::read_image(&dir.clone()).await?);  // 使用 Arc 包装图像
+        let img = Arc::new(ImageOperate::read_image(&dir.clone()).await?); // 使用 Arc 包装图像
         let mut join_set = JoinSet::new();
         for level in compression_level {
-            println!("1111111111111 {}",&level.size);
+            log::info!("获取图片尺寸 {}", &level.size);
             let vec_clone = Arc::clone(&result);
             let image = img.clone();
             let root_dir_clone = Arc::clone(&root_dir); // 克隆 Arc 来传递给闭包
@@ -154,7 +157,7 @@ impl ImageOperate {
                 let hash = FileHashUtils::sha256_async(&dir_clone)
                     .await
                     .expect("读取文件 Hash 失败!");
-                println!("hash {}",hash);
+                log::info!("获取 Hash ：{}", hash);
                 // 获取保存路径
                 let save_path = FileHashUtils::hash_to_file_path(
                     hash.as_str(),
@@ -162,16 +165,17 @@ impl ImageOperate {
                     &file_name_clone,
                     level.size,
                 )
-                    .display()
-                    .to_string();
-                println!("save_path {}",&save_path);
+                .display()
+                .to_string();
+                log::info!("save_path {}", &save_path);
                 // 保存结果数据
                 let mut vec = vec_clone.lock().await;
                 // 检测缩略图文件是否存在
                 let exists = file_exists(&save_path);
                 if !exists {
                     // 压缩
-                    let x1 = image.compression_with_size(level.size, level.size, FilterType::Triangle);
+                    let x1 =
+                        image.compression_with_size(level.size, level.size, FilterType::Triangle);
                     let image1 = x1.await;
                     // 保存
                     ImageOperate::save_image(save_path.clone(), image1, fmt)
@@ -192,6 +196,65 @@ impl ImageOperate {
             vec.clone() // 克隆 Vec 以得到一个新的 Vec
         };
         Ok(vec)
+    }
+
+    /// 生成指定级别的压缩图
+    pub async fn designate_level_image_compression(
+        dir: String,
+        fmt: ImageFormat,
+        compression_level: u32,
+    ) -> Result<String> {
+        // 获取根目录
+        let root_dir = SYS_CONFIG
+            .thumbnail_storage_path
+            .clone()
+            .ok_or_else(|| anyhow!(AError::ThumbnailCacheConfigurationReadFailed.message()))?;
+        // 获取文件名
+        let file_name = image_format_util::get_suffix_name(fmt.clone());
+
+        // 获取 Hash
+        let hash = FileHashUtils::sha256_async(&dir)
+            .await
+            .map_err(|e| anyhow!(AError::HashConversionFailed.message()))?;
+        log::info!("获取 Hash ：{}", hash);
+        // 获取保存路径
+        let save_path = FileHashUtils::hash_to_file_path(
+            hash.as_str(),
+            &root_dir,
+            &file_name,
+            compression_level,
+        )
+        .display()
+        .to_string();
+        log::info!("save_path {}", &save_path);
+
+        // 检测缩略图文件是否存在
+        let exists = file_exists(&save_path);
+        if !exists {
+            // 读取图片
+            // let img = ImageOperate::read_image(dir).await?;
+            let img = ImageOperate::read_image(&dir.clone()).await.map_err(|e| {
+                let err = e.to_string();
+                return if err.is_empty() {
+                    anyhow!(format!("file: {} ,压缩失败: {}", dir, AError::OriginalImageReadFailed.message()))
+                } else {
+                    anyhow!(format!("file: {} ,压缩失败: {}", dir, err))
+                };
+            })?;
+            // 压缩
+            let x1 = img.compression_with_size(
+                compression_level,
+                compression_level,
+                FilterType::Triangle,
+            );
+            let image1 = x1.await;
+            // 保存
+            ImageOperate::save_image(save_path.clone(), image1, fmt)
+                .await
+                .map_err(|e| anyhow!(AError::FileSaveFailed.message()))?;
+        }
+
+        Ok(save_path)
     }
 }
 
