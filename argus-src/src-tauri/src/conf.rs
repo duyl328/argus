@@ -1,7 +1,7 @@
 use once_cell::sync::Lazy;
-use std::sync::RwLock;
+use std::sync::{Arc, RwLock};
 
-#[derive(Debug)]
+#[derive(Debug,Clone)]
 pub struct Conf {
     /// 数据库默认连接
     pub database_default_link: String,
@@ -23,7 +23,7 @@ pub struct Conf {
     pub python_service_path: String,
 }
 
-pub(crate) static CONF: Lazy<RwLock<Conf>> = Lazy::new(|| RwLock::new(Conf::default()));
+pub(crate) static CONF: Lazy<Arc<RwLock<Conf>>> = Lazy::new(|| Arc::new(RwLock::new(Conf::default())));
 pub(crate) static CONF_DEFAULT: Lazy<Conf> = Lazy::new(|| Conf::default());
 
 impl Conf {
