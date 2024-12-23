@@ -2,7 +2,7 @@ use crate::constant;
 use crate::constant::{
     DEFAULT_THUMBNAIL_SIZE, IMAGE_COMPRESSION_RATIO, IMAGE_COMPRESSION_STORAGE_FORMAT,
 };
-use crate::errors::{AError, AppError};
+use crate::errors::{AError};
 use crate::structs::config::SYS_CONFIG;
 use crate::utils::file_hash_util::FileHashUtils;
 use crate::utils::file_util::{get_all_dir_img, get_all_subfolders};

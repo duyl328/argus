@@ -1,4 +1,5 @@
-use anyhow::Result;
+use crate::errors::AError;
+use anyhow::{anyhow, Result};
 use glob::glob;
 use sha2::digest::typenum::op;
 use std::env;
@@ -143,7 +144,7 @@ pub fn get_root_folder() -> Result<PathBuf> {
     // 获取基础路径，默认为当前 EXE 所在目录
     let buf = std::env::current_exe()?
         .parent()
-        .expect("父文件夹读取失败")
+        .ok_or(anyhow!(AError::ParentPathReadFailed))?
         .to_path_buf();
     Ok(buf)
 }

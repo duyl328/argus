@@ -1,6 +1,10 @@
-use crate::constant::{DEFAULT_PROFILE_NAME};
+use crate::conf;
+use crate::conf::{Conf, CONF_DEFAULT};
+use crate::constant::DEFAULT_PROFILE_NAME;
 use crate::utils::file_util;
 use crate::utils::file_util::{create_folder, get_root_folder};
+use crate::utils::json_util::JsonUtil;
+use anyhow::Result;
 use once_cell::sync::Lazy;
 use serde::{Deserialize, Serialize};
 use std::cmp::PartialEq;
@@ -33,6 +37,10 @@ pub struct Config {
     /// 目录界别
     pub directory_level: Option<u32>,
 
+    // Python 相关配置
+    /// Python 服务地址
+    pub python_service_path: Option<String>,
+
     #[serde(flatten)] // 收集多余的字段
     extra: HashMap<String, String>,
 }
@@ -44,14 +52,15 @@ impl Config {
 
     pub fn default() -> Config {
         Config {
-            database_default_link: Some("db/sqlite.db".to_string()),
-            database_name: Some("sqlite.db".to_string()),
-            database_path: Some("db".to_string()),
-            image_cache_path: Some("compress".to_string()),
-            cache_path: Some("cache".to_string()),
+            database_default_link: Some(CONF_DEFAULT.database_default_link.clone()),
+            database_name: Some(CONF_DEFAULT.database_name.clone()),
+            database_path: Some(CONF_DEFAULT.database_path.clone()),
+            image_cache_path: Some(CONF_DEFAULT.image_cache_path.clone()),
+            cache_path: Some(CONF_DEFAULT.cache_path.clone()),
             thumbnail_storage_path: None,
-            time_basic_fmt: Some("%Y-%m-%d %H:%M:%S".to_string()),
-            directory_level:Some(3),
+            time_basic_fmt: Some(CONF_DEFAULT.time_basic_fmt.clone()),
+            directory_level: Some(CONF_DEFAULT.directory_level.clone()),
+            python_service_path: Some(CONF_DEFAULT.python_service_path.clone()),
             extra: HashMap::new(),
         }
     }
@@ -67,11 +76,16 @@ impl PartialEq for Config {
             && self.thumbnail_storage_path == other.thumbnail_storage_path
             && self.time_basic_fmt == other.time_basic_fmt
             && self.directory_level == other.directory_level
+            && self.python_service_path == other.python_service_path
             && self.extra == other.extra
     }
 }
 
-pub static SYS_CONFIG: Lazy<Config> = Lazy::new(|| load_config().expect("系统配置文件加载失败! "));
+pub static SYS_CONFIG: Lazy<Config> = Lazy::new(|| {
+    let config = load_config().expect("系统配置文件加载失败! ");
+    // 构建必须参数
+    config
+});
 
 /// 获取配置文件存放路径
 fn get_config_dir() -> String {
@@ -79,7 +93,7 @@ fn get_config_dir() -> String {
     root_dir.join(DEFAULT_PROFILE_NAME).display().to_string()
 }
 
-pub fn save_config(config: &Config) -> Result<(), Box<dyn std::error::Error>> {
+pub fn save_config(config: &Config) -> Result<()> {
     let path = get_config_dir();
     let toml_string = to_string_pretty(&config)?;
     let mut file = File::create(path)?;
@@ -87,9 +101,13 @@ pub fn save_config(config: &Config) -> Result<(), Box<dyn std::error::Error>> {
     Ok(())
 }
 
-fn load_config() -> Result<Config, Box<dyn std::error::Error>> {
+fn load_config() -> Result<Config> {
+    log::info!("load_config");
     let path = get_config_dir();
-
+    log::info!("餐速回构建完毕!!!!!!!!!!!!!  ");
+    let str = JsonUtil::stringify(&path)?;
+    log::info!("{}  ", str);
+    let mut data = conf::CONF.read().expect("报错了");
     let mut config;
 
     // 检查配置文件是否存在
@@ -110,88 +128,75 @@ fn load_config() -> Result<Config, Box<dyn std::error::Error>> {
         config = default_config;
     }
     let config_clone = config.clone();
-    let default_config = Config::default();
+
     // 修复配置文件
-    let cache_path_merged = if config_clone.cache_path == None {
-        default_config.cache_path
+    let cache_path_merged = config_clone
+        .cache_path
+        .unwrap_or_else(|| data.cache_path.clone());
+    let image_cache_path_merged = config_clone
+        .image_cache_path
+        .unwrap_or_else(|| data.image_cache_path.clone());
+    // 缩略图保存路径
+    let thumbnail_storage_path_merged = if config_clone.thumbnail_storage_path == None {
+        // 获取 exe 文件路径
+        let root_dir = get_root_folder()?;
+        let thumbnail_path = root_dir
+            .join(cache_path_merged.clone())
+            .join(image_cache_path_merged.clone());
+        let string = thumbnail_path.display().to_string();
+        let mut data = conf::CONF.write().expect("write 报错了");
+        data.thumbnail_storage_path = string.clone();
+        Some(string)
     } else {
-        config_clone.cache_path
-    };
-    let image_cache_path_merged = if config_clone.image_cache_path == None {
-        default_config.image_cache_path
-    } else {
-        config_clone.image_cache_path
+        config_clone.thumbnail_storage_path
     };
     let merged_config = Config {
-        database_default_link: if config_clone.database_default_link == None {
-            default_config.database_default_link
-        } else {
-            config_clone.database_default_link
-        },
-        database_name: if config_clone.database_name == None {
-            default_config.database_name
-        } else {
-            config_clone.database_name
-        },
-        database_path: if config_clone.database_path == None {
-            default_config.database_path
-        } else {
-            config_clone.database_path
-        },
-        cache_path: cache_path_merged.clone(),
-        image_cache_path: image_cache_path_merged.clone(),
-        thumbnail_storage_path: if config_clone.thumbnail_storage_path == None {
-            // 获取 exe 文件路径
-            let root_dir = get_root_folder().expect("根路径获取失败! ");
-            let thumbnail_path = root_dir
-                .join(cache_path_merged.unwrap())
-                .join(image_cache_path_merged.unwrap());
-            Some(thumbnail_path.display().to_string())
-        } else {
-            config_clone.thumbnail_storage_path
-        },
-        time_basic_fmt: if config_clone.time_basic_fmt == None {
-            default_config.time_basic_fmt
-        } else {
-            config_clone.time_basic_fmt
-        },
-        directory_level:if config_clone.directory_level == None{
-            default_config.directory_level
-        }else{
-            config_clone.directory_level
-        },
+        database_default_link: Some(
+            config_clone
+                .database_default_link
+                .unwrap_or_else(|| data.database_default_link.clone()),
+        ),
+        database_name: Some(
+            config_clone
+                .database_name
+                .unwrap_or_else(|| data.database_name.clone()),
+        ),
+        database_path: Some(
+            config_clone
+                .database_path
+                .unwrap_or_else(|| data.database_path.clone()),
+        ),
+        cache_path: Some(cache_path_merged.clone()),
+        image_cache_path: Some(image_cache_path_merged.clone()),
+        thumbnail_storage_path: thumbnail_storage_path_merged,
+        time_basic_fmt: Some(
+            config_clone
+                .time_basic_fmt
+                .unwrap_or_else(|| data.time_basic_fmt.clone()),
+        ),
+        directory_level: Some(
+            config_clone
+                .directory_level
+                .unwrap_or_else(|| data.directory_level.clone()),
+        ),
+        python_service_path: Some(
+            config_clone
+                .python_service_path
+                .unwrap_or_else(|| data.python_service_path.clone()),
+        ),
         extra: Default::default(),
     };
     // 如果配置有变动，保存修复后的配置
     if config != merged_config {
         log::info!("保存修复后的配置...");
         save_config(&merged_config)?;
-        return Ok(merged_config)
+        return Ok(merged_config);
     }
     Ok(config)
 }
 
 /// 公开的初始化
 pub fn init_config() -> Config {
+    log::info!("进入初始化");
     SYS_CONFIG.clone()
-}
-
-fn main() -> Result<(), Box<dyn std::error::Error>> {
-    // 模拟从文件读取配置内容
-    let config_str = r#"
-    database_url = "postgres://user:password@localhost/dbname"
-    log_path = "/var/log/app"
-    "#;
-
-    // 反序列化配置文件
-    let config: Config = from_str(config_str)?;
-
-    println!("{:?}", config);
-
-    // 输出多余的字段
-    for (key, value) in &config.extra {
-        println!("Extra field - {}: {}", key, value);
-    }
-
-    Ok(())
 }

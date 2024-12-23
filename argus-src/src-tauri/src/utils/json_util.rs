@@ -1,16 +1,15 @@
 use serde::{Deserialize, Serialize};
 use serde_json::{self, Value, Error};
-use crate::errors::JsonError;
-
+use anyhow::{anyhow, Result};
 pub struct JsonUtil;
 impl JsonUtil {
     /// 通用函数：序列化
-    pub fn stringify<T: Serialize>(value: &T) -> Result<String, JsonError> {
+    pub fn stringify<T: Serialize>(value: &T) -> Result<String> {
         let result = serde_json::to_string(value);
         if result.is_ok() {
             Ok(result?)
         } else {
-            Err(JsonError::Error(result.unwrap_err()))
+            Err(anyhow!("序列化失败!"))
         }
     }
 

@@ -1,13 +1,12 @@
-use crate::errors::SqlError;
 use crate::models::photo_storage::{NewPhotoStorage, PhotoStorage};
 use crate::storage::schema::photo_storages::dsl::photo_storages;
 use crate::utils::time_util::TimeUtils;
 use diesel::associations::HasTable;
 use diesel::prelude::*;
 use crate::storage::schema::photo_storages::is_delete;
-
+use anyhow::{anyhow, Result};
 /// 获取数据
-pub fn get_all_photo_path(connection: &mut SqliteConnection) -> Result<Vec<PhotoStorage>, SqlError> {
+pub fn get_all_photo_path(connection: &mut SqliteConnection) -> Result<Vec<PhotoStorage>> {
     // 尝试加载所有数据
     // let results = photo_storages::table
     //     .select(PhotoStorage::as_select()).filter(is_delete.eq(false))
@@ -20,15 +19,16 @@ pub fn get_all_photo_path(connection: &mut SqliteConnection) -> Result<Vec<Photo
 }
 
 /// 插入元素
-pub fn insert_img_path(connection: &mut SqliteConnection, img_path: String, is_enable: bool) -> Result<(), SqlError> {
+pub fn insert_img_path(connection: &mut SqliteConnection, img_path: String, is_enable: bool) -> Result<()> {
     let result = get_all_photo_path(connection)?;
     let photo_path = img_path.trim();
     for x in result {
         if photo_path.is_empty() {
-            return Err(SqlError::InsertError(String::from("Empty photo storage!")));
+            return Err(anyhow!("Empty photo storage!"));
         }
         if x.img_paths.eq(photo_path) {
-            return Err(SqlError::InsertError(String::from("选择路径重复! ")));
+            return Err(anyhow!("选择路径重复!"));
+
         }
     }
 
@@ -48,7 +48,7 @@ pub fn insert_img_path(connection: &mut SqliteConnection, img_path: String, is_e
     if result.is_ok() {
         Ok(())
     } else {
-        Err(SqlError::Error(result.unwrap_err()))
+        Err(anyhow!(result.unwrap_err()))
     }
 }
 
@@ -56,7 +56,7 @@ pub fn insert_img_path(connection: &mut SqliteConnection, img_path: String, is_e
 pub fn update_photo_storages(
     connection: &mut SqliteConnection,
     item: &mut PhotoStorage,
-) -> Result<(), SqlError> {
+) -> Result<()> {
     use crate::storage::schema::photo_storages;
     let result = diesel::update(photo_storages::table.filter(photo_storages::id.eq(item.id)))
         .set((
@@ -71,15 +71,15 @@ pub fn update_photo_storages(
             if rows_updated > 0 {
                 Ok(())
             } else {
-                Err(SqlError::NotFound())
+                Err(anyhow!("未找到！"))
             }
         }
-        Err(err) => Err(SqlError::Error(err)),
+        Err(err) => Err(anyhow!("数据库错误")),
     }
 }
 
 /// 删除一个图像路径
-pub fn delete_img_path(connection: &mut SqliteConnection,id:i32) -> Result<(), SqlError> {
+pub fn delete_img_path(connection: &mut SqliteConnection,id:i32) -> Result<()> {
     use crate::storage::schema::photo_storages;
     let result = diesel::update(photo_storages::table.filter(photo_storages::id.eq(id)))
         .set((
@@ -93,10 +93,10 @@ pub fn delete_img_path(connection: &mut SqliteConnection,id:i32) -> Result<(), S
             if rows_updated > 0 {
                 Ok(())
             } else {
-                Err(SqlError::NotFound())
+                Err(anyhow!("未知数据库错误"))
             }
         }
-        Err(err) => Err(SqlError::Error(err)),
+        Err(err) => Err(anyhow!("位置数据库错误")),
     }
 }
 

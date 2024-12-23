@@ -1,5 +1,5 @@
 use crate::constant;
-use crate::errors::{AError, AppError};
+use crate::errors::{AError,};
 use crate::structs::config::SYS_CONFIG;
 use crate::structs::image_size::ImageSize;
 use crate::utils::base64_util::base64_encode;

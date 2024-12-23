@@ -1,6 +1,3 @@
-use tauri::ipc::InvokeBody::Json;
-use tauri::ipc::InvokeError;
-use crate::errors::{AppError, SqlError};
 use crate::models::photo_storage::PhotoStorage;
 use crate::services;
 use crate::utils::json_util::JsonUtil;
@@ -23,10 +20,10 @@ pub fn delete_photo_storage(id:i32) {
 }
 
 #[tauri::command]
-pub fn add_photo_storage(img2path: String, is_enable: bool) -> Result<String, AppError> {
+pub fn add_photo_storage(img2path: String, is_enable: bool) -> Result<String,String> {
     let result = services::photo_photo_service::add_img_path(img2path, is_enable);
     if result.is_err() {
-        Err(AppError::SqlError(result.unwrap_err()))
+        Err("数据库读取失败！".to_string())
     } else {
         Ok("插入成功.".to_string())
     }
