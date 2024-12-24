@@ -38,7 +38,7 @@
   },
   "bundle": {
     "externalBin": [
-      "bin/app.exe"
+      "bin/app"
     ],
     "active": true,
     "targets": "all",

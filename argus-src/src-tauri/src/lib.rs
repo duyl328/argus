@@ -17,7 +17,9 @@ use crate::structs::config;
 use crate::structs::config::SYS_CONFIG;
 use crate::utils::file_util::create_folder;
 use tauri::{Emitter, Listener, Manager, State};
+use tauri_plugin_shell::process::CommandEvent;
 use tauri_plugin_sql::{Migration, MigrationKind};
+use tauri_plugin_shell::ShellExt;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -125,7 +127,29 @@ pub fn run() {
             println!("输出的路径：{}", lazy);
 
             // 启动服务
+            // `sidecar()` 只需要文件名, 不像 JavaScript 中的整个路径
+            println!("sidecar().");
+            let sidecar_command = app.shell().sidecar("app").unwrap();
+            let (mut rx, mut _child) = sidecar_command
+                .spawn()
+                .expect("Failed to spawn sidecar");
 
+            // 使 tauri 托管该线程
+            app.manage(Some(_child));
+
+            tauri::async_runtime::spawn(async move {
+                // 读取诸如 stdout 之类的事件
+                while let Some(event) = rx.recv().await {
+                    println!("启动成功!");
+                    // if let CommandEvent::Stdout(line) = event {
+                    //     window
+                    //         .emit("message", Some(format!("'{}'", line)))
+                    //         .expect("failed to emit event");
+                    //     // 写入 stdin
+                    //     child.write("message from Rust\n".as_bytes()).unwrap();
+                    // }
+                }
+            });
 
             // 打开控制台
             #[cfg(debug_assertions)] // 仅在调试版本中包含此代码
@@ -134,7 +158,6 @@ pub fn run() {
                 window.open_devtools();
                 window.close_devtools();
             }
-
 
             Ok(())
         })
