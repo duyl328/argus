@@ -37,6 +37,9 @@
     }
   },
   "bundle": {
+    "externalBin": [
+      "bin/app.exe"
+    ],
     "active": true,
     "targets": "all",
     "icon": [

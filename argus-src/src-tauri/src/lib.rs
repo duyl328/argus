@@ -1,8 +1,12 @@
+mod api;
 mod commands;
+mod conf;
 mod constant;
 mod errors;
 mod explore;
+mod http_client;
 mod models;
+mod server;
 mod services;
 mod storage;
 mod structs;
@@ -79,6 +83,7 @@ pub fn run() {
         .plugin(tauri_plugin_shell::init())
         .invoke_handler(tauri::generate_handler![
             commands::command::greet,
+            commands::command::http_example,
             commands::file_command::get_image_absolute_path,
             commands::file_command::check_directory_access,
             commands::file_command::read_image_as_base64,
@@ -101,7 +106,7 @@ pub fn run() {
         ])
         .setup(|app| {
             log::info!(" =============================== 程序启动！==============================");
-            #[cfg(debug_assertions)]
+            #[cfg(not(debug_assertions))]
             {
                 log::info!("{}", constant::BANNER4);
             }
@@ -119,6 +124,9 @@ pub fn run() {
             let lazy = configs.thumbnail_storage_path.unwrap();
             println!("输出的路径：{}", lazy);
 
+            // 启动服务
+
+
             // 打开控制台
             #[cfg(debug_assertions)] // 仅在调试版本中包含此代码
             {
@@ -126,6 +134,7 @@ pub fn run() {
                 window.open_devtools();
                 window.close_devtools();
             }
+
 
             Ok(())
         })
