@@ -1,6 +1,6 @@
 extern crate chrono;
-pub use chrono::{DateTime, NaiveDateTime, TimeZone, Utc};
 use crate::structs::config::SYS_CONFIG;
+pub use chrono::{DateTime, NaiveDateTime, TimeZone, Utc};
 
 pub struct TimeUtils;
 
@@ -43,7 +43,6 @@ impl TimeUtils {
     }
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -64,7 +63,10 @@ mod tests {
         let timestamp_millis = TimeUtils::current_timestamp_millis();
         let current_timestamp_millis = Utc::now().timestamp_millis();
         // 允许小的误差（例如，函数执行时的时间差）
-        assert!(timestamp_millis >= current_timestamp_millis - 1 && timestamp_millis <= current_timestamp_millis + 1);
+        assert!(
+            timestamp_millis >= current_timestamp_millis - 1
+                && timestamp_millis <= current_timestamp_millis + 1
+        );
     }
 
     #[test]
@@ -96,7 +98,10 @@ mod tests {
         let naive_datetime = TimeUtils::string_to_naive_date_time(date_str, Some(TIME_BASIC_FMT));
         // 确保日期解析成功
         assert!(naive_datetime.is_some());
-        assert_eq!(naive_datetime.unwrap().format(TIME_BASIC_FMT).to_string(), date_str);
+        assert_eq!(
+            naive_datetime.unwrap().format(TIME_BASIC_FMT).to_string(),
+            date_str
+        );
     }
 
     #[test]

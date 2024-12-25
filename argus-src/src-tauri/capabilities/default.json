@@ -41,6 +41,8 @@
     "fs:allow-exists",
     "fs:read-all",
     "fs:write-all",
+    "fs:allow-read-text-file",
+    "fs:allow-resource-read-recursive",
     "sql:default",
     "sql:allow-execute",
     "sql:allow-load",

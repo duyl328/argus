@@ -1,2 +1,2 @@
-pub mod image_size;
 pub mod config;
+pub mod image_size;

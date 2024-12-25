@@ -1,7 +1,7 @@
 use once_cell::sync::Lazy;
 use std::sync::{Arc, RwLock};
 
-#[derive(Debug,Clone)]
+#[derive(Debug, Clone)]
 pub struct Conf {
     /// 数据库默认连接
     pub database_default_link: String,
@@ -28,6 +28,7 @@ pub(crate) static CONF_DEFAULT: Lazy<Conf> = Lazy::new(|| Conf::default());
 
 impl Conf {
     pub fn default() -> Conf {
+        println!("获取默认配置");
         Conf {
             database_default_link: "db/sqlite.db".to_string(),
             database_name: "sqlite.db".to_string(),

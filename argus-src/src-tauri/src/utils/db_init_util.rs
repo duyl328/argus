@@ -23,7 +23,8 @@ create table posts
     update_time BIGINT  default 0     not null,
     is_delete   BOOLEAN default FALSE not null
 );
-".to_string(),
+"
+            .to_string(),
         },
         // =======================================================================
         DbInit {
@@ -37,7 +38,8 @@ create table user
     create_time BIGINT  default 0     not null,
     update_time BIGINT  default 0     not null,
 );
-".to_string(),
+"
+            .to_string(),
         },
         // =======================================================================
     ];

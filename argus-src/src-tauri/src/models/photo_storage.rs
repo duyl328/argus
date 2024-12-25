@@ -1,6 +1,6 @@
+use crate::utils::time_util::TimeUtils;
 use diesel::{Insertable, Queryable, Selectable};
 use serde::{Deserialize, Serialize};
-use crate::utils::time_util::TimeUtils;
 
 #[derive(Queryable, Selectable, Insertable, Debug, Serialize, Deserialize)]
 #[diesel(table_name = crate::storage::schema::photo_storages)]

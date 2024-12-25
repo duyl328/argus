@@ -1,12 +1,12 @@
-use diesel::{Connection, QueryResult, RunQueryDsl};
+use crate::structs::config::SYS_CONFIG;
+use crate::utils::{db_init_util, file_util};
+use diesel::connection::SimpleConnection;
 use diesel::sqlite::SqliteConnection;
+use diesel::{Connection, QueryResult, RunQueryDsl};
 use diesel_migrations::{embed_migrations, EmbeddedMigrations, MigrationHarness};
 use dotenvy::dotenv;
 use once_cell::sync::Lazy;
 use std::{env, fs};
-use diesel::connection::SimpleConnection;
-use crate::structs::config::SYS_CONFIG;
-use crate::utils::{db_init_util, file_util};
 
 /// 获取所有的数据库迁移
 pub const MIGRATIONS: EmbeddedMigrations = embed_migrations!();
@@ -15,21 +15,25 @@ pub fn run_migrations() -> Result<(), Box<dyn std::error::Error>> {
     init_path().expect("数据库路径初始化失败!");
     let lazy = DATABASE_URL.as_str();
     let mut connection = SqliteConnection::establish(lazy)?;
-    connection.run_pending_migrations(MIGRATIONS).expect("TODO: panic message");
+    connection
+        .run_pending_migrations(MIGRATIONS)
+        .expect("TODO: panic message");
     Ok(())
 }
 
 /// 验证指定表是否存在
-pub fn does_table_exist(conn: &mut SqliteConnection, table_name: &str) -> Result<bool, diesel::result::Error> {
+pub fn does_table_exist(
+    conn: &mut SqliteConnection,
+    table_name: &str,
+) -> Result<bool, diesel::result::Error> {
     let query = format!(
         "SELECT EXISTS (SELECT 1 FROM sqlite_master WHERE type='table' AND name='{}')",
         table_name
     );
-    let exists:QueryResult<bool> = diesel::dsl::sql::<diesel::sql_types::Bool>(
-        &*query
-    ).get_result(conn);
+    let exists: QueryResult<bool> =
+        diesel::dsl::sql::<diesel::sql_types::Bool>(&*query).get_result(conn);
     log::info!("query ans : {:?}", exists);
-    
+
     Ok(exists?)
 }
 
@@ -46,7 +50,7 @@ pub static DATABASE_URL: Lazy<String> = Lazy::new(|| {
         .unwrap_or_else(|_| database_path.parse().unwrap());
     let cpath = file_util::get_root_folder().expect("根路径读取失败！ ");
 
-    log::info!("Using database url: {:?},{}", cpath,database_url);
+    log::info!("Using database url: {:?},{}", cpath, database_url);
     let string = format!("{}/{}/{}", cpath.to_string_lossy(), db_dir, db_name);
     log::info!("Using database - url: {:?}", string);
     string
@@ -63,7 +67,7 @@ pub fn init_path() -> Result<(), rusqlite::Error> {
     let exists = file_util::file_exists(&app_dir);
     if exists {
         log::info!("Found existing database url: {}", app_dir);
-    }else {
+    } else {
         log::info!("Creating database directory: {}", app_dir);
         // 获取推荐的数据库路径
         fs::create_dir_all(&app_dir).expect("The app data directory should be created.");
@@ -83,17 +87,18 @@ pub fn establish_connection() -> SqliteConnection {
         .unwrap_or_else(|err| panic!("Error connecting to {:?}: {:?}", *DATABASE_URL, err))
 }
 
-
 /// 删除指定表
-pub fn drop_table(conn: &mut SqliteConnection, table_name: &str) -> Result<(), diesel::result::Error> {
+pub fn drop_table(
+    conn: &mut SqliteConnection,
+    table_name: &str,
+) -> Result<(), diesel::result::Error> {
     let query = format!("DROP TABLE IF EXISTS {}", table_name);
     diesel::sql_query(query).execute(conn)?;
     Ok(())
 }
 
-
 /// 初始化数据库【未使用】
-fn init_databases(){
+fn init_databases() {
     let vec = db_init_util::get_init_sql_list();
     let mut connection = establish_connection();
     for x in vec {
@@ -101,18 +106,19 @@ fn init_databases(){
         // 如果不存在则创建对应数据库
         if !is_exist {
             let result = diesel::sql_query(x.sql).execute(&mut connection);
-            if !result.is_ok() { 
+            if !result.is_ok() {
                 log::error!("Failed to create table: {:?}", x.name);
                 panic!("Failed to create table: {:?}", x.name);
             }
         }
     }
     // 为数据库字段插入数据
-       
-    
+
     return;
     // todo: 2024/12/8 10:33 配置管理数据库升级
-    SqliteConnection::batch_execute(&mut connection, "
+    SqliteConnection::batch_execute(
+        &mut connection,
+        "
     create table __diesel_schema_migrations
 (
     version VARCHAR(50)                         not null
@@ -140,5 +146,7 @@ create table user
     age  INTEGER
 );
 
-    ").expect("TODO: panic message");
+    ",
+    )
+    .expect("TODO: panic message");
 }

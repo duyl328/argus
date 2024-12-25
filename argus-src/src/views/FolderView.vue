@@ -2,7 +2,6 @@
 import { ref, reactive, onMounted, watch } from 'vue'
 import { getDirAllSubfoldersFirstImg } from '@/services/folderService'
 import type { FolderImage } from '@/types/rusts/FolderImage'
-import { addListener } from '@/services/emits/base'
 import EmitOrder from '@/constants/emitOrder'
 import { convertFileSrc } from '@tauri-apps/api/core'
 import { Picture as IconPicture } from '@element-plus/icons-vue'

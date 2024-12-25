@@ -2,7 +2,7 @@
 from flask import Blueprint, jsonify
 
 # 蓝图
-example_bp = Blueprint('user', __name__)
+example_bp = Blueprint('example', __name__)
 
 
 @example_bp.route('/', methods=['GET'])

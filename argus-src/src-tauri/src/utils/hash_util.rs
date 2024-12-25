@@ -14,7 +14,6 @@ impl HashUtil {
     }
 }
 
-
 #[test]
 fn test_sha256() {
     let input = "hello";

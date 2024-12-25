@@ -1,8 +1,8 @@
-use tauri_plugin_dialog::DialogExt;
 use crate::api::example::get_example;
 use crate::http_client::HttpClient;
 use crate::server;
 use crate::server::example;
+use tauri_plugin_dialog::DialogExt;
 
 #[tauri::command]
 pub fn greet(name: &str) -> String {
@@ -20,13 +20,13 @@ pub fn greet(name: &str) -> String {
 }
 
 #[tauri::command]
-pub async fn http_example()  {
+pub async fn http_example() {
     // let example1 = example::http_get_example().await;
 
     let client = HttpClient::new();
 
     let example = get_example().await;
-    match example{
+    match example {
         Ok(post) => println!("Fetched Post: {:?}", post),
         Err(err) => eprintln!("Error fetching post: {}", err),
     }

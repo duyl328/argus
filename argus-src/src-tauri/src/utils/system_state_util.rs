@@ -7,7 +7,10 @@ pub fn get_memory() -> (u64, u64) {
 
     system.refresh_memory();
 
-    (system.total_memory() / 1024, system.available_memory() / 1024)
+    (
+        system.total_memory() / 1024,
+        system.available_memory() / 1024,
+    )
 }
 
 /// 获取 CPU 信息
@@ -22,7 +25,7 @@ fn get_cpu_load() -> f32 {
 }
 
 /// 获取占用百分比
-pub fn get_memory_as_percentage()->f32{
+pub fn get_memory_as_percentage() -> f32 {
     let (fm, am) = get_memory();
     (am as f32) / (fm as f32)
 }

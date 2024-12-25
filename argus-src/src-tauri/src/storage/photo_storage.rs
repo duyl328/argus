@@ -1,10 +1,10 @@
 use crate::models::photo_storage::{NewPhotoStorage, PhotoStorage};
 use crate::storage::schema::photo_storages::dsl::photo_storages;
+use crate::storage::schema::photo_storages::is_delete;
 use crate::utils::time_util::TimeUtils;
+use anyhow::{anyhow, Result};
 use diesel::associations::HasTable;
 use diesel::prelude::*;
-use crate::storage::schema::photo_storages::is_delete;
-use anyhow::{anyhow, Result};
 /// 获取数据
 pub fn get_all_photo_path(connection: &mut SqliteConnection) -> Result<Vec<PhotoStorage>> {
     // 尝试加载所有数据
@@ -19,7 +19,11 @@ pub fn get_all_photo_path(connection: &mut SqliteConnection) -> Result<Vec<Photo
 }
 
 /// 插入元素
-pub fn insert_img_path(connection: &mut SqliteConnection, img_path: String, is_enable: bool) -> Result<()> {
+pub fn insert_img_path(
+    connection: &mut SqliteConnection,
+    img_path: String,
+    is_enable: bool,
+) -> Result<()> {
     let result = get_all_photo_path(connection)?;
     let photo_path = img_path.trim();
     for x in result {
@@ -28,7 +32,6 @@ pub fn insert_img_path(connection: &mut SqliteConnection, img_path: String, is_e
         }
         if x.img_paths.eq(photo_path) {
             return Err(anyhow!("选择路径重复!"));
-
         }
     }
 
@@ -79,7 +82,7 @@ pub fn update_photo_storages(
 }
 
 /// 删除一个图像路径
-pub fn delete_img_path(connection: &mut SqliteConnection,id:i32) -> Result<()> {
+pub fn delete_img_path(connection: &mut SqliteConnection, id: i32) -> Result<()> {
     use crate::storage::schema::photo_storages;
     let result = diesel::update(photo_storages::table.filter(photo_storages::id.eq(id)))
         .set((
@@ -100,11 +103,10 @@ pub fn delete_img_path(connection: &mut SqliteConnection,id:i32) -> Result<()> {
     }
 }
 
-
 #[test]
 /// 在内存中使用数据库测试【未测试】
 fn test_with_memory_db() {
-    use rusqlite::{Connection};
+    use rusqlite::Connection;
     // let conn = Connection::open_in_memory().unwrap();
     // conn.execute(
     //     "CREATE TABLE test (id INTEGER PRIMARY KEY, name TEXT NOT NULL)",None

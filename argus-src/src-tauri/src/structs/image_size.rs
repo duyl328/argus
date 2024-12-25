@@ -12,6 +12,8 @@ pub struct ImageSize {
 
 impl ImageSize {
     pub fn default() -> ImageSize {
-        ImageSize { size: DEFAULT_THUMBNAIL_SIZE }
+        ImageSize {
+            size: DEFAULT_THUMBNAIL_SIZE,
+        }
     }
 }

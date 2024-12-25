@@ -1,5 +1,3 @@
-
-
 #[tauri::command]
 pub fn log_logs() {
     log::info!("正常信息");

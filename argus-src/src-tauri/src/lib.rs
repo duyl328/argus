@@ -1,4 +1,5 @@
 mod api;
+pub mod bg_services;
 mod commands;
 mod conf;
 mod constant;
@@ -14,12 +15,18 @@ mod utils;
 
 use crate::storage::connection;
 use crate::structs::config;
-use crate::structs::config::SYS_CONFIG;
+use std::error::Error;
+use std::sync::{Arc, Mutex};
+use std::thread;
+use std::time::Duration;
+
 use crate::utils::file_util::create_folder;
-use tauri::{Emitter, Listener, Manager, State};
+use tauri::{App, Emitter, Listener, Manager, State, WindowEvent};
 use tauri_plugin_shell::process::CommandEvent;
-use tauri_plugin_sql::{Migration, MigrationKind};
 use tauri_plugin_shell::ShellExt;
+use tauri_plugin_sql::{Migration, MigrationKind};
+use crate::bg_services::{BgServes, SERVES};
+use crate::structs::config::SYS_CONFIG;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -78,11 +85,28 @@ pub fn run() {
         builder = builder.plugin(log_plugin)
     }
 
+    // 初始化配置文件
+    let configs = config::init_config();
+
+    print!("配置完毕!!!!!!!!!!!!!");
+
     builder
         .plugin(tauri_plugin_sql::Builder::new().build())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_fs::init())
         .plugin(tauri_plugin_shell::init())
+        .on_window_event(|windows, event| {
+            // 事件处理
+            match event {
+                // 窗口关闭事件
+                WindowEvent::CloseRequested { api, .. } => {
+                    println!("进入关闭流程！ ");
+                    SERVES.write().unwrap().drop_all();
+                }
+                _ => {}
+            }
+        })
+        .manage::<Option<tauri_plugin_shell::process::CommandChild>>(None)
         .invoke_handler(tauri::generate_handler![
             commands::command::greet,
             commands::command::http_example,
@@ -106,61 +130,43 @@ pub fn run() {
             commands::image_command::get_image_thumbnail_path,
             commands::image_command::get_image_thumbnail,
         ])
-        .setup(|app| {
-            log::info!(" =============================== 程序启动！==============================");
-            #[cfg(not(debug_assertions))]
-            {
-                log::info!("{}", constant::BANNER4);
-            }
-            // 初始化配置文件
-            let configs = config::init_config();
-
-            let cpath = std::env::current_dir().expect("软件路径获取");
-            log::info!("软件路径:{:?}", cpath);
-
-            log::info!("创建数据库");
-            let db = connection::run_migrations().expect("Database initialize should succeed");
-            log::info!("创建完毕");
-
-            // 创建指定目录
-            let lazy = configs.thumbnail_storage_path.unwrap();
-            println!("输出的路径：{}", lazy);
-
-            // 启动服务
-            // `sidecar()` 只需要文件名, 不像 JavaScript 中的整个路径
-            println!("sidecar().");
-            let sidecar_command = app.shell().sidecar("app").unwrap();
-            let (mut rx, mut _child) = sidecar_command
-                .spawn()
-                .expect("Failed to spawn sidecar");
-
-            // 使 tauri 托管该线程
-            app.manage(Some(_child));
-
-            tauri::async_runtime::spawn(async move {
-                // 读取诸如 stdout 之类的事件
-                while let Some(event) = rx.recv().await {
-                    println!("启动成功!");
-                    // if let CommandEvent::Stdout(line) = event {
-                    //     window
-                    //         .emit("message", Some(format!("'{}'", line)))
-                    //         .expect("failed to emit event");
-                    //     // 写入 stdin
-                    //     child.write("message from Rust\n".as_bytes()).unwrap();
-                    // }
-                }
-            });
-
-            // 打开控制台
-            #[cfg(debug_assertions)] // 仅在调试版本中包含此代码
-            {
-                let window = app.get_webview_window("main").unwrap();
-                window.open_devtools();
-                window.close_devtools();
-            }
-
-            Ok(())
-        })
+        .setup(main_setup())
         .run(tauri::generate_context!())
         .expect("argus 启动失败!");
+}
+
+fn main_setup() -> fn(&mut App) -> Result<(), Box<dyn Error>> {
+    |app| {
+        log::info!(" =============================== 程序启动！==============================");
+        #[cfg(not(debug_assertions))]
+        {
+            log::info!("{}", constant::BANNER4);
+        }
+
+        let cpath = std::env::current_dir().expect("软件路径获取");
+        log::info!("软件路径:{:?}", cpath);
+
+        log::info!("创建数据库");
+        let db = connection::run_migrations().expect("Database initialize should succeed");
+        log::info!("创建完毕");
+
+        // 创建指定目录
+        let lazy = SYS_CONFIG.thumbnail_storage_path.clone().unwrap();
+        println!("输出的路径：{}", lazy);
+
+        // 启动服务
+        // `sidecar()` 只需要文件名, 不像 JavaScript 中的整个路径
+        println!("sidecar().");
+
+        bg_services::start_python_service();
+
+        // 打开控制台
+        #[cfg(debug_assertions)] // 仅在调试版本中包含此代码
+        {
+            let window = app.get_webview_window("main").unwrap();
+            window.open_devtools();
+            window.close_devtools();
+        }
+        Ok(())
+    }
 }

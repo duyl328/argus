@@ -107,7 +107,7 @@ fn load_config() -> Result<Config> {
     log::info!("餐速回构建完毕!!!!!!!!!!!!!  ");
     let str = JsonUtil::stringify(&path)?;
     log::info!("{}  ", str);
-    let mut data = conf::CONF.read().expect("报错了");
+    let mut data = conf::CONF.write().expect("write 报错了");
     let mut config;
 
     // 检查配置文件是否存在
@@ -128,7 +128,6 @@ fn load_config() -> Result<Config> {
         config = default_config;
     }
     let config_clone = config.clone();
-
     // 修复配置文件
     let cache_path_merged = config_clone
         .cache_path
@@ -144,7 +143,6 @@ fn load_config() -> Result<Config> {
             .join(cache_path_merged.clone())
             .join(image_cache_path_merged.clone());
         let string = thumbnail_path.display().to_string();
-        let mut data = conf::CONF.write().expect("write 报错了");
         data.thumbnail_storage_path = string.clone();
         Some(string)
     } else {

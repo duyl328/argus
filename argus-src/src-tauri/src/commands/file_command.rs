@@ -65,10 +65,7 @@ pub fn get_all_imgs(path: String) -> String {
 
 /// 获取指定路径下所有子文件夹的第一张图片
 #[tauri::command]
-pub async fn get_dir_all_subfolders_first_img(
-    app: AppHandle,
-    path: String,
-) -> Vec<String> {
+pub async fn get_dir_all_subfolders_first_img(app: AppHandle, path: String) -> Vec<String> {
     // 使用 spawn_blocking 将同步函数包装成异步
     let vec = get_all_subfolders(&path);
     let mut result: Vec<String> = Vec::new(); // 使用 Arc 和 Mutex

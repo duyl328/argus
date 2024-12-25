@@ -1,7 +1,7 @@
+use crate::conf;
+use anyhow::Result;
 use reqwest::{Client, ClientBuilder};
 use std::time::Duration;
-use anyhow::Result;
-use crate::conf;
 
 pub struct HttpClient {
     pub client: Client,
@@ -29,7 +29,6 @@ impl HttpClient {
         Ok(self.client.post(url).json(body).send().await?)
     }
 }
-
 
 pub fn get_base_url() -> String {
     let data = conf::CONF.read().expect("报错了");

@@ -23,7 +23,4 @@ diesel::table! {
     }
 }
 
-diesel::allow_tables_to_appear_in_same_query!(
-    photo_storages,
-    posts,
-);
+diesel::allow_tables_to_appear_in_same_query!(photo_storages, posts,);

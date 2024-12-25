@@ -1,6 +1,6 @@
-use serde::{Deserialize, Serialize};
-use serde_json::{self, Value, Error};
 use anyhow::{anyhow, Result};
+use serde::{Deserialize, Serialize};
+use serde_json::{self, Error, Value};
 pub struct JsonUtil;
 impl JsonUtil {
     /// 通用函数：序列化
@@ -17,7 +17,7 @@ impl JsonUtil {
     pub fn from_json<'a, T: Deserialize<'a>>(json_str: &'a str) -> Result<T, Error> {
         serde_json::from_str(json_str)
     }
-    
+
     /// 获取单层键值
     pub fn get_value(json_str: &str, key: &str) -> Option<Value> {
         match serde_json::from_str::<Value>(json_str) {
@@ -29,7 +29,6 @@ impl JsonUtil {
         }
     }
 
-    
     pub fn set_value(json_str: &str, key: &str, value: Value) -> Option<String> {
         let mut parsed: Value = serde_json::from_str(json_str).ok()?;
         if let Value::Object(ref mut map) = parsed {
@@ -42,14 +41,14 @@ impl JsonUtil {
 
 #[cfg(test)]
 mod test {
-    use std::collections::HashSet;
-    use serde_json::Error;
     use crate::utils::json_util::JsonUtil;
+    use serde_json::Error;
+    use std::collections::HashSet;
 
     #[test]
     fn test_parse_arg() {
         let vec = vec!["arg1", "arg2"];
-        let mut x:HashSet < String > = HashSet::new();
+        let mut x: HashSet<String> = HashSet::new();
         x.insert("1".to_string());
         x.insert("2".to_string());
         x.insert("3".to_string());
@@ -64,7 +63,7 @@ mod test {
     #[test]
     fn test_parse_empty_array() {
         let str = "[\"arg1\",\"arg2\"]";
-        let result:Result<Vec<String>,Error> = JsonUtil::from_json(str);
+        let result: Result<Vec<String>, Error> = JsonUtil::from_json(str);
         assert!(result.is_ok());
         let result = result.unwrap();
         assert_eq!(result.len(), 2);

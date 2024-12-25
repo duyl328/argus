@@ -42,7 +42,7 @@ impl AError {
             AError::ThumbnailGenerationFailed => 3,
             AError::SpecifiedFileDoesNotExist => 3,
             AError::ParentPathReadFailed => 3,
-            _ => -1
+            _ => -1,
         }
     }
 
@@ -55,7 +55,7 @@ impl AError {
             AError::ThumbnailGenerationFailed => "缩略图生成失败！",
             AError::SpecifiedFileDoesNotExist => "指定文件不存在！",
             AError::ParentPathReadFailed => "父路径读取失败！",
-            _ => "默认报错返回"
+            _ => "默认报错返回",
         }
     }
 

@@ -1,7 +1,6 @@
 use std::time::{Duration, Instant};
 use tokio::time::sleep;
 
-
 async fn async_task(id: usize, delay_secs: u64) {
     sleep(Duration::from_secs(delay_secs)).await;
 }

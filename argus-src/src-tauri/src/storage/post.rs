@@ -27,5 +27,4 @@ pub fn insert_post(conn: &mut SqliteConnection, title: &str, body: &str) -> Post
         log::error!("Error adding new post11 {:?}", err);
         panic!("Error creating post {}", title)
     })
-    
 }

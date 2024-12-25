@@ -1,10 +1,10 @@
-use std::collections::HashSet;
 use crate::models::photo_storage::PhotoStorage;
 use crate::storage;
 use crate::storage::connection::establish_connection;
 use crate::utils::json_util::JsonUtil;
-use serde_json::{self, Value, Error};
 use anyhow::Result;
+use serde_json::{self, Error, Value};
+use std::collections::HashSet;
 
 pub fn get_photo_storages() -> Result<Vec<PhotoStorage>> {
     let mut conn = establish_connection();

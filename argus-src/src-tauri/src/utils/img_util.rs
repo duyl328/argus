@@ -1,5 +1,5 @@
 use crate::constant;
-use crate::errors::{AError,};
+use crate::errors::AError;
 use crate::structs::config::SYS_CONFIG;
 use crate::structs::image_size::ImageSize;
 use crate::utils::base64_util::base64_encode;
@@ -9,6 +9,7 @@ use crate::utils::system_state_util::get_memory_as_percentage;
 use crate::utils::{file_util, image_format_util};
 use anyhow::{anyhow, Context, Result};
 use env_logger::Target;
+use image::io::Reader;
 use image::{imageops, DynamicImage, GenericImageView, ImageError, ImageFormat};
 use image::{imageops::FilterType, io::Reader as ImageReader};
 use log::{error, info, warn};
@@ -17,7 +18,6 @@ use std::io::Cursor;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::Instant;
-use image::io::Reader;
 use tokio::sync::{mpsc, Mutex};
 use tokio::task;
 use tokio::task::JoinSet;
@@ -39,7 +39,9 @@ impl ImageOperate {
             return Err(anyhow!(AError::SpecifiedFileDoesNotExist.message()));
         };
         // 猜测文件类型并打开
-        let result = image::ImageReader::open(image_path)?.with_guessed_format()?.decode()?;
+        let result = image::ImageReader::open(image_path)?
+            .with_guessed_format()?
+            .decode()?;
 
         let rs = ImageOperate {
             img_path: String::from(image_path),
@@ -236,7 +238,11 @@ impl ImageOperate {
             let img = ImageOperate::read_image(&dir.clone()).await.map_err(|e| {
                 let err = e.to_string();
                 return if err.is_empty() {
-                    anyhow!(format!("file: {} ,压缩失败: {}", dir, AError::OriginalImageReadFailed.message()))
+                    anyhow!(format!(
+                        "file: {} ,压缩失败: {}",
+                        dir,
+                        AError::OriginalImageReadFailed.message()
+                    ))
                 } else {
                     anyhow!(format!("file: {} ,压缩失败: {}", dir, err))
                 };
