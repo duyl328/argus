@@ -8,6 +8,10 @@ export default {
     extend: {
       fontSize: {
       },
+      colors: {
+        'image-show-text-bg': 'var(--color-image-show-text-bg)',
+        'background-soft': 'var(--color-background-soft)',
+      },
     }
   },
   plugins: [],

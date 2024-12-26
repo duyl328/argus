@@ -65,23 +65,31 @@ pub fn get_all_imgs(path: String) -> String {
 
 /// 获取指定路径下所有子文件夹的第一张图片
 #[tauri::command]
-pub async fn get_dir_all_subfolders_first_img(app: AppHandle, path: String) -> Vec<String> {
+pub async fn get_dir_all_subfolders_first_img(app: AppHandle, path: String) -> Vec<FolderImage> {
     // 使用 spawn_blocking 将同步函数包装成异步
     let vec = get_all_subfolders(&path);
-    let mut result: Vec<String> = Vec::new(); // 使用 Arc 和 Mutex
+    let mut result: Vec<FolderImage> = Vec::new(); // 使用 Arc 和 Mutex
 
     // 使用并发处理文件夹
     for x in &vec {
         let display = x.display().to_string();
 
-        let vec1 = get_all_dir_img(&display, Some(-1)); // 获取文件夹中的图像路径
+        let vec1 = get_all_dir_img(&display, Some(1)); // 获取文件夹中的图像路径
         if !vec1.is_empty() {
-            result.extend(vec1)
+            let path1 = vec1[0].clone();
+            result.push(FolderImage {
+                source_file_path: path1.clone(),
+                file_path: display,
+            });
         }
-        // let vec1 = get_all_dir_img(&display, Some(1)); // 获取文件夹中的图像路径
-        // if !vec1.is_empty() {
-        //     result.push(vec1[0].clone())
-        // }
     }
     result
+}
+
+#[derive(Serialize, Deserialize, Debug, Clone)] // 需要加上这些
+pub struct FolderImage {
+    /// 原图路径
+    pub source_file_path: String,
+    /// 文件路径
+    pub file_path: String,
 }

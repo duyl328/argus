@@ -131,9 +131,3 @@ pub async fn get_image_thumbnail(image_path: String) -> Result<String, String> {
 
     Ok(string)
 }
-
-#[derive(Serialize, Deserialize, Debug, Clone)] // 需要加上这些
-pub struct FolderImage {
-    pub source_file_path: String,
-    pub compress_file_path: String,
-}
