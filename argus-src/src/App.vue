@@ -4,11 +4,13 @@ import PathUtils from '@/utils/pathUtils'
 import StringUtils from '@/utils/stringUtils'
 import type { subRoute, subRouteList } from '@/types/views/dev/DevIndex.type'
 import app from '@/constants/app'
-import { ref } from 'vue'
-
-import {emitInit} from "@/services/emits/base"
+import { emitInit } from '@/services/emits/base'
+import { changedTheme, isDark, toggleDark } from '@/utils/darkUtil'
+import { ref ,watch} from 'vue'
+import { useDark } from '@vueuse/core'
 
 const router = useRouter()
+const isCollapse = ref(true)
 
 // 初始化后端监听器
 emitInit()
@@ -66,22 +68,29 @@ if (nodeenv !== undefined && !StringUtils.isBlank(nodeenv) && nodeenv === app.DE
   app.IS_SHOW_GENERATE_ROUTER = true
   isShowGenerateRouter.value = app.IS_SHOW_GENERATE_ROUTER
 }
+
 // endregion
+
+function getSwitch() {
+  changedTheme()
+}
 </script>
 
 <template>
-  <div class="flex flex-col h-dvh">
-    <!--    路由导航-->
-    <ul class="mr-20 top-0 sticky hidden lg:flex" v-if="isShowGenerateRouter">
-      <li
-        class="list-none list-item p-1 m-1 transition-all select-none cursor-pointer hover:text-yellow-300 text-gray-700"
-        v-for="(subRoute, index) in subRouteLists"
-        :key="index"
-      >
+  <div class="flex flex-col min-h-screen">
+    <!-- 顶部导航 -->
+    <ul
+      class="sticky top-0 shadow-md z-10 flex flex-row items-center p-4 space-x-4"
+      v-if="isShowGenerateRouter"
+    >
+      <li class="list-none" v-for="(subRoute, index) in subRouteLists" :key="index">
         <ElButton :type="isActive(subRoute.path) ? 'primary' : ''" @click="listClickJump(subRoute)">
           {{ subRoute.displayName }}
         </ElButton>
       </li>
+      <!-- 顶部功能按钮 -->
+      <ElButton @click="getSwitch">切换主题</ElButton>
+      <button class="button">你好</button>
     </ul>
 
     <hr v-if="isShowGenerateRouter" />
@@ -92,3 +101,17 @@ if (nodeenv !== undefined && !StringUtils.isBlank(nodeenv) && nodeenv === app.DE
     </div>
   </div>
 </template>
+<style scoped>
+/* 修复高度相关问题，确保 sticky 有效果 */
+html,
+body,
+#app {
+  height: 100%;
+  margin: 0;
+}
+
+/* 使用 tailwindcss */
+.button {
+  @apply bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-700;
+}
+</style>

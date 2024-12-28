@@ -99,7 +99,7 @@ pub const IMAGE_COMPRESSION_RATIO: [ImageSize; 3] = [
 ];
 
 /// 图像压缩存储格式
-pub const IMAGE_COMPRESSION_STORAGE_FORMAT: ImageFormat = ImageFormat::WebP;
+pub const IMAGE_COMPRESSION_STORAGE_FORMAT: ImageFormat = ImageFormat::Jpeg;
 
 /// 默认缩略图大小
 pub const DEFAULT_THUMBNAIL_SIZE: u32 = IMAGE_COMPRESSION_RATIO[2].size;

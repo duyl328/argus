@@ -17,19 +17,35 @@ export class ImageShowInfo {
   isLoading = true
   isError = false
   errorMsg = ''
-  imgPath = ''
+  // 原图路径
+  sourceFilePath = ''
+  // 文件路径
+  filePath = ''
+  // 缩略图路径
   compressedPath = ''
   public isWhether: boolean = false
 
   constructor(
-    imgPath: string,
+    sourceFilePath = '',
+    filePath = '',
     isLoading: boolean = true,
     isError: boolean = false,
     errorMsg: string = ''
   ) {
+    this.sourceFilePath = sourceFilePath
+    this.filePath = filePath
     this.isLoading = isLoading
     this.isError = isError
     this.errorMsg = errorMsg
-    this.imgPath = imgPath
   }
+}
+
+/**
+ * 后端返回数据
+ */
+export type ImageDirRustInfo = {
+  // 原图路径
+  source_file_path: string
+  // 文件路径
+  file_path: string
 }

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, reactive, onMounted, watch } from 'vue'
+import { ref, reactive, onMounted, watch, onUnmounted } from 'vue'
 import { getDirAllSubfoldersFirstImg } from '@/services/folderService'
 import type { FolderImage } from '@/types/rusts/FolderImage'
 import EmitOrder from '@/constants/emitOrder'
@@ -38,18 +38,22 @@ function updateColumns() {
 onMounted(() => {
   let dirAllSubfoldersFirstImg = getDirAllSubfoldersFirstImg(
     // 'D:\\argus\\img\\jpg\\局部'
-    'D:\\argus\\img\\jpg'
-    // 'E:\\整合\\niannian 125套\\年年（vip套图）',
+    // 'D:\\argus\\img\\jpg'
+    'E:\\整合\\niannian 125套\\年年（vip套图）',
   )
 
   dirAllSubfoldersFirstImg.then((res) => {
     res.forEach((item) => {
-      let imageShowInfo = new ImageShowInfo(item)
+      let imageShowInfo = new ImageShowInfo(item.source_file_path, item.file_path)
       images.value.push(imageShowInfo)
     })
   })
 
   window.addEventListener('resize', updateColumns) // 监听窗口变化
+})
+
+onUnmounted(() => {
+  window.removeEventListener('resize', updateColumns) // 清除监听窗口变化
 })
 
 const setItemRef = (info: ImageShowInfo) => (el: Element) => {
@@ -59,7 +63,7 @@ const setItemRef = (info: ImageShowInfo) => (el: Element) => {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          getImageThumbnail(info.imgPath)
+          getImageThumbnail(info.sourceFilePath)
             .then((res) => {
               info.isLoading = false
               info.compressedPath = convertFileSrc(res)
@@ -95,7 +99,7 @@ updateColumns()
         v-for="(col, index) in images"
         :key="index"
         :ref="setItemRef(col)"
-        class="flex flex-col gap-4 p-1 m-2 rounded-lg shadow overflow-hidden"
+        class="flex flex-col gap-4 m-2 rounded-lg shadow overflow-hidden bg-image-show-text-bg"
       >
         <!--        Loading-->
         <!-- 使用 aspect-ratio 保证容器是方形的 -->
@@ -124,8 +128,14 @@ updateColumns()
           />
         </div>
 
-        <span>{{ col.imgPath }}</span>
-        <span>{{ col }}</span>
+        <!--        暂时不展示 tooltip -->
+        <!--        <el-tooltip :content="col.filePath" placement="bottom" >-->
+        <span
+          class="ellipsis mb-3 mr-3 ml-1 whitespace-nowrap overflow-hidden text-ellipsis text-left"
+        >
+          {{ col.filePath }}
+        </span>
+        <!--        </el-tooltip>-->
       </div>
     </div>
   </div>
@@ -134,10 +144,14 @@ updateColumns()
 <style scoped lang="scss">
 // 图片加载失败
 .img-load {
-  width: 40%;
-  height: 40%;
-  transform: translate(60%, 60%);
+  width: 50%;
+  height: 50%;
+  transform: translate(50%, 50%);
   @apply rounded-lg;
+}
+
+.ellipsis {
+  direction: rtl; /* 设置文本为右到左 */
 }
 </style>
 

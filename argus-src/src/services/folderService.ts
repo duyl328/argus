@@ -1,6 +1,7 @@
 import { invoke } from '@tauri-apps/api/core'
 import { getDirAllSubfoldersFirstImgCommand, insertPostCommand } from '@/constants/command'
 import type { FolderImage } from '@/types/rusts/FolderImage'
+import type { ImageDirRustInfo } from '@/models/ImageShowInfo'
 
 /**
  * Time:2024/12/14 15:55 56
@@ -17,7 +18,7 @@ import type { FolderImage } from '@/types/rusts/FolderImage'
  * 获取指定路径所有子路径的第一张图片，没有图片则不返回内容
  */
 export function getDirAllSubfoldersFirstImg(path: string) {
-  return invoke<string[]>(getDirAllSubfoldersFirstImgCommand, { path })
+  return invoke<ImageDirRustInfo[]>(getDirAllSubfoldersFirstImgCommand, { path })
 }
 
 
