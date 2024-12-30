@@ -38,7 +38,6 @@ const devPageViews: RouteRecordRaw[] = Object.keys(routes)
 
 console.log('自动生成路由', devPageViews)
 
-
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [

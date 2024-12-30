@@ -1,6 +1,5 @@
 <script setup lang="ts">
 // 切换主题
-import { toggleDark } from '@/utils/darkUtil'
 import { ref } from 'vue'
 import {
   Document,
@@ -10,13 +9,10 @@ import {
   ArrowLeft,
   ArrowRight,
   Folder,
-  FolderOpened, Files
+  FolderOpened,
+  Files
 } from '@element-plus/icons-vue'
 import { useRoute } from 'vue-router'
-
-function getSwitch() {
-  toggleDark()
-}
 
 const route = useRoute()
 // region tab 项
@@ -32,16 +28,10 @@ const handleClose = (key: string, keyPath: string[]) => {
 
 <template>
   <div class="flex w-full h-full flex-col">
-    <!--    顶部内容【功能区】-->
-    <div class="flex-shrink-0 whitespace-nowrap" v-if="false">
-      <ElButton @click="getSwitch">切换主题</ElButton>
-      <button class="button">你好</button>
-    </div>
-    <!--    底部主要内容-->
-    <div class="flex-1 flex overflow-hidden">
-      <!--    左侧 tab 栏展示-->
-      <div class="flex-shrink-0 overflow-hidden border-r">
-        <!--      控制列表展示状态-->
+    <div class="flex flex-1">
+      <!-- 左侧 Tab 栏 -->
+      <div class="sticky top-0 flex-shrink-0 border-r p-4 overflow-y-auto h-screen">
+        <!-- 控制列表展示状态 -->
         <el-radio-group v-model="isCollapse" class="mt-3 w-full" style="margin-bottom: 20px">
           <el-radio-button class="ml-auto mr-2" v-if="isCollapse" :value="false">
             <el-icon>
@@ -55,10 +45,10 @@ const handleClose = (key: string, keyPath: string[]) => {
           </el-radio-button>
         </el-radio-group>
 
-        <!--        tab 展示-->
+        <!-- Tab 菜单 -->
         <el-menu
           router
-          class=""
+          class="w-full"
           :default-active="route.path"
           :collapse="isCollapse"
           @open="handleOpen"
@@ -96,7 +86,6 @@ const handleClose = (key: string, keyPath: string[]) => {
             </el-icon>
             <template #title>
               <span>Navigator Three</span>
-              <!--              <span class="ml-12 mr-12">500</span>-->
             </template>
           </el-menu-item>
           <el-menu-item index="/home/folder">
@@ -119,22 +108,18 @@ const handleClose = (key: string, keyPath: string[]) => {
           </el-menu-item>
         </el-menu>
       </div>
-      <!--    右侧主要内容展示-->
-      <main class="flex-1 overflow-hidden">
+
+      <!-- 右侧内容区 -->
+      <div class="flex-1 overflow-auto p-4">
         <router-view />
-      </main>
+      </div>
     </div>
   </div>
 </template>
 
 <style scoped lang="scss">
-// 取消 element-plus tab 栏右侧边框展示
+/* 取消 element-plus tab 栏右侧边框展示 */
 .el-menu {
   border: none;
-}
-
-// 使用 tailwindcss
-.button {
-  @apply bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-700;
 }
 </style>
