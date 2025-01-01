@@ -88,6 +88,11 @@
 - [ ] rust 中或者说大多数语言中对于 exif 信息的读取非常的匮乏，比如rust或者java等只有 exiftool 较为常用但是不够方便，有机会可以构建一个自己的库
 - [ ] 使用 exiftool 完成 exif 信息的读取和编辑
 
+2025年1月1日
+- [ ] 定义exif结构体
+- [ ] 解析exiftool返回内容，将内容转换为结构体
+- [ ] exiftool保存exif到图片
+
 
 
 
