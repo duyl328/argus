@@ -38,7 +38,7 @@
   },
   "bundle": {
     "resources": {
-      "../src-python/dist/app.exe": "service/argus-app.exe"
+      "./resources/app.exe": "service/argus-app.exe"
     },
     "active": true,
     "targets": "all",
