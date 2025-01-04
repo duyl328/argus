@@ -6,3 +6,4 @@ pub mod image_command;
 pub mod log_command;
 pub mod photo_storage_command;
 pub mod post_command;
+pub mod global_task_command;

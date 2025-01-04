@@ -5,6 +5,7 @@ mod conf;
 mod constant;
 mod errors;
 mod explore;
+mod global_task_manager;
 mod http_client;
 mod models;
 mod server;
@@ -12,21 +13,30 @@ mod services;
 mod storage;
 mod structs;
 mod utils;
+use serde::{Deserialize, Serialize};
+use serde_json::Value;
 
 use crate::storage::connection;
 use crate::structs::config;
+use std::collections::HashMap;
 use std::error::Error;
 use std::sync::{Arc, Mutex};
 use std::thread;
 use std::time::Duration;
+use tauri::async_runtime;
 
+use crate::bg_services::{BgServes, SERVES};
+use crate::global_task_manager::{
+    start_image_loading_background_task, BackgroundImageLoadingTaskManager,
+    BackgroundTaskAutoManager,
+};
+use crate::structs::config::SYS_CONFIG;
 use crate::utils::file_util::create_folder;
 use tauri::{App, Emitter, Listener, Manager, State, WindowEvent};
 use tauri_plugin_shell::process::CommandEvent;
 use tauri_plugin_shell::ShellExt;
 use tauri_plugin_sql::{Migration, MigrationKind};
-use crate::bg_services::{BgServes, SERVES};
-use crate::structs::config::SYS_CONFIG;
+use tokio::sync::{mpsc, watch};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -90,6 +100,21 @@ pub fn run() {
 
     print!("配置完毕!!!!!!!!!!!!!");
 
+    // 启动后台算法
+    // 创建一个大小为 100 的通道
+    let (tx, rx) = mpsc::channel::<String>(100);
+    let (pause_tx, pause_rx) = watch::channel(false); // 创建暂停信号
+    let (auto_manager_tx, auto_manager_rx)
+        = watch::channel(BackgroundTaskAutoManager::default());
+    // 启动 Tokio 运行时
+    async_runtime::spawn(async {
+        start_image_loading_background_task(rx, pause_rx, auto_manager_rx).await;
+    });
+
+    let global_task_manager = tokio::sync::Mutex::new(
+        global_task_manager::BackgroundImageLoadingTaskManager::new(tx, pause_tx, auto_manager_tx),
+    );
+
     builder
         .plugin(tauri_plugin_sql::Builder::new().build())
         .plugin(tauri_plugin_dialog::init())
@@ -106,7 +131,11 @@ pub fn run() {
                 _ => {}
             }
         })
+        // Tauri 通过类型来管理和注入状态，因此在 .manage() 中注册的类型必须是唯一的。
+        // 如果你尝试注册同一个类型多次，Tauri 会抛出错误。
+    // 使用时一定要注意类型一定要一致 !!!
         .manage::<Option<tauri_plugin_shell::process::CommandChild>>(None)
+        .manage(global_task_manager)
         .invoke_handler(tauri::generate_handler![
             commands::command::greet,
             commands::command::http_example,
@@ -129,6 +158,9 @@ pub fn run() {
             commands::image_command::generate_save_thumbnail,
             commands::image_command::get_image_thumbnail_path,
             commands::image_command::get_image_thumbnail,
+            commands::global_task_command::add_task,
+            commands::global_task_command::pause_task,
+            commands::global_task_command::resume_task,
         ])
         .setup(main_setup())
         .run(tauri::generate_context!())
@@ -158,7 +190,8 @@ fn main_setup() -> fn(&mut App) -> Result<(), Box<dyn Error>> {
         // `sidecar()` 只需要文件名, 不像 JavaScript 中的整个路径
         println!("sidecar().");
 
-        bg_services::start_python_service();
+        // 启用 python 算法
+        bg_services::start_python_service().unwrap();
 
         // 打开控制台
         #[cfg(debug_assertions)] // 仅在调试版本中包含此代码
@@ -167,6 +200,7 @@ fn main_setup() -> fn(&mut App) -> Result<(), Box<dyn Error>> {
             window.open_devtools();
             window.close_devtools();
         }
+
         Ok(())
     }
 }

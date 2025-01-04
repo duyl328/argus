@@ -1,6 +1,5 @@
-use crate::conf;
 use crate::errors::AError;
-use crate::http_client::{get_base_url, HttpClient};
+use crate::http_client::{get_base_url};
 use crate::structs::config::SYS_CONFIG;
 use anyhow::{anyhow, Result};
 use futures::SinkExt;

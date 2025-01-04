@@ -2,22 +2,10 @@ use crate::utils::base64_util::base64_encode;
 use crate::utils::file_util::{
     file_exists, get_all_dir_img, get_all_img, get_all_subfolders, read_binary_file,
 };
-use crate::utils::img_util::ImageOperate;
 use crate::utils::json_util::JsonUtil;
-use base64::encode;
-use base64::engine::general_purpose::STANDARD;
 use base64::Engine;
-use image::imageops::FilterType;
 use serde::{Deserialize, Serialize};
-use std::fs;
-use std::io::Cursor;
-use std::io::Read;
-use std::path::{Path, PathBuf};
-use std::slice::RChunksExactMut;
-use std::sync::Arc;
 use tauri::{AppHandle, Emitter};
-use tokio::sync::{Mutex, Semaphore};
-use tokio::task::JoinSet;
 
 /// 返回图像绝对路径
 #[tauri::command]

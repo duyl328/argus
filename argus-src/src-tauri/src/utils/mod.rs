@@ -1,6 +1,8 @@
 pub mod base64_util;
 pub mod compressed_util;
 pub mod db_init_util;
+pub mod env_util;
+pub mod exif_utils;
 pub mod file_hash_util;
 pub mod file_util;
 pub mod hash_util;
@@ -9,4 +11,3 @@ pub mod img_util;
 pub mod json_util;
 pub mod system_state_util;
 pub mod time_util;
-pub  mod env_util;

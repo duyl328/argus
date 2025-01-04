@@ -19,22 +19,6 @@ const commands: CommandType[] = [
     ],
     result: null
   },
-  {
-    name: 'init_state',
-    description: 'init_state',
-    params: [
-      {
-        name: 'new_state',
-        label: 'new_state',
-        type: 'text',
-        // 默认值
-        value: 'init_state',
-        // 提示字段，如：【输入名称】
-        placeholder: 'string'
-      }
-    ],
-    result: null
-  }
 ]
 </script>
 
