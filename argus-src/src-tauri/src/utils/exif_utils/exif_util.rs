@@ -1,9 +1,11 @@
 use crate::utils::exif_utils::tag::Tag;
 use crate::utils::file_util;
 use anyhow::{anyhow, Result};
+use diesel::query_dsl::InternalJoinDsl;
 use futures::io::ReadExact;
 use futures::{AsyncReadExt, AsyncWriteExt};
 use lazy_static::lazy_static;
+use std::env;
 use std::fs::File;
 use std::io::{BufReader, Cursor, Read, Write};
 use std::sync::atomic::{AtomicBool, AtomicPtr, Ordering};
@@ -15,14 +17,14 @@ lazy_static! {
     static ref INIT: AtomicBool = AtomicBool::new(false);
 }
 
-trait ExifUtil {
+pub trait ExifUtil {
     /// 读取所有 exif 信息
     fn read_all_exif(&self, path: &str) -> Result<String>;
     fn write_exif(&self, exif_data: Vec<u8>);
 }
 
-struct ExifToolCmd;
-struct ArgusExif;
+pub(crate) struct ExifToolCmd;
+pub(crate) struct ArgusExif;
 
 impl ExifUtil for ExifToolCmd {
     fn read_all_exif(&self, path: &str) -> Result<String> {
@@ -32,7 +34,9 @@ impl ExifUtil for ExifToolCmd {
         }
 
         let exiftool_path = ExifToolCmd::get_exiftool_path();
+        println!("exiftool: {}", exiftool_path);
         if !file_util::file_exists(exiftool_path.as_str()) {
+            eprintln!("exiftool: {}", exiftool_path);
             return Err(anyhow!("执行文件 exiftool 不存在! "));
         }
 
@@ -73,8 +77,19 @@ impl ExifToolCmd {
         if !INIT.load(Ordering::Acquire) {
             let mut exif_cmd_path = EXIF_CMD_PATH.write().unwrap();
             if exif_cmd_path.is_none() {
-                let path =
-                    String::from("D:/argus/argus-src/src-tauri/resources/exiftool/exiftool.exe");
+                let path: String;
+                if cfg!(test) {
+                    path = String::from(
+                        "D:/argus/argus-src/src-tauri/resources/exiftool/exiftool.exe",
+                    );
+                } else {
+                    let current_exe_path = env::current_exe().unwrap();
+                    // 获取当前程序目录
+                    let current_dir = current_exe_path.parent().expect("父路径获取！");
+                    let app_path = current_dir.join("service").join("exiftool.exe");
+                    path = app_path.clone().display().to_string();
+                }
+
                 *exif_cmd_path = Some(path);
             }
             INIT.store(true, Ordering::Release); // 标记初始化完成
@@ -92,14 +107,15 @@ mod test {
     #[test]
     fn test_exif_tool() {
         let exif_tool = ExifToolCmd;
-        let exif_data =
-            exif_tool.read_all_exif("./resources/image/image-1-1.JPG").unwrap();
+        let exif_data = exif_tool
+            .read_all_exif("./resources/image/image-1-1.JPG")
+            .unwrap();
         let mut tag = Tag::new();
+        println!("{:?}", exif_data);
         let mt = tag.parse(&exif_data);
         let option = mt
             .entry_map
             .get(crate::utils::exif_utils::tag::ExifToolDesc::MAKE.exif_tool_desc);
         println!("{:?}", option);
     }
-
 }

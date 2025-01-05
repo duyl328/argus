@@ -13,6 +13,8 @@ mod services;
 mod storage;
 mod structs;
 mod utils;
+mod tuples;
+
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
@@ -139,6 +141,7 @@ pub fn run() {
         .invoke_handler(tauri::generate_handler![
             commands::command::greet,
             commands::command::http_example,
+            commands::command::get_exif_info,
             commands::file_command::get_image_absolute_path,
             commands::file_command::check_directory_access,
             commands::file_command::read_image_as_base64,

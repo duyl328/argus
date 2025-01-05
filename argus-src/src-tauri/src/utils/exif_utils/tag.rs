@@ -1,6 +1,9 @@
+use crate::tuples::Pair;
 use crate::utils::exif_utils::value::ValueType;
+use crate::utils::json_util::JsonUtil;
 use std::borrow::Cow;
 use std::collections::HashMap;
+use std::fmt::format;
 
 #[derive(Debug, Clone)]
 pub struct Tag {
@@ -21,6 +24,98 @@ impl Tag {
             }
         }
         self
+    }
+
+    pub fn get(&self, key: &str) -> Option<Cow<String>> {
+        self.entry_map.get(key).map(|v| Cow::Borrowed(v))
+    }
+// todo: 2025/1/4 22:29 GPS 信息的单独处理 （根据维度参考，具体维度信息，以及高度进行处理）
+    /// 打包数据
+    pub fn pack_tags(&self) -> anyhow::Result<String> {
+        let mut res: Vec<Pair<String, String>> = Vec::new();
+        ExifToolDesc::EXIF_INFOS_FRONT.map(|info| {
+            let ans = self.get(info.exif_tool_desc);
+            // 如果数据有值
+            if ans.is_some() {
+                res.push(Pair {
+                    first: info.dis.to_string(),
+                    second: ans.unwrap().to_string(),
+                });
+            }
+        });
+        JsonUtil::stringify(&res)
+    }
+    pub fn pack_front_tags(&self) -> anyhow::Result<String> {
+        let mut res: Vec<Pair<String, String>> = Vec::new();
+
+        // 使用一个辅助函数处理字段的封装
+        let mut add_tag = |desc: &ExifInfo, field_name: &str| {
+            self.get(desc.exif_tool_desc).map(|x| {
+                res.push(Pair {
+                    first: field_name.to_string(),
+                    second: x.to_string(),
+                });
+            });
+        };
+
+        // 封装通用的字段添加逻辑
+        add_tag(&ExifToolDesc::MAKE, ExifToolDesc::MAKE.dis);
+        add_tag(&ExifToolDesc::MODEL, ExifToolDesc::MODEL.dis);
+        add_tag(&ExifToolDesc::SOFTWARE, ExifToolDesc::SOFTWARE.dis);
+        add_tag(&ExifToolDesc::ARTIST, ExifToolDesc::ARTIST.dis);
+        add_tag(&ExifToolDesc::FLASH, ExifToolDesc::FLASH.dis);
+        add_tag(&ExifToolDesc::FOCAL_LENGTH, ExifToolDesc::FOCAL_LENGTH.dis);
+        add_tag(
+            &ExifToolDesc::EXPOSURE_TIME,
+            ExifToolDesc::EXPOSURE_TIME.dis,
+        );
+        add_tag(&ExifToolDesc::F_NUMBER, ExifToolDesc::F_NUMBER.dis);
+        add_tag(&ExifToolDesc::ISO, ExifToolDesc::ISO.dis);
+        add_tag(
+            &ExifToolDesc::EXPOSURE_PROGRAM,
+            ExifToolDesc::EXPOSURE_PROGRAM.dis,
+        );
+        add_tag(
+            &ExifToolDesc::METERING_MODE,
+            ExifToolDesc::METERING_MODE.dis,
+        );
+
+        // 焦距和等效焦距处理
+        if let Some(focal_length) = self.get(ExifToolDesc::FOCAL_LENGTH.exif_tool_desc) {
+            let mm35 = self
+                .get(ExifToolDesc::FOCAL_LENGTH_IN_35MM_FORMAT.exif_tool_desc)
+                .unwrap_or_default();
+            let ans = if mm35.is_empty() {
+                focal_length.to_string()
+            } else {
+                format!("{}, 等效焦距: {}", focal_length, mm35)
+            };
+
+            res.push(Pair {
+                first: ExifToolDesc::FOCAL_LENGTH.dis.to_string(),
+                second: ans,
+            });
+        }
+
+        // GPS 信息拼接
+        let gps_ans = [
+            self.get(ExifToolDesc::GPS_LATITUDE_REF.exif_tool_desc),
+            self.get(ExifToolDesc::GPS_LATITUDE.exif_tool_desc),
+            self.get(ExifToolDesc::GPS_LONGITUDE_REF.exif_tool_desc),
+            self.get(ExifToolDesc::GPS_LONGITUDE.exif_tool_desc),
+            self.get(ExifToolDesc::GPS_ALTITUDE.exif_tool_desc),
+        ]
+        .iter()
+        .filter_map(|x| x.clone().map(|cow| cow.to_string()))
+        .collect::<Vec<String>>()
+        .join(" "); // 连接所有字段
+
+        res.push(Pair {
+            first: "GPS 信息".to_string(),
+            second: gps_ans,
+        });
+
+        JsonUtil::stringify(&res)
     }
 
     pub fn new() -> Self {
@@ -144,6 +239,63 @@ impl ExifToolDesc {
         exif_tool_desc: "Flash",
         value_type: ValueType::String,
     };
+    pub const ARTIST: ExifInfo = ExifInfo {
+        dis: "艺术家",
+        exif_tool_desc: "Artist",
+        value_type: ValueType::String,
+    };
+
+    pub const EXIF_INFOS: [&'static ExifInfo; 23] = [
+        &Self::MAKE,
+        &Self::MODEL,
+        &Self::SOFTWARE,
+        &Self::EXPOSURE_TIME,
+        &Self::F_NUMBER,
+        &Self::ISO,
+        &Self::EXIF_VERSION,
+        &Self::DATE_TIME_ORIGINAL,
+        &Self::OFFSET_TIME,
+        &Self::MAX_APERTURE_VALUE,
+        &Self::FOCAL_LENGTH,
+        &Self::FOCAL_LENGTH_IN_35MM_FORMAT,
+        &Self::IMAGE_WIDTH,
+        &Self::IMAGE_HEIGHT,
+        &Self::GPS_LATITUDE_REF,
+        &Self::GPS_LONGITUDE_REF,
+        &Self::GPS_LATITUDE,
+        &Self::GPS_LONGITUDE,
+        &Self::GPS_ALTITUDE,
+        &Self::EXPOSURE_PROGRAM,
+        &Self::METERING_MODE,
+        &Self::FLASH,
+        &Self::ARTIST,
+    ];
+    /// 前端展示的数据
+    pub const EXIF_INFOS_FRONT: [&'static ExifInfo; 23] = [
+        &Self::MAKE,
+        &Self::MODEL,
+        &Self::SOFTWARE,
+        &Self::EXPOSURE_TIME,
+        &Self::F_NUMBER,
+        &Self::ISO,
+        &Self::EXIF_VERSION,
+        &Self::DATE_TIME_ORIGINAL,
+        &Self::OFFSET_TIME,
+        &Self::MAX_APERTURE_VALUE,
+        &Self::FOCAL_LENGTH,
+        &Self::FOCAL_LENGTH_IN_35MM_FORMAT,
+        &Self::IMAGE_WIDTH,
+        &Self::IMAGE_HEIGHT,
+        &Self::GPS_LATITUDE_REF,
+        &Self::GPS_LONGITUDE_REF,
+        &Self::GPS_LATITUDE,
+        &Self::GPS_LONGITUDE,
+        &Self::GPS_ALTITUDE,
+        &Self::EXPOSURE_PROGRAM,
+        &Self::METERING_MODE,
+        &Self::FLASH,
+        &Self::ARTIST,
+    ];
 }
 
 #[derive(Clone, Debug)]

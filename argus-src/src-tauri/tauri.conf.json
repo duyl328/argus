@@ -38,7 +38,8 @@
   },
   "bundle": {
     "resources": {
-      "./resources/app.exe": "service/argus-app.exe"
+      "./resources/app.exe": "service/argus-app.exe",
+      "./resources/exiftool/exiftool.exe": "service/exiftool.exe"
     },
     "active": true,
     "targets": "all",
