@@ -18,6 +18,7 @@ lazy_static! {
 }
 
 pub trait ExifUtil {
+    // todo: 2025/1/6 13:39 基础信息读取
     /// 读取所有 exif 信息
     fn read_all_exif(&self, path: &str) -> Result<String>;
     fn write_exif(&self, exif_data: Vec<u8>);

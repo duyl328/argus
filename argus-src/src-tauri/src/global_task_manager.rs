@@ -127,7 +127,6 @@ pub async fn start_image_loading_background_task(
                     }
                 } else {
                     wait_counter += 1; // 递增等待轮数
-                    println!("No tasks, waiting for new tasks... (round: {})", wait_counter);
                 }
             },
             // 监听 pause_rx 的变化，如果接收到暂停命令，更新 paused 状态

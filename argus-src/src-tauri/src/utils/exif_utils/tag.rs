@@ -1,4 +1,5 @@
 use crate::tuples::Pair;
+use crate::utils::exif_utils::gps_util::GpsUtil;
 use crate::utils::exif_utils::value::ValueType;
 use crate::utils::json_util::JsonUtil;
 use std::borrow::Cow;
@@ -29,7 +30,7 @@ impl Tag {
     pub fn get(&self, key: &str) -> Option<Cow<String>> {
         self.entry_map.get(key).map(|v| Cow::Borrowed(v))
     }
-// todo: 2025/1/4 22:29 GPS 信息的单独处理 （根据维度参考，具体维度信息，以及高度进行处理）
+    // todo: 2025/1/4 22:29 GPS 信息的单独处理 （根据维度参考，具体维度信息，以及高度进行处理）
     /// 打包数据
     pub fn pack_tags(&self) -> anyhow::Result<String> {
         let mut res: Vec<Pair<String, String>> = Vec::new();
@@ -98,24 +99,65 @@ impl Tag {
         }
 
         // GPS 信息拼接
-        let gps_ans = [
-            self.get(ExifToolDesc::GPS_LATITUDE_REF.exif_tool_desc),
-            self.get(ExifToolDesc::GPS_LATITUDE.exif_tool_desc),
-            self.get(ExifToolDesc::GPS_LONGITUDE_REF.exif_tool_desc),
-            self.get(ExifToolDesc::GPS_LONGITUDE.exif_tool_desc),
-            self.get(ExifToolDesc::GPS_ALTITUDE.exif_tool_desc),
-        ]
-        .iter()
-        .filter_map(|x| x.clone().map(|cow| cow.to_string()))
-        .collect::<Vec<String>>()
-        .join(" "); // 连接所有字段
-
+        let gps_info = self.parse_gps_tags().unwrap_or_else(|err| String::from(""));
         res.push(Pair {
             first: "GPS 信息".to_string(),
-            second: gps_ans,
+            second: gps_info,
         });
 
         JsonUtil::stringify(&res)
+    }
+
+    /// 解析 gps 数据【获取 gps 数据，并根据有无转换为文字信息】
+    pub fn parse_gps_tags(&self) -> anyhow::Result<String> {
+        // 经度
+        let longitude: String;
+        // 维度
+        let dimensions;
+        // 海拔
+        let altitude;
+
+        let gps_latitude = self.get(ExifToolDesc::GPS_LATITUDE.exif_tool_desc);
+        if gps_latitude.is_some() {
+            let gc = gps_latitude.unwrap_or_default().to_string();
+            let string = GpsUtil::resolve_coordinate(gc);
+
+            let gps_latitude_ref = self.get(ExifToolDesc::GPS_LATITUDE_REF.exif_tool_desc);
+            let gc_ref = if gps_latitude_ref.is_some() {
+                GpsUtil::resolve_direction(gps_latitude_ref.unwrap().to_string())
+            } else {
+                String::from("")
+            };
+
+            longitude = format!("{} {}", gc_ref, string)
+        } else {
+            longitude = String::from("")
+        }
+
+        let gps_longitude = self.get(ExifToolDesc::GPS_LONGITUDE.exif_tool_desc);
+        if gps_longitude.is_some() {
+            let gc = gps_longitude.unwrap_or_default().to_string();
+            let string = GpsUtil::resolve_coordinate(gc);
+
+            let gps_latitude_ref = self.get(ExifToolDesc::GPS_LONGITUDE_REF.exif_tool_desc);
+            let gc_ref = if gps_latitude_ref.is_some() {
+                GpsUtil::resolve_direction(gps_latitude_ref.unwrap().to_string())
+            } else {
+                String::from("")
+            };
+
+            dimensions = format!("{} {}", gc_ref, string)
+        } else {
+            dimensions = String::from("")
+        }
+
+        let gps_altitude = self
+            .get(ExifToolDesc::GPS_ALTITUDE.exif_tool_desc)
+            .unwrap_or_default()
+            .to_string();
+        altitude = GpsUtil::resolve_altitude(gps_altitude);
+
+        Ok(format!("{},{},{}", longitude, dimensions, altitude))
     }
 
     pub fn new() -> Self {
@@ -125,6 +167,34 @@ impl Tag {
         }
     }
 }
+
+/// Represents gps information stored in [`GPSInfo`](crate::ExifTag::GPSInfo)
+/// subIFD.
+// #[derive(Debug, Default, Clone, PartialEq, Eq)]
+// pub struct GPSInfo {
+//     /// N, S
+//     pub latitude_ref: char,
+//     /// degree, minute, second,
+//     pub latitude: LatLng,
+//
+//     /// E, W
+//     pub longitude_ref: char,
+//     /// degree, minute, second,
+//     pub longitude: LatLng,
+//
+//     /// 0: Above Sea Level
+//     /// 1: Below Sea Level
+//     pub altitude_ref: u8,
+//     /// meters
+//     pub altitude: URational,
+//
+//     /// Speed unit
+//     /// - K: kilometers per hour
+//     /// - M: miles per hour
+//     /// - N: knots
+//     pub speed_ref: Option<char>,
+//     pub speed: Option<URational>,
+// }
 
 pub struct ExifToolDesc {}
 

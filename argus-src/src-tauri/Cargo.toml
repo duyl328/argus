@@ -84,6 +84,8 @@ tauri-plugin-devtools   = "2.0.0"
 # http 通信服务
 reqwest                 = "0.12.9"
 lazy_static             = "1.5.0"
+# 正则匹配
+regex                   = "1.11.1"
 
 
 [dev-dependencies]
