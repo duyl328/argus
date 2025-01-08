@@ -1,1 +1,0 @@
-CREATE TABLE users1 (id integer PRIMARY KEY, bool_field bool NOT NULL);

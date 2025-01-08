@@ -25,3 +25,5 @@ dist-ssr
 *.sln
 *.sw?
 /temp/
+!/src-python-v1/image_processing/models/
+!/src-tauri/resources/exiftool-13.10_64/

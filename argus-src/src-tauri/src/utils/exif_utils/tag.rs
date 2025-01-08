@@ -14,6 +14,7 @@ pub struct Tag {
     pub entry_map: HashMap<String, String>,
 }
 
+/// 图像的 exif 信息对象
 pub struct ImgExif {
     /// 相机制造商
     make: String,
@@ -69,7 +70,7 @@ impl Tag {
     pub fn get(&self, key: &str) -> Option<Cow<String>> {
         self.entry_map.get(key).map(|v| Cow::Borrowed(v))
     }
-    // todo: 2025/1/4 22:29 GPS 信息的单独处理 （根据维度参考，具体维度信息，以及高度进行处理）
+
     /// 打包数据
     pub fn pack_tags(&self) -> anyhow::Result<String> {
         let mut res: Vec<Pair<String, String>> = Vec::new();
@@ -150,7 +151,27 @@ impl Tag {
     }
 
     /// 打包为对象
-    pub fn pack_object(&self) {
+    pub fn pack_object(&self)->ImgExif {
+        let make:String;
+        let model:String;
+        let software:String;
+        let exposure_time:String;
+        let flash:String;
+        let f_number:String;
+        let iso:String;
+        let date_time_original:String;
+        let offset_time:String;
+        let max_aperture_value:String;
+        let focal_length:String;
+        let image_width:String;
+        let image_height:String;
+        let gps_info:String;
+        let exposure_program:String;
+        let metering_mode:String;
+        let artist:String;
+
+        
+
         todo!()
     }
 
