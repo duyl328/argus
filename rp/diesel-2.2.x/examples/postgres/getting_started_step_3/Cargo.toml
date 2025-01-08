@@ -1,0 +1,32 @@
+[package]
+name = "diesel_demo_step_3_pg"
+version = "0.1.0"
+edition = "2018"
+publish = false
+
+[dependencies]
+diesel = { version = "2.1.0", path = "../../../diesel", features = ["postgres"] }
+dotenvy = "0.15"
+
+[[bin]]
+name = "show_posts"
+doc = false
+
+[[bin]]
+name = "write_post"
+doc = false
+
+[[bin]]
+name = "delete_post"
+doc = false
+
+[[bin]]
+name = "publish_post"
+doc = false
+
+[[bin]]
+name = "get_post"
+doc = false
+
+[lib]
+doc = false

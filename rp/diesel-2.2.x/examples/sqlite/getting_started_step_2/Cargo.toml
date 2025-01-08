@@ -1,0 +1,22 @@
+[package]
+name = "diesel_demo_step_2_sqlite"
+version = "0.1.0"
+license = "MIT OR Apache-2.0"
+edition = "2018"
+publish = false
+
+[dependencies]
+diesel = { version = "2.1.0", path = "../../../diesel", features = ["sqlite", "returning_clauses_for_sqlite_3_35"] }
+dotenvy = "0.15"
+libsqlite3-sys = { workspace = true, features = ["bundled"] }
+
+[[bin]]
+name = "show_posts"
+doc = false
+
+[[bin]]
+name = "write_post"
+doc = false
+
+[lib]
+doc = false

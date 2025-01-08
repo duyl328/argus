@@ -14,6 +14,45 @@ pub struct Tag {
     pub entry_map: HashMap<String, String>,
 }
 
+pub struct ImgExif {
+    /// 相机制造商
+    make: String,
+    /// 相机型号
+    model: String,
+    /// 软件版本
+    software: String,
+    /// 曝光时间
+    exposure_time: String,
+    /// 闪光灯
+    flash: String,
+    /// 光圈
+    f_number: String,
+    /// ISO
+    iso: String,
+    /// exif 信息版本
+    // exif_version:String,
+    /// 创建日期
+    date_time_original: String,
+    /// 时区（+8）
+    offset_time: u32,
+    /// 最大光圈值
+    max_aperture_value: String,
+    /// 焦距
+    focal_length: String,
+    /// 宽度
+    image_width: String,
+    /// 长度
+    image_height: String,
+    /// gps 信息
+    gps_info: String,
+    /// 曝光程序
+    exposure_program: String,
+    /// 测光模式
+    metering_mode: String,
+    /// 作者（艺术家）
+    artist: String,
+}
+
 impl Tag {
     pub fn parse(mut self, info: &str) -> Self {
         for line in info.lines() {
@@ -46,6 +85,8 @@ impl Tag {
         });
         JsonUtil::stringify(&res)
     }
+
+    /// 打包为前端展示字段
     pub fn pack_front_tags(&self) -> anyhow::Result<String> {
         let mut res: Vec<Pair<String, String>> = Vec::new();
 
@@ -108,6 +149,11 @@ impl Tag {
         JsonUtil::stringify(&res)
     }
 
+    /// 打包为对象
+    pub fn pack_object(&self) {
+        todo!()
+    }
+
     /// 解析 gps 数据【获取 gps 数据，并根据有无转换为文字信息】
     pub fn parse_gps_tags(&self) -> anyhow::Result<String> {
         // 经度
@@ -167,34 +213,6 @@ impl Tag {
         }
     }
 }
-
-/// Represents gps information stored in [`GPSInfo`](crate::ExifTag::GPSInfo)
-/// subIFD.
-// #[derive(Debug, Default, Clone, PartialEq, Eq)]
-// pub struct GPSInfo {
-//     /// N, S
-//     pub latitude_ref: char,
-//     /// degree, minute, second,
-//     pub latitude: LatLng,
-//
-//     /// E, W
-//     pub longitude_ref: char,
-//     /// degree, minute, second,
-//     pub longitude: LatLng,
-//
-//     /// 0: Above Sea Level
-//     /// 1: Below Sea Level
-//     pub altitude_ref: u8,
-//     /// meters
-//     pub altitude: URational,
-//
-//     /// Speed unit
-//     /// - K: kilometers per hour
-//     /// - M: miles per hour
-//     /// - N: knots
-//     pub speed_ref: Option<char>,
-//     pub speed: Option<URational>,
-// }
 
 pub struct ExifToolDesc {}
 
@@ -377,7 +395,6 @@ pub struct ExifInfo {
     pub value_type: ValueType,
 }
 
-// todo: 2025/1/2 21:05 该部分目前只关心 gps ，暂不拓展
 /*
 现在的目的是实现结构体的定义和现有数据的匹配，数据的解析等功能暂不考虑
 */
