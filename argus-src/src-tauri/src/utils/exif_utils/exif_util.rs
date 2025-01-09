@@ -1,4 +1,4 @@
-use crate::utils::exif_utils::tag::Tag;
+use crate::utils::exif_utils::tag::Tags;
 use crate::utils::file_util;
 use anyhow::{anyhow, Result};
 use diesel::query_dsl::InternalJoinDsl;
@@ -111,7 +111,7 @@ mod test {
         let exif_data = exif_tool
             .read_all_exif("./resources/image/image-1-1.JPG")
             .unwrap();
-        let mut tag = Tag::new();
+        let mut tag = Tags::new();
         println!("{:?}", exif_data);
         let mt = tag.parse(&exif_data);
         let option = mt

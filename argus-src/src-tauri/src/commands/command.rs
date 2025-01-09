@@ -5,7 +5,7 @@ use crate::server::example;
 use tauri_plugin_dialog::DialogExt;
 use crate::utils::exif_utils::exif_util;
 use crate::utils::exif_utils::exif_util::ExifUtil;
-use crate::utils::exif_utils::tag::Tag;
+use crate::utils::exif_utils::tag::Tags;
 
 #[tauri::command]
 pub fn greet(name: &str) -> String {
@@ -40,7 +40,7 @@ pub async fn http_example() {
 pub async fn get_exif_info(path:String) -> Result<String, String> {
     let exif_tool = exif_util::ExifToolCmd;
     let exif_info = exif_tool.read_all_exif(&*path).expect("图像信息读取失败！");
-    let mut tag = Tag::new();
+    let mut tag = Tags::new();
     let mt = tag.parse(&exif_info);
     let result = mt.pack_front_tags().expect("数据打包失败！");
     Ok(result)
