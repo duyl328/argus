@@ -13,7 +13,7 @@ pub trait ExifValueConverter {
 impl ExifValueConverter for ValueType {
     fn convert(value: &str)->Self  {
         value.to_string();
-        return ValueType::String;
+        ValueType::String
     }
 }
 // impl ExifValueConverter for ValueType::Gps {

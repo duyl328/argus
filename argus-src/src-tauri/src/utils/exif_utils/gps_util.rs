@@ -1,12 +1,7 @@
 use crate::utils::exif_utils::tag::{ExifToolDesc, Tags};
-use crate::utils::exif_utils::value::ValueType::Gps;
-use anyhow::{anyhow, Result};
-use diesel::dsl::min;
+use anyhow::Result;
 use regex::Regex;
-use rusqlite::ffi::fts5_api;
-use std::cell::BorrowError;
 use std::fmt;
-use tokio::time::sleep;
 
 /// exif 中的 gps 信息
 #[derive(Default, Clone, Debug)]
@@ -41,24 +36,24 @@ impl fmt::Display for GpsInfo {
         let mut ans_str = String::new();
         // 纬度
         if let Some(x) = &self.latitude_ref {
-            &ans_str.push_str(x.to_string().as_str());
+            ans_str.push_str(x.to_string().as_str());
         }
         if let Some(x) = &self.latitude {
-            &ans_str.push_str(x.to_string().as_str());
+            ans_str.push_str(x.to_string().as_str());
         }
         // 经度
         if let Some(x) = &self.longitude_ref {
-            &ans_str.push_str(x.to_string().as_str());
+            ans_str.push_str(x.to_string().as_str());
         }
         if let Some(x) = &self.longitude {
-            &ans_str.push_str(x.to_string().as_str());
+            ans_str.push_str(x.to_string().as_str());
         }
         // 海拔
         if let Some(x) = &self.altitude_ref {
-            &ans_str.push_str(x.to_string().as_str());
+            ans_str.push_str(x.to_string().as_str());
         }
         if let Some(x) = &self.altitude {
-            &ans_str.push_str(x.to_string().as_str());
+            ans_str.push_str(x.to_string().as_str());
         }
         write!(f, "{}", ans_str)
     }
@@ -213,7 +208,7 @@ impl DMS {
     pub fn parse_with_exiftool(dms: &str) -> Option<DMS> {
         // 匹配度数、分度、秒度和方向
         let re = Regex::new(r"(\d+) deg (\d+)' (\d+\.\d+)").unwrap();
-        let x: Vec<_> = dms
+        let _: Vec<_> = dms
             .split("\"")
             .map(str::trim) // 去除每部分的前后空白
             .collect();

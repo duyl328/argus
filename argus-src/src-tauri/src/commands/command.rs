@@ -1,11 +1,9 @@
 use crate::api::example::get_example;
 use crate::http_client::HttpClient;
-use crate::server;
-use crate::server::example;
-use tauri_plugin_dialog::DialogExt;
 use crate::utils::exif_utils::exif_util;
 use crate::utils::exif_utils::exif_util::ExifUtil;
 use crate::utils::exif_utils::tag::Tags;
+use tauri_plugin_dialog::DialogExt;
 
 #[tauri::command]
 pub fn greet(name: &str) -> String {
