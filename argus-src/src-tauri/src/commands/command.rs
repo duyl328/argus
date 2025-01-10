@@ -40,7 +40,7 @@ pub async fn http_example() {
 pub async fn get_exif_info(path:String) -> Result<String, String> {
     let exif_tool = exif_util::ExifToolCmd;
     let exif_info = exif_tool.read_all_exif(&*path).expect("图像信息读取失败！");
-    let mut tag = Tags::new();
+    let mut tag = Tags::new(true);
     let mt = tag.parse(&exif_info);
     let result = mt.pack_front_tags().expect("数据打包失败！");
     Ok(result)

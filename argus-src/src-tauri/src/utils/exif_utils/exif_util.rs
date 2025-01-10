@@ -111,7 +111,7 @@ mod test {
         let exif_data = exif_tool
             .read_all_exif("./resources/image/image-1-1.JPG")
             .unwrap();
-        let mut tag = Tags::new();
+        let mut tag = Tags::new(true);
         println!("{:?}", exif_data);
         let mt = tag.parse(&exif_data);
         let option = mt

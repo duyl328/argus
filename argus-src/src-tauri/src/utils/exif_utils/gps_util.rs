@@ -24,7 +24,7 @@ pub struct GpsInfo {
     /// 海拔
     pub altitude_ref: Option<SeaLevel>,
     /// 海拔
-    pub altitude: Option<f64>,
+    pub altitude: Option<String>,
 
     /// 速度单位【不支持速度】
     /// - K: kilometers per hour
@@ -35,6 +35,33 @@ pub struct GpsInfo {
 
     /// 遇到错误时继续
     continue_on_error: bool,
+}
+impl fmt::Display for GpsInfo {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let mut ans_str = String::new();
+        // 纬度
+        if let Some(x) = &self.latitude_ref {
+            &ans_str.push_str(x.to_string().as_str());
+        }
+        if let Some(x) = &self.latitude {
+            &ans_str.push_str(x.to_string().as_str());
+        }
+        // 经度
+        if let Some(x) = &self.longitude_ref {
+            &ans_str.push_str(x.to_string().as_str());
+        }
+        if let Some(x) = &self.longitude {
+            &ans_str.push_str(x.to_string().as_str());
+        }
+        // 海拔
+        if let Some(x) = &self.altitude_ref {
+            &ans_str.push_str(x.to_string().as_str());
+        }
+        if let Some(x) = &self.altitude {
+            &ans_str.push_str(x.to_string().as_str());
+        }
+        write!(f, "{}", ans_str)
+    }
 }
 
 impl GpsInfo {
@@ -50,7 +77,7 @@ impl GpsInfo {
         let longitude: Option<DMS>;
 
         let altitude_ref: Option<SeaLevel> = Some(SeaLevel::AboveSeaLevel);
-        let altitude: Option<f64>;
+        let altitude: Option<String>;
 
         // 经度
         latitude_ref = if let Some(x) = tags.get(ExifToolDesc::GPS_LATITUDE_REF.exif_tool_desc) {
@@ -83,7 +110,7 @@ impl GpsInfo {
                 if result.is_err() {
                     None
                 } else {
-                    Some(result.unwrap_or_default())
+                    Some(result?)
                 }
             } else {
                 Some(result?)
@@ -107,7 +134,7 @@ impl GpsInfo {
         longitude_ref: Option<Direction>,
         longitude: Option<DMS>,
         altitude_ref: Option<SeaLevel>,
-        altitude: Option<f64>,
+        altitude: Option<String>,
     ) -> Self {
         Self {
             latitude_ref,
@@ -166,6 +193,13 @@ pub struct DMS {
     pub seconds: f64, // 秒（float）
 }
 
+impl fmt::Display for DMS {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let str = format!("{}°{}′{}″", self.degrees, self.minutes, self.seconds);
+        write!(f, "{}", str)
+    }
+}
+
 impl DMS {
     pub fn new(degrees: i32, minutes: i32, seconds: f64) -> Self {
         DMS {
@@ -209,17 +243,27 @@ pub enum SeaLevel {
     /// 海平面以上
     #[default]
     AboveSeaLevel,
-    /// 海平面一下
+    /// 海平面以上
     BelowSeaLevel,
+}
+
+impl fmt::Display for SeaLevel {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let s = match *self {
+            SeaLevel::AboveSeaLevel => "",
+            SeaLevel::BelowSeaLevel => "-",
+        };
+        write!(f, "{}", s)
+    }
 }
 
 impl SeaLevel {
     /// 解析海拔
-    pub fn parse_with_exiftool(coordinate: &str) -> Result<f64> {
+    pub fn parse_with_exiftool(coordinate: &str) -> Result<String> {
         let string = coordinate
             .replace(" m ", "m")
             .replace("Above Sea Level", "");
-        string.parse()
+        Ok(string)
     }
 }
 
@@ -230,7 +274,7 @@ mod tests {
     fn test1() {
         let str = "114 deg 9' 56.09\" E";
         let string = DMS::parse_with_exiftool(&str);
-        println!("{:?}", string)
+        println!("{:?}", string.unwrap().to_string())
     }
 
     #[test]
