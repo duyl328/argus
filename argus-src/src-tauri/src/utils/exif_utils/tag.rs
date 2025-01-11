@@ -155,28 +155,31 @@ impl Tags {
         let exposure_program: Option<String>;
         let metering_mode: Option<String>;
         let artist: Option<String>;
+        let rating: Option<u32>;
 
         make = self.get(ExifToolDesc::MAKE.exif_tool_desc);
         model = self.get(ExifToolDesc::MODEL.exif_tool_desc);
         software = self.get(ExifToolDesc::SOFTWARE.exif_tool_desc);
         artist = self.get(ExifToolDesc::ARTIST.exif_tool_desc);
         flash = self.get(ExifToolDesc::FLASH.exif_tool_desc);
-        focal_length = self.parse_number_data1(ExifToolDesc::FOCAL_LENGTH.exif_tool_desc)?;
+        focal_length = self.parse_number_data(ExifToolDesc::FOCAL_LENGTH.exif_tool_desc)?;
         // 解析曝光时间信息
         exposure_time = self.parse_exposure_time();
         // 光圈数解析
-        f_number = self.parse_number_data1(ExifToolDesc::F_NUMBER.exif_tool_desc)?;
-        image_width = self.parse_number_data1(ExifToolDesc::IMAGE_WIDTH.exif_tool_desc)?;
-        image_height = self.parse_number_data1(ExifToolDesc::IMAGE_HEIGHT.exif_tool_desc)?;
+        f_number = self.parse_number_data(ExifToolDesc::F_NUMBER.exif_tool_desc)?;
+        image_width = self.parse_number_data(ExifToolDesc::IMAGE_WIDTH.exif_tool_desc)?;
+        image_height = self.parse_number_data(ExifToolDesc::IMAGE_HEIGHT.exif_tool_desc)?;
         max_aperture_value =
-            self.parse_number_data1(ExifToolDesc::MAX_APERTURE_VALUE.exif_tool_desc)?;
-        iso = self.parse_number_data1(ExifToolDesc::ISO.exif_tool_desc)?;
+            self.parse_number_data(ExifToolDesc::MAX_APERTURE_VALUE.exif_tool_desc)?;
+        iso = self.parse_number_data(ExifToolDesc::ISO.exif_tool_desc)?;
         exposure_program = self.get(ExifToolDesc::EXPOSURE_PROGRAM.exif_tool_desc);
         metering_mode = self.get(ExifToolDesc::METERING_MODE.exif_tool_desc);
         // 解析 GPS
         gps_info = Option::from(GpsInfo::parse(self, self.continue_on_error)?);
         // 解析时间
         date_time_original = self.parse_create_time();
+        // 评分
+        rating = self.parse_number_data(ExifToolDesc::RATING.exif_tool_desc)?;
         Ok(ImgExif {
             make,
             model,
@@ -194,6 +197,7 @@ impl Tags {
             exposure_program,
             metering_mode,
             artist,
+            rating
         })
     }
 
@@ -218,27 +222,7 @@ impl Tags {
         Some(date_time.with_timezone(&offset).with_timezone(&Utc))
     }
 
-    // 解析数字类型数据
-    // pub fn parse_number_data<T>(&self, str: &str) -> Result<Option<T>> {
-    //     let ans = self.get(str);
-    //
-    //     if let Some(x) = ans {
-    //         let s: Result<T> = x.parse();
-    //         if self.continue_on_error {
-    //             if s.is_err() {
-    //                 Ok(None)
-    //             } else {
-    //                 Ok(Some(s.unwrap_or_default()))
-    //             }
-    //         } else {
-    //             Ok(Some(s?))
-    //         }
-    //     } else {
-    //         Ok(None)
-    //     }
-    // }
-
-    pub fn parse_number_data1<T>(&self, str: &str) -> Result<Option<T>>
+    pub fn parse_number_data<T>(&self, str: &str) -> Result<Option<T>>
     where
         T: FromStr + Default,
     {
@@ -335,6 +319,8 @@ pub struct ImgExif {
     metering_mode: Option<String>,
     /// 作者（艺术家）
     artist: Option<String>,
+    /// 等级【评分】
+    rating: Option<u32>,
 }
 
 impl fmt::Display for ImgExif {
@@ -401,6 +387,9 @@ impl fmt::Display for ImgExif {
         }
 
         if let Some(x) = &self.artist {
+            ans_str.push_str(x.to_string().as_str());
+        }
+        if let Some(x) = &self.rating {
             ans_str.push_str(x.to_string().as_str());
         }
         write!(f, "{}", ans_str)
@@ -525,8 +514,13 @@ impl ExifToolDesc {
         exif_tool_desc: "Artist",
         value_type: ValueType::String,
     };
+    pub const RATING: ExifInfo = ExifInfo {
+        dis: "评级",
+        exif_tool_desc: "Rating",
+        value_type: ValueType::String,
+    };
 
-    pub const EXIF_INFOS: [&'static ExifInfo; 23] = [
+    pub const EXIF_INFOS: [&'static ExifInfo; 24] = [
         &Self::MAKE,
         &Self::MODEL,
         &Self::SOFTWARE,
@@ -550,9 +544,10 @@ impl ExifToolDesc {
         &Self::METERING_MODE,
         &Self::FLASH,
         &Self::ARTIST,
+        &Self::RATING,
     ];
     /// 前端展示的数据
-    pub const EXIF_INFOS_FRONT: [&'static ExifInfo; 23] = ExifToolDesc::EXIF_INFOS;
+    pub const EXIF_INFOS_FRONT: [&'static ExifInfo; 24] = ExifToolDesc::EXIF_INFOS;
 }
 
 #[derive(Clone, Debug)]
