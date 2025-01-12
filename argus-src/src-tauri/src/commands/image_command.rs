@@ -1,4 +1,3 @@
-use crate::constant;
 use crate::constant::{
     DEFAULT_THUMBNAIL_SIZE, IMAGE_COMPRESSION_RATIO, IMAGE_COMPRESSION_STORAGE_FORMAT,
 };
@@ -7,25 +6,16 @@ use crate::structs::config::SYS_CONFIG;
 use crate::utils::file_hash_util::FileHashUtils;
 use crate::utils::file_util::{get_all_dir_img, get_all_subfolders};
 use crate::utils::img_util::ImageOperate;
-use crate::utils::{file_hash_util, file_util, image_format_util, img_util};
+use crate::utils::{file_util, image_format_util};
 use anyhow::Result;
-use image::imageops::FilterType;
-use serde::__private::ser::constrain;
-use serde::{Deserialize, Serialize};
-use std::env;
-use std::ptr::hash;
-use std::sync::Arc;
-use tauri::{AppHandle, Emitter};
-use tokio::sync::{Mutex, Semaphore};
 use tokio::task;
-use tokio::task::JoinSet;
 
 /// 压缩图片地址获取
 ///
 /// 直接计算指定图片，如果不存在则压缩创建该图片后返回
 /// 如果指定大小的图片未定义，则使用默认缩放大小
 #[tauri::command]
-pub fn get_compress_image_address(path: String, size: u32) -> String {
+pub fn get_compress_image_address(_path: String, size: u32) -> String {
     // 计算缩略图大小
     let mut image_size = DEFAULT_THUMBNAIL_SIZE;
     for x in IMAGE_COMPRESSION_RATIO {
@@ -113,6 +103,7 @@ pub async fn get_image_thumbnail_path(image_path: String) -> Result<String, Stri
 /// 获取指定图片的缩略图【如果不存在，直接创建】
 #[tauri::command]
 pub async fn get_image_thumbnail(image_path: String) -> Result<String, String> {
+    log::debug!("读取缩略图");
     let string = ImageOperate::designate_level_image_compression(
         image_path,
         IMAGE_COMPRESSION_STORAGE_FORMAT,

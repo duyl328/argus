@@ -1,11 +1,5 @@
-use crate::errors::AError;
-use crate::http_client::{get_base_url};
-use crate::structs::config::SYS_CONFIG;
-use anyhow::{anyhow, Result};
-use futures::SinkExt;
-use reqwest::ClientBuilder;
-use serde_json::json;
-use std::time::Duration;
+use crate::http_client::get_base_url;
+use anyhow::Result;
 
 pub async fn get_example() -> Result<String> {
     let base_url = get_base_url();

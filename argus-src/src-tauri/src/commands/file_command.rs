@@ -3,9 +3,8 @@ use crate::utils::file_util::{
     file_exists, get_all_dir_img, get_all_img, get_all_subfolders, read_binary_file,
 };
 use crate::utils::json_util::JsonUtil;
-use base64::Engine;
 use serde::{Deserialize, Serialize};
-use tauri::{AppHandle, Emitter};
+use tauri::AppHandle;
 
 /// 返回图像绝对路径
 #[tauri::command]
@@ -53,7 +52,7 @@ pub fn get_all_imgs(path: String) -> String {
 
 /// 获取指定路径下所有子文件夹的第一张图片
 #[tauri::command]
-pub async fn get_dir_all_subfolders_first_img(app: AppHandle, path: String) -> Vec<FolderImage> {
+pub async fn get_dir_all_subfolders_first_img(_app: AppHandle, path: String) -> Vec<FolderImage> {
     // 使用 spawn_blocking 将同步函数包装成异步
     let vec = get_all_subfolders(&path);
     let mut result: Vec<FolderImage> = Vec::new(); // 使用 Arc 和 Mutex

@@ -27,7 +27,44 @@ pub struct Photo {
     /// 备注信息。
     pub notes: Option<String>,
 
+    /*
+        相册存储：
+            对于相册存储来说，相册 和 图片 都是单独的文件夹，然后通过管理表，一列存储相册ID一列存储图片ID将二者进行互联
+        标签：
+            【标签表的内容：用户设置、软件生成、是否成为单独标签（特殊标签比如收藏、账单、隐藏）】
+            预删除、未审阅、
+
+            和相册类似方式
+            收藏、隐藏 等功能都通过标签实现
+
+        人脸：
+            人脸进行单独存储，使用单独的表进行人脸和图片的链接
+
+        地点：
+            读取所有gps信息不为空的图片，并解析计算，按照分簇展示
+
+
+        未分类照片过滤：
+            是否已标注（标注删除或保存）
+
+    diesel migration generate photo_table_add_info_field
+
+        */
+    /// 是否经过算法【识别 人物、场景 等内容】
+    pub is_algorithm: Option<bool>,
+
+    /// 算法评分
+    pub algorithm_score: Option<i32>,
+
+    /// 上次查看时间
+    pub last_viewed_time: Option<i64>,
+
     // region exif 信息
+    /// 时区 存储时区偏移量，如 '+08:00' 或 '-05:00'
+    pub offset_time: Option<String>,
+    /// 评分（用户评分）
+    pub rating: Option<i32>,
+    // 评分（自动评分）
     /// 相机制造商
     pub make: Option<String>,
     /// 相机型号

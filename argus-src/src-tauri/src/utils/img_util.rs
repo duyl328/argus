@@ -1,3 +1,4 @@
+use crate::computed_value::ComputedValue;
 use crate::constant;
 use crate::errors::AError;
 use crate::structs::config::SYS_CONFIG;
@@ -11,42 +12,107 @@ use anyhow::{anyhow, Context, Result};
 use env_logger::Target;
 use image::io::Reader;
 use image::{imageops, DynamicImage, GenericImageView, ImageError, ImageFormat};
-use image::{imageops::FilterType, io::Reader as ImageReader};
+use image::{imageops::FilterType, ImageReader};
 use log::{error, info, warn};
 use std::fs;
-use std::io::Cursor;
+use std::fs::File;
+use std::io::{BufReader, Cursor};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::Instant;
+use thiserror::__private::AsDisplay;
 use tokio::sync::{mpsc, Mutex};
 use tokio::task;
 use tokio::task::JoinSet;
 
 #[derive(Debug, Clone)]
 pub struct ImageOperate {
-    /// 文件路径
-    img_path: String,
-    /// 图片存储
-    data: DynamicImage,
+    /// 图像动态内容跟【这步转换很耗时】
+    image_dynamic: Option<DynamicImage>,
+    /// 图像路径
+    pub img_path: String,
+    /// 文件名称
+    pub img_name: String,
+    /// 文件 Hash【唯一 ID】
+    pub hash: String,
+    /// 图片宽度。
+    pub width: i32,
+    /// 图片高度
+    pub height: i32,
+    /// 图片比例（宽/高，方便快速排序）。
+    pub aspect_ratio: f32,
+    /// 文件大小（字节）。
+    pub file_size: i64,
+    /// 图片格式（如 JPEG, PNG, WebP）。
+    pub format: Option<ImageFormat>,
 }
 
 impl ImageOperate {
-    /// 读取图像到内存
+    /// 读取基础图像信息
     pub async fn read_image(image_path: &str) -> Result<ImageOperate> {
         let start_resize = Instant::now();
+        log::debug!("检测文件是否存在");
         // 检测文件是否存在
         if !file_exists(image_path) {
             return Err(anyhow!(AError::SpecifiedFileDoesNotExist.message()));
         };
+
         // 猜测文件类型并打开
-        let result = image::ImageReader::open(image_path)?
-            .with_guessed_format()?
-            .decode()?;
+        let reader = image::ImageReader::open(image_path)?.with_guessed_format()?;
+
+        // 格式
+        let format = (&reader).format();
+        log::debug!("获取 格式");
+
+        // 获取图像长宽信息
+        let (width, height) = reader.into_dimensions()?;
+        log::debug!("获取 获取图像长宽信息111111111");
+        // 计算长宽比例信息
+        let res = width.clone() as f32 / height.clone() as f32;
+        log::debug!("获取 计算长宽比例信息");
+        let aspect_ratio = (res * 100.0).round() / 100.0;
+        log::debug!("获取 aspect_ratio");
+
+        // 获取文件大小
+        let metadata = tokio::fs::metadata(image_path).await?;
+        let file_size = metadata.len();
+
+        // 获取图像名称和路径
+        let file_path = Path::new(image_path);
+        // 获取路径部分（去除文件名）
+        let file_parent = file_path
+            .parent()
+            .unwrap_or(Path::new(""))
+            .display()
+            .to_string();
+        log::debug!("获取 获取图像名称和路径");
+        // 获取文件名部分
+        // let file_name = file_path.file_name().unwrap_or(Path::new("").as_ref()).to_str().to_string();
+        let file_name = file_path
+            .file_name()
+            .and_then(|os_str| os_str.to_str())
+            .unwrap_or("") // 默认值为空字符串
+            .to_string();
+
+        log::debug!("获取 计算 Hash 开始");
+        // 计算 Hash
+        let hash = FileHashUtils::sha256_async(image_path)
+            .await
+            .map_err(|e| anyhow!(AError::HashConversionFailed.message()))?;
+        log::debug!("获取 计算 Hash 完毕");
 
         let rs = ImageOperate {
-            img_path: String::from(image_path),
-            data: result,
+            img_path: file_parent,
+            format,
+            hash,
+            img_name: String::from(file_name),
+            file_size: file_size as i64,
+            aspect_ratio,
+            width: width.clone() as i32,
+            height: height.clone() as i32,
+            image_dynamic: None,
         };
+
         println!(
             "图片：{}, 读取: {:?}, 内存占用:{}",
             image_path,
@@ -56,19 +122,29 @@ impl ImageOperate {
         Ok(rs)
     }
 
+    /// 解析图片信息并存储
+    pub fn read_image_dynamic(&self) -> Result<DynamicImage> {
+        // 图像本体信息
+        let full_path = Path::new(&self.img_path).join(&self.img_name); // 合并路径和文件名
+        let reader = image::ImageReader::open(full_path)?.with_guessed_format()?;
+        let image_data = reader.decode()?;
+        Ok(image_data)
+    }
+
     /// 将图像压缩返回
     pub async fn compression(&self, scale: f32) -> Result<DynamicImage> {
         // 获取图像的原始尺寸
-        let (width, height) = self.data.dimensions();
+        let width = self.width;
+        let height = self.height;
         // 计算新的尺寸，按比例缩放
         let new_width = (width as f32 * scale) as u32;
         let new_height = (height as f32 * scale) as u32;
 
         // 按比例缩放图像
         let start_resize = Instant::now();
-        let result = self
-            .data
-            .resize_exact(new_width, new_height, FilterType::Triangle);
+
+        let image = self.read_image_dynamic()?;
+        let result = image.resize_exact(new_width, new_height, FilterType::Triangle);
         println!(
             "图片：{}, 压缩: {:?}, 内存占用:{}",
             self.img_path,
@@ -85,8 +161,9 @@ impl ImageOperate {
         new_width: u32,
         new_height: u32,
         filter: imageops::FilterType,
-    ) -> DynamicImage {
-        self.data.resize(new_width, new_height, filter)
+    ) -> Result<DynamicImage> {
+        let image = self.read_image_dynamic()?;
+        Ok(image.resize(new_width, new_height, filter))
     }
 
     /// 按照指定的宽高进行压缩
@@ -95,8 +172,9 @@ impl ImageOperate {
         new_width: u32,
         new_height: u32,
         filter: imageops::FilterType,
-    ) -> DynamicImage {
-        self.data.resize_exact(new_width, new_height, filter)
+    ) -> Result<DynamicImage> {
+        let image = self.read_image_dynamic()?;
+        Ok(image.resize_exact(new_width, new_height, filter))
     }
 
     /// 转换为 BASE64
@@ -147,19 +225,19 @@ impl ImageOperate {
         // let img = ImageOperate::read_image(dir).await?;
         let img = Arc::new(ImageOperate::read_image(&dir.clone()).await?); // 使用 Arc 包装图像
         let mut join_set = JoinSet::new();
+        let shared_img_dyc = Arc::new(Mutex::new(ComputedValue::<DynamicImage>::new()));
+
         for level in compression_level {
             log::info!("获取图片尺寸 {}", &level.size);
             let vec_clone = Arc::clone(&result);
             let image = img.clone();
             let root_dir_clone = Arc::clone(&root_dir); // 克隆 Arc 来传递给闭包
             let file_name_clone = Arc::clone(&file_name);
-            let dir_clone = dir.clone();
+            let shared_img_dyc_clone = Arc::clone(&shared_img_dyc);
+
             join_set.spawn(async move {
                 // 获取 Hash
-                let hash = FileHashUtils::sha256_async(&dir_clone)
-                    .await
-                    .expect("读取文件 Hash 失败!");
-                log::info!("获取 Hash ：{}", hash);
+                let hash = &image.hash;
                 // 获取保存路径
                 let save_path = FileHashUtils::hash_to_file_path(
                     hash.as_str(),
@@ -175,12 +253,14 @@ impl ImageOperate {
                 // 检测缩略图文件是否存在
                 let exists = file_exists(&save_path);
                 if !exists {
+                    let mut img_dyc = shared_img_dyc_clone.lock().await;
+                    let img = img_dyc.get_or_compute(|| {
+                        image.read_image_dynamic().expect("可计算图像获取失败！")
+                    });
                     // 压缩
-                    let x1 =
-                        image.compression_with_size(level.size, level.size, FilterType::Triangle);
-                    let image1 = x1.await;
+                    let x1 = img.resize(level.size, level.size, FilterType::Triangle);
                     // 保存
-                    ImageOperate::save_image(save_path.clone(), image1, fmt)
+                    ImageOperate::save_image(save_path.clone(), x1, fmt)
                         .await
                         .expect("文件报错失败! ");
                 }
@@ -206,56 +286,55 @@ impl ImageOperate {
         fmt: ImageFormat,
         compression_level: u32,
     ) -> Result<String> {
+        log::debug!("开始读取!");
         // 获取根目录
         let root_dir = SYS_CONFIG
             .thumbnail_storage_path
             .clone()
             .ok_or_else(|| anyhow!(AError::ThumbnailCacheConfigurationReadFailed.message()))?;
-        // 获取文件名
-        let file_name = image_format_util::get_suffix_name(fmt.clone());
+        log::debug!("获取根目录! 成功");
+        // 读取图片
+        let read_img = ImageOperate::read_image(&dir.clone()).await.map_err(|e| {
+            let err = e.to_string();
+            return if err.is_empty() {
+                anyhow!(format!(
+                    "file: {} ,打开失败: {}",
+                    dir,
+                    AError::OriginalImageReadFailed.message()
+                ))
+            } else {
+                anyhow!(format!("file: {} ,打开失败: {}", dir, err))
+            };
+        })?;
+        log::debug!("获取所有信息! 成功");
 
-        // 获取 Hash
-        let hash = FileHashUtils::sha256_async(&dir)
-            .await
-            .map_err(|e| anyhow!(AError::HashConversionFailed.message()))?;
-        log::info!("获取 Hash ：{}", hash);
         // 获取保存路径
         let save_path = FileHashUtils::hash_to_file_path(
-            hash.as_str(),
+            read_img.hash.as_str(),
             &root_dir,
-            &file_name,
+            &read_img.img_name,
             compression_level,
         )
         .display()
         .to_string();
+        log::debug!("获取保存路径! 成功");
         log::info!("save_path {}", &save_path);
 
         // 检测缩略图文件是否存在
         let exists = file_exists(&save_path);
+        log::debug!("检测缩略图文件是否存在! 成功");
         if !exists {
-            // 读取图片
-            // let img = ImageOperate::read_image(dir).await?;
-            let img = ImageOperate::read_image(&dir.clone()).await.map_err(|e| {
-                let err = e.to_string();
-                return if err.is_empty() {
-                    anyhow!(format!(
-                        "file: {} ,压缩失败: {}",
-                        dir,
-                        AError::OriginalImageReadFailed.message()
-                    ))
-                } else {
-                    anyhow!(format!("file: {} ,压缩失败: {}", dir, err))
-                };
-            })?;
+            let img = read_img;
             // 压缩
             let x1 = img.compression_with_size(
                 compression_level,
                 compression_level,
                 FilterType::Triangle,
             );
-            let image1 = x1.await;
+            let image1 = x1.await.expect("可处理信息获取失败! ");
+            let x = img.format.unwrap_or(fmt);
             // 保存
-            ImageOperate::save_image(save_path.clone(), image1, fmt)
+            ImageOperate::save_image(save_path.clone(), image1, x)
                 .await
                 .map_err(|e| anyhow!(AError::FileSaveFailed.message()))?;
         }

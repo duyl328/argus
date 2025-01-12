@@ -14,6 +14,7 @@ mod storage;
 mod structs;
 mod utils;
 mod tuples;
+mod computed_value;
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;

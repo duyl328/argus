@@ -29,11 +29,11 @@ impl FileHashUtils {
         let m10 = 10 * 1024 * 1024; // 10 MB
         let m100 = 100 * 1024 * 1024; // 100 MB
         let buffer_size = if file_size < m10 {
-            16 * 1024 // 小于等于 10MB，用 16KB 缓冲
+            32 * 1024 // 小于等于 10MB，用 16KB 缓冲
         } else if file_size < m100 {
             64 * 1024 // 10MB 到 100MB 用 64KB
         } else {
-            256 * 1024 // 超过 100MB，用 256KB 缓冲
+            128 * 1024 // 超过 100MB，用 256KB 缓冲
         };
 
         let mut hasher = Sha256::new();

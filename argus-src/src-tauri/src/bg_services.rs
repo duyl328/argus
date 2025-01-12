@@ -69,7 +69,7 @@ pub fn start_python_service() -> Result<()> {
     let child_pid = output.id();
     println!("子进程 PID: {}", child_pid);
     SERVES.write().expect("服务信息读取失败！").py_service_id = Some(child_pid);
-    return Ok(());
+    Ok(())
 }
 
 pub fn stop_python_service() {
