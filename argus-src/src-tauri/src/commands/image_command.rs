@@ -103,7 +103,6 @@ pub async fn get_image_thumbnail_path(image_path: String) -> Result<String, Stri
 /// 获取指定图片的缩略图【如果不存在，直接创建】
 #[tauri::command]
 pub async fn get_image_thumbnail(image_path: String) -> Result<String, String> {
-    log::debug!("读取缩略图");
     let string = ImageOperate::designate_level_image_compression(
         image_path,
         IMAGE_COMPRESSION_STORAGE_FORMAT,

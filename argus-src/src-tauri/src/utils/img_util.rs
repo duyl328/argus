@@ -24,6 +24,8 @@ use thiserror::__private::AsDisplay;
 use tokio::sync::{mpsc, Mutex};
 use tokio::task;
 use tokio::task::JoinSet;
+use crate::storage::connection::establish_connection;
+use crate::storage::photo_table::insert_photo;
 
 #[derive(Debug, Clone)]
 pub struct ImageOperate {
@@ -50,8 +52,9 @@ pub struct ImageOperate {
 impl ImageOperate {
     /// 读取基础图像信息
     pub async fn read_image(image_path: &str) -> Result<ImageOperate> {
+        let mut conn = establish_connection();
+
         let start_resize = Instant::now();
-        log::debug!("检测文件是否存在");
         // 检测文件是否存在
         if !file_exists(image_path) {
             return Err(anyhow!(AError::SpecifiedFileDoesNotExist.message()));
@@ -62,16 +65,12 @@ impl ImageOperate {
 
         // 格式
         let format = (&reader).format();
-        log::debug!("获取 格式");
 
         // 获取图像长宽信息
         let (width, height) = reader.into_dimensions()?;
-        log::debug!("获取 获取图像长宽信息111111111");
         // 计算长宽比例信息
         let res = width.clone() as f32 / height.clone() as f32;
-        log::debug!("获取 计算长宽比例信息");
         let aspect_ratio = (res * 100.0).round() / 100.0;
-        log::debug!("获取 aspect_ratio");
 
         // 获取文件大小
         let metadata = tokio::fs::metadata(image_path).await?;
@@ -85,7 +84,6 @@ impl ImageOperate {
             .unwrap_or(Path::new(""))
             .display()
             .to_string();
-        log::debug!("获取 获取图像名称和路径");
         // 获取文件名部分
         // let file_name = file_path.file_name().unwrap_or(Path::new("").as_ref()).to_str().to_string();
         let file_name = file_path
@@ -94,12 +92,10 @@ impl ImageOperate {
             .unwrap_or("") // 默认值为空字符串
             .to_string();
 
-        log::debug!("获取 计算 Hash 开始");
         // 计算 Hash
         let hash = FileHashUtils::sha256_async(image_path)
             .await
             .map_err(|e| anyhow!(AError::HashConversionFailed.message()))?;
-        log::debug!("获取 计算 Hash 完毕");
 
         let rs = ImageOperate {
             img_path: file_parent,
@@ -113,12 +109,9 @@ impl ImageOperate {
             image_dynamic: None,
         };
 
-        println!(
-            "图片：{}, 读取: {:?}, 内存占用:{}",
-            image_path,
-            start_resize.elapsed(),
-            get_memory_as_percentage()
-        );
+        // 读取信息保存到数据库
+        insert_photo(&mut conn, rs.clone());
+
         Ok(rs)
     }
 
@@ -286,13 +279,11 @@ impl ImageOperate {
         fmt: ImageFormat,
         compression_level: u32,
     ) -> Result<String> {
-        log::debug!("开始读取!");
         // 获取根目录
         let root_dir = SYS_CONFIG
             .thumbnail_storage_path
             .clone()
             .ok_or_else(|| anyhow!(AError::ThumbnailCacheConfigurationReadFailed.message()))?;
-        log::debug!("获取根目录! 成功");
         // 读取图片
         let read_img = ImageOperate::read_image(&dir.clone()).await.map_err(|e| {
             let err = e.to_string();
@@ -306,7 +297,6 @@ impl ImageOperate {
                 anyhow!(format!("file: {} ,打开失败: {}", dir, err))
             };
         })?;
-        log::debug!("获取所有信息! 成功");
 
         // 获取保存路径
         let save_path = FileHashUtils::hash_to_file_path(
@@ -317,12 +307,10 @@ impl ImageOperate {
         )
         .display()
         .to_string();
-        log::debug!("获取保存路径! 成功");
         log::info!("save_path {}", &save_path);
 
         // 检测缩略图文件是否存在
         let exists = file_exists(&save_path);
-        log::debug!("检测缩略图文件是否存在! 成功");
         if !exists {
             let img = read_img;
             // 压缩

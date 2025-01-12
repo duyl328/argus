@@ -21,7 +21,6 @@ impl FileHashUtils {
     }
 
     pub async fn sha256_async(file_path: &str) -> io::Result<String> {
-        log::debug!("FileHashUtils::sha256 {}", file_path);
         let metadata = tokio::fs::metadata(file_path).await?;
         let file_size = metadata.len();
 
@@ -65,7 +64,6 @@ impl FileHashUtils {
         suffix_name: &str,
         compression_level: u32,
     ) -> PathBuf {
-        println!("hash_to_file_path {}", base_path);
         let dir_level = SYS_CONFIG.directory_level.clone().unwrap();
         // 定义目录分级层数
         let mut path = PathBuf::from(base_path);
