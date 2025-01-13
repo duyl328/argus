@@ -122,6 +122,9 @@ pub struct NewPhoto {
     pub file_size: i64,
     /// 图片格式（如 JPEG, PNG, WebP）。
     pub format: String,
+    pub create_time: i64,
+    pub update_time: i64,
+
 }
 
 /*

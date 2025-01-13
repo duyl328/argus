@@ -7,6 +7,7 @@ use diesel::prelude::*;
 use diesel::{RunQueryDsl, SqliteConnection, TextExpressionMethods};
 use diesel::associations::HasTable;
 use crate::constant::IMAGE_COMPRESSION_STORAGE_FORMAT;
+use crate::utils::time_util::TimeUtils;
 // 获取图片 hash、基础信息（长、宽、比例）、exif 信息
 
 /// 把照片存储到数据库
@@ -19,6 +20,7 @@ pub fn insert_photo(connection: &mut SqliteConnection, img_info: ImageOperate)->
     }else{
         ""
     };
+    let timestamp = TimeUtils::current_timestamp();
     let np = NewPhoto{
         img_path:img_info.img_path ,
         img_name:img_info.img_name ,
@@ -28,6 +30,8 @@ pub fn insert_photo(connection: &mut SqliteConnection, img_info: ImageOperate)->
         aspect_ratio:img_info.aspect_ratio,
         file_size:img_info.file_size,
         format:  op.to_string(),
+        create_time: timestamp,
+        update_time: timestamp,
     };
     return if photos.is_empty() {
         let res = diesel::insert_into(photo_table::table())
