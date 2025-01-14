@@ -89,8 +89,7 @@ function getSwitch() {
         </ElButton>
       </li>
       <!-- 顶部功能按钮 -->
-      <ElButton @click="getSwitch">切换主题</ElButton>
-      <button class="button">你好</button>
+      <ElButton class="button" @click="getSwitch">切换主题</ElButton>
     </ul>
 
     <hr v-if="isShowGenerateRouter" />
