@@ -158,7 +158,46 @@ function pathSelectChange(items: photoStorageType) {
       </div>
     </div>
     <el-divider border-style="dotted" />
+
+    <!--    该数据需要存储到数据库-->
+
+    <!--    重新检索【默认增量检索】-->
+    <div class="flex lib-option w-64">
+        <span class="mt-1 iconfont icon-zhongxin search-again"></span>
+        <div class="flex flex-col">
+          <el-checkbox class="text-4xl" label="重新检索" size="large" />
+          <span class="text-wrap">放弃所有已索引文件，全部重新检索，默认增量检索</span>
+      </div>
+    </div>
+
+    <!--    清理-->
   </div>
 </template>
 
-<style scoped lang="scss"></style>
+<style  lang="scss">
+.lib-option {
+  /* 重新检索的 icon */
+  .search-again{
+    margin-right: .7rem;
+    font-size: 1.2rem;
+  }
+
+  /* 放大复选框组件 */
+  .el-checkbox.el-checkbox--large {
+    /* 选择框 */
+    .el-checkbox__inner {
+      &::after{
+        @apply h-3 w-2;
+      }
+      @apply h-5 w-5;
+    }
+    /* 展示文字*/
+    .el-checkbox__label{
+      font-size: 1.5em;
+    }
+  }
+}
+
+
+
+</style>
