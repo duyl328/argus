@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted, type Reactive, type Ref, reactive, ref } from 'vue'
+import { onMounted, type Reactive, type Ref, reactive, ref, watch } from 'vue'
 import { Delete, Plus } from '@element-plus/icons-vue'
 import type { photoStorageType } from '@/types/photoStorage.type'
 import { open } from '@tauri-apps/plugin-dialog'
@@ -16,12 +16,66 @@ const input = ref('')
 // 所有的路径展示
 let folders: Reactive<photoStorageType[]> = reactive([])
 const checkList = ref([])
+const basicProcessColor: string = '#409dfe'
+const activeProcessColor: string = '#dcdfe6'
+
+//  UI 由 elementplus 转换为 vuetify
+
+/**
+ * 是否正在加载
+ */
+const isLoading = ref(false)
+
+/**
+ * 监视任务属性
+ */
+watch(isLoading, (value, oldValue, onCleanup) => {
+  if (value) {
+    processColor.value = basicProcessColor
+    processProgress.value = 0
+    processStriped.value = true
+    processStrokeWidth.value = 15
+  } else {
+    processColor.value = activeProcessColor
+    processProgress.value = 100
+    processStrokeWidth.value = 1
+    processStriped.value = false
+    taskName.value = ""
+  }
+})
+
+/**
+ * 进度条进度
+ */
+const processProgress = ref(100)
+
+/**
+ * 进度条颜色
+ */
+const processColor = ref<string>('')
+processColor.value = activeProcessColor
+
+/**
+ * 进度条高度
+ */
+const processStrokeWidth = ref(1)
+
+/**
+ * 进度条条纹
+ */
+const processStriped = ref(false)
+
+/**
+ * 正在处理任务
+ */
+const taskName = ref('')
 
 // 页面挂在后，查询所有路径
 onMounted(() => {
   getAllData()
 })
 
+// region 数据库操作
 /**
  * 获取所有路径数据
  */
@@ -108,6 +162,22 @@ function pathSelectChange(items: photoStorageType) {
       console.error(err)
     })
 }
+
+// endregion
+
+// region 进度条
+/**
+ * 进度条展示文字
+ */
+let processFormat = (): string => {
+  return ''
+}
+
+onMounted(() => {
+  // 绑定事件
+})
+
+// endregion
 </script>
 
 <template>
@@ -157,28 +227,52 @@ function pathSelectChange(items: photoStorageType) {
         </el-checkbox>
       </div>
     </div>
-    <el-divider border-style="dotted" />
 
-    <!--    该数据需要存储到数据库-->
+    <!--    进度条-->
+    <div class="mt-5 mb-5">
+      <el-progress
+        :stroke-width="processStrokeWidth"
+        :percentage="processProgress"
+        :striped="processStriped"
+        striped-flow
+        :color="processColor"
+        :format="processFormat"
+      />
+      <!--      信息提示文字-->
+      <div v-show="taskName" class="text-nowrap flex justify-center items-center w-full mt-2">
+        <span class="text-nowrap">正在处理任务：</span>
+        <span class="text-nowrap">{{ taskName }}</span>
+      </div>
+    </div>
 
-    <!--    重新检索【默认增量检索】-->
-    <div class="flex lib-option w-64">
+    <!--    其他选项-->
+    <div class="flex flex-row flex-wrap">
+      <!--    该数据需要存储到数据库-->
+
+      <!--    重新检索【默认增量检索】-->
+      <div class="flex lib-option w-64">
         <span class="mt-1 iconfont icon-zhongxin search-again"></span>
         <div class="flex flex-col">
           <el-checkbox class="text-4xl" label="重新检索" size="large" />
           <span class="text-wrap">放弃所有已索引文件，全部重新检索，默认增量检索</span>
+        </div>
       </div>
+
+      <!--    清理【清理缩略图】-->
     </div>
 
-    <!--    清理-->
+<!--    Option-->
+    <div>
+      <button></button>
+    </div>
   </div>
 </template>
 
-<style  lang="scss">
+<style lang="scss">
 .lib-option {
   /* 重新检索的 icon */
-  .search-again{
-    margin-right: .7rem;
+  .search-again {
+    margin-right: 0.7rem;
     font-size: 1.2rem;
   }
 
@@ -186,18 +280,17 @@ function pathSelectChange(items: photoStorageType) {
   .el-checkbox.el-checkbox--large {
     /* 选择框 */
     .el-checkbox__inner {
-      &::after{
-        @apply h-3 w-2;
+      &::after {
+        @apply h-3.5 w-1.5;
       }
+
       @apply h-5 w-5;
     }
+
     /* 展示文字*/
-    .el-checkbox__label{
+    .el-checkbox__label {
       font-size: 1.5em;
     }
   }
 }
-
-
-
 </style>
