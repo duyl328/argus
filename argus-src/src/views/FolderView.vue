@@ -38,9 +38,8 @@ function updateColumns() {
 onMounted(() => {
   let dirAllSubfoldersFirstImg = getDirAllSubfoldersFirstImg(
     // 'D:\\argus\\img\\jpg\\局部\\新建文件夹'
-    // 'D:\\argus\\img\\jpg'
+    'D:\\argus\\img\\jpg'
     // 'E:\\整合',
-    'E:\\整合\\Ikeda Elaiza First Photobook pinturita\\大神摄影\\大神拍照\\『核酸醬+林芯玥+粉色小野貓』14位頂級網紅女神吃雞啪啪私拍流出[1005P71V3.8G]',
   )
 
   dirAllSubfoldersFirstImg.then((res) => {

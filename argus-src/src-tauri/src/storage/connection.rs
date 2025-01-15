@@ -79,12 +79,15 @@ pub fn init_path() -> Result<(), rusqlite::Error> {
 
 /// 创建数据库链接
 pub fn establish_connection() -> SqliteConnection {
-    SqliteConnection::establish(&DATABASE_URL).unwrap_or_else(|err| {
-        log::error!("Error connecting to {:?}: {:?}", *DATABASE_URL, err);
-        panic!("Error connecting to {:?}: {:?}", *DATABASE_URL, err)
-    });
-    SqliteConnection::establish(&DATABASE_URL)
-        .unwrap_or_else(|err| panic!("Error connecting to {:?}: {:?}", *DATABASE_URL, err))
+    let mut conn = SqliteConnection::establish(&DATABASE_URL)
+        .unwrap_or_else(|err| {
+            log::error!("Error connecting to {:?}: {:?}", *DATABASE_URL, err);
+            panic!("Error connecting to {:?}: {:?}", *DATABASE_URL, err);
+        });
+    // 多线程读、单线程写
+    conn.batch_execute("PRAGMA journal_mode = WAL;")
+        .expect("Failed to enable WAL mode");
+    conn
 }
 
 /// 删除指定表

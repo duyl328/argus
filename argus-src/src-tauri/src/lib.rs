@@ -1,6 +1,7 @@
 mod api;
 pub mod bg_services;
 mod commands;
+mod computed_value;
 mod conf;
 mod constant;
 mod errors;
@@ -12,9 +13,8 @@ mod server;
 mod services;
 mod storage;
 mod structs;
-mod utils;
 mod tuples;
-mod computed_value;
+mod utils;
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -30,8 +30,8 @@ use tauri::async_runtime;
 
 use crate::bg_services::{BgServes, SERVES};
 use crate::global_task_manager::{
-    start_image_loading_background_task, BackgroundImageLoadingTaskManager,
-    BackgroundTaskAutoManager,
+     start_image_loading_background_task,
+    BackgroundImageLoadingTaskManager, BackgroundTaskAutoManager,
 };
 use crate::structs::config::SYS_CONFIG;
 use crate::utils::file_util::create_folder;
@@ -104,14 +104,24 @@ pub fn run() {
     print!("配置完毕!!!!!!!!!!!!!");
 
     // 启动后台算法
+
     // 创建一个大小为 100 的通道
     let (tx, rx) = mpsc::channel::<String>(100);
     let (pause_tx, pause_rx) = watch::channel(false); // 创建暂停信号
     let (auto_manager_tx, auto_manager_rx)
         = watch::channel(BackgroundTaskAutoManager::default());
+
+    let (databases_tx, databases_rx) = mpsc::channel::<String>(100);
+    let (databases_pause_tx, databases_pause_rx) = watch::channel(false); // 创建暂停信号
+    let (databases_auto_manager_tx, databases_auto_manager_rx)
+        = watch::channel(BackgroundTaskAutoManager::default());
+
     // 启动 Tokio 运行时
     async_runtime::spawn(async {
+        // 后台图像加载
         start_image_loading_background_task(rx, pause_rx, auto_manager_rx).await;
+        // 数据库后台写入
+        start_databases_write_background_task(databases_rx, databases_pause_rx, databases_auto_manager_rx).await;
     });
 
     let global_task_manager = tokio::sync::Mutex::new(
@@ -136,7 +146,7 @@ pub fn run() {
         })
         // Tauri 通过类型来管理和注入状态，因此在 .manage() 中注册的类型必须是唯一的。
         // 如果你尝试注册同一个类型多次，Tauri 会抛出错误。
-    // 使用时一定要注意类型一定要一致 !!!
+        // 使用时一定要注意类型一定要一致 !!!
         .manage::<Option<tauri_plugin_shell::process::CommandChild>>(None)
         .manage(global_task_manager)
         .invoke_handler(tauri::generate_handler![
