@@ -1,3 +1,45 @@
+
+
+## 构建
+构建所需工具：
+前端：
+> `npm` 或 `yarn` 等前端构建工具
+后端：
+> rustc、cargo 和 rustup
+
+确保以下指令可以输出正常信息：
+```shell
+npm -v
+```
+```shell
+rustc --version
+```
+```shell
+cargo --version
+```
+```shell
+rustup --version
+```
+
+
+1. 在 `argus-src` 目录下安装 `npm` 所需依赖
+   ```shell
+   npm i
+   ```
+2. 在 `src-tauri` 下运行：
+   ```shell
+   cargo install tauri-cli
+   ```
+
+## 常见构建问题
+### cargo 运行提示: '在没有 rustup 的情况下，无法自动附加 stdlib 源'
+> 使用 
+> ```shell
+> rustup component add rust-src
+> ```
+> 进行安装
+
+
 ## 图像处理功能
 
 1. 重复照片检测
@@ -16,8 +58,3 @@
 13. 提供gpx文件导入入口，通过时间对比调整无GPS信息的图像信息
 14. 图像自动同步功能，内置文件传输服务，手机提供对应App，开始时自动同步照片和视频
 15. 预览删除功能，预览默认使用缩略图，可指定缓存图片数量（所有操作不直接删除，通过分类文件夹做到伪删除，通过二次确认真删除），原则上用户只需提供文件夹软件自动扫描并划分，且除非用户同意，否则不修改文件位置及信息
-
-
-
-
-
