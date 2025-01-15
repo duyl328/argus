@@ -121,7 +121,7 @@ pub fn run() {
         // 后台图像加载
         start_image_loading_background_task(rx, pause_rx, auto_manager_rx).await;
         // 数据库后台写入
-        start_databases_write_background_task(databases_rx, databases_pause_rx, databases_auto_manager_rx).await;
+        // start_databases_write_background_task(databases_rx, databases_pause_rx, databases_auto_manager_rx).await;
     });
 
     let global_task_manager = tokio::sync::Mutex::new(

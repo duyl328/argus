@@ -38,7 +38,7 @@ function updateColumns() {
 onMounted(() => {
   let dirAllSubfoldersFirstImg = getDirAllSubfoldersFirstImg(
     // 'D:\\argus\\img\\jpg\\局部\\新建文件夹'
-    'D:\\argus\\img\\jpg'
+    'D:\\argus\\img'
     // 'E:\\整合',
   )
 
