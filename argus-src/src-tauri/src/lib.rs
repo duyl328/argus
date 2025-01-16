@@ -23,11 +23,12 @@ use std::sync::{Arc, Mutex};
 use tauri::{async_runtime, AppHandle};
 
 use crate::bg_services::{BgServes, SERVES};
-use crate::global_task_manager::{
-    start_image_loading_background_task,
-    BackgroundTaskAutoManager,
-};
+use crate::global_task_manager::{start_image_loading_background_task, BackgroundTaskAutoManager};
+use crate::storage::connection::establish_connection;
+use crate::storage::photo_table::insert_photo;
 use crate::structs::config::SYS_CONFIG;
+use crate::utils::img_util::ImageOperate;
+use crate::utils::task_util;
 use tauri::{App, Emitter, Listener, Manager, State, WindowEvent};
 use tokio::sync::{mpsc, watch};
 
@@ -100,17 +101,6 @@ pub fn run() {
     let (pause_tx, pause_rx) = watch::channel(false); // 创建暂停信号
     let (auto_manager_tx, auto_manager_rx) = watch::channel(BackgroundTaskAutoManager::default());
 
-    // 初始化图像数据库保存
-    // let (photo_handler_tx, photo_handler_rx) = mpsc::channel::<ImageOperate>(100);
-    // let photo_handler = task_util::PHOTO_LOAD_RECEIVER.lock().unwrap();
-    // *photo_handler = Some(photo_handler_tx);
-    //
-    // let f = |io:ImageOperate|{
-    //
-    // };
-    //
-    // task_util::task_h(photo_handler_rx, f);
-
     // 启动 Tokio 运行时
     async_runtime::spawn(async {
         // 后台图像加载
@@ -123,9 +113,10 @@ pub fn run() {
     );
 
     // 全局句柄
-    // let app_handle: Arc<Mutex<Option<AppHandle>>> = Arc::new(Mutex::new(None));
     let app_handle = Arc::new(tokio::sync::Mutex::new(None::<AppHandle>));
 
+    // 启动后台服务
+    back_a_task();
     builder
         .plugin(tauri_plugin_sql::Builder::new().build())
         .plugin(tauri_plugin_dialog::init())
@@ -219,4 +210,30 @@ fn main_setup() -> fn(&mut App) -> Result<(), Box<dyn Error>> {
 
         Ok(())
     }
+}
+
+/// 后台服务
+async fn back_a_task() {
+    use tokio::sync::{mpsc, Mutex};  // 需要引入 mpsc 和 Mutex
+    use tokio::sync::mpsc::Sender;
+
+
+    // 使用 tokio 的 mpsc 通道
+    let (photo_handler_tx, photo_handler_rx) = mpsc::channel::<ImageOperate>(100);
+
+    // 使用 .await 获取 Mutex 锁
+    let mut photo_handler:Sender<ImageOperate> = task_util::PHOTO_LOAD_RECEIVER.lock().await.unwrap();
+
+    // 修改 photo_handler 中的值
+    *photo_handler = Some(photo_handler_tx);
+
+    // Define the function to process ImageOperate
+    let f = |io: ImageOperate| {
+        let mut conn = establish_connection();
+        // Read information and save to the database
+        insert_photo(&mut conn, io);
+    };
+
+    // Start the background task
+    task_util::task_h(photo_handler_rx, f);
 }

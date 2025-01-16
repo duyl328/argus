@@ -52,8 +52,6 @@ pub struct ImageOperate {
 impl ImageOperate {
     /// 读取基础图像信息
     pub async fn read_image(image_path: &str) -> Result<ImageOperate> {
-        let mut conn = establish_connection();
-
         let start_resize = Instant::now();
         // 检测文件是否存在
         if !file_exists(image_path) {
@@ -108,9 +106,6 @@ impl ImageOperate {
             height: height.clone() as i32,
             image_dynamic: None,
         };
-
-        // 读取信息保存到数据库
-        insert_photo(&mut conn, rs.clone());
 
         Ok(rs)
     }
