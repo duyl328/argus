@@ -16,32 +16,20 @@ mod structs;
 mod tuples;
 mod utils;
 
-use serde::{Deserialize, Serialize};
-use serde_json::Value;
-
 use crate::storage::connection;
 use crate::structs::config;
-use std::collections::HashMap;
 use std::error::Error;
 use std::sync::{Arc, Mutex};
-use std::thread;
-use std::time::Duration;
-use tauri::async_runtime;
+use tauri::{async_runtime, AppHandle};
 
 use crate::bg_services::{BgServes, SERVES};
 use crate::global_task_manager::{
-     start_image_loading_background_task,
-    BackgroundImageLoadingTaskManager, BackgroundTaskAutoManager,
+    start_image_loading_background_task,
+    BackgroundTaskAutoManager,
 };
 use crate::structs::config::SYS_CONFIG;
-use crate::utils::file_util::create_folder;
 use tauri::{App, Emitter, Listener, Manager, State, WindowEvent};
-use tauri_plugin_shell::process::CommandEvent;
-use tauri_plugin_shell::ShellExt;
-use tauri_plugin_sql::{Migration, MigrationKind};
 use tokio::sync::{mpsc, watch};
-use crate::utils::img_util::ImageOperate;
-use crate::utils::task_util;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -110,18 +98,17 @@ pub fn run() {
     // 创建一个大小为 100 的通道
     let (tx, rx) = mpsc::channel::<String>(100);
     let (pause_tx, pause_rx) = watch::channel(false); // 创建暂停信号
-    let (auto_manager_tx, auto_manager_rx)
-        = watch::channel(BackgroundTaskAutoManager::default());
+    let (auto_manager_tx, auto_manager_rx) = watch::channel(BackgroundTaskAutoManager::default());
 
     // 初始化图像数据库保存
     // let (photo_handler_tx, photo_handler_rx) = mpsc::channel::<ImageOperate>(100);
     // let photo_handler = task_util::PHOTO_LOAD_RECEIVER.lock().unwrap();
     // *photo_handler = Some(photo_handler_tx);
-    // 
+    //
     // let f = |io:ImageOperate|{
-    // 
+    //
     // };
-    // 
+    //
     // task_util::task_h(photo_handler_rx, f);
 
     // 启动 Tokio 运行时
@@ -129,13 +116,15 @@ pub fn run() {
         // 后台图像加载
         start_image_loading_background_task(rx, pause_rx, auto_manager_rx).await;
         // 数据库后台写入
-
-
     });
 
     let global_task_manager = tokio::sync::Mutex::new(
         global_task_manager::BackgroundImageLoadingTaskManager::new(tx, pause_tx, auto_manager_tx),
     );
+
+    // 全局句柄
+    // let app_handle: Arc<Mutex<Option<AppHandle>>> = Arc::new(Mutex::new(None));
+    let app_handle = Arc::new(tokio::sync::Mutex::new(None::<AppHandle>));
 
     builder
         .plugin(tauri_plugin_sql::Builder::new().build())
@@ -158,6 +147,7 @@ pub fn run() {
         // 使用时一定要注意类型一定要一致 !!!
         .manage::<Option<tauri_plugin_shell::process::CommandChild>>(None)
         .manage(global_task_manager)
+        .manage(app_handle)
         .invoke_handler(tauri::generate_handler![
             commands::command::greet,
             commands::command::http_example,
@@ -184,6 +174,7 @@ pub fn run() {
             commands::global_task_command::add_task,
             commands::global_task_command::pause_task,
             commands::global_task_command::resume_task,
+            commands::global_task_command::set_app_handle,
         ])
         .setup(main_setup())
         .run(tauri::generate_context!())
@@ -215,6 +206,7 @@ fn main_setup() -> fn(&mut App) -> Result<(), Box<dyn Error>> {
 
         // 启用 python 算法
         bg_services::start_python_service().unwrap();
+        let app_handle = app.handle();
 
         // 打开控制台
         #[cfg(debug_assertions)] // 仅在调试版本中包含此代码

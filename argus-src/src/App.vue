@@ -6,12 +6,15 @@ import type { subRoute, subRouteList } from '@/types/views/dev/DevIndex.type'
 import app from '@/constants/app'
 import { addListener, emitInit } from '@/services/emits/base'
 import { changedTheme, isDark, toggleDark } from '@/utils/darkUtil'
-import { ref ,watch} from 'vue'
+import { onMounted, ref, watch } from 'vue'
 import { useDark } from '@vueuse/core'
 
 import { ElNotification } from 'element-plus'
 import { h } from 'vue'
 import emitOrder from '@/constants/emitOrder'
+import { GlobalErrorMsg } from '@/models/globalErrorMsg'
+import { setAppHandle } from '@/services/globalService'
+import { logB } from '@/utils/logHelper/logUtils'
 
 const router = useRouter()
 const isCollapse = ref(true)
@@ -79,20 +82,32 @@ function getSwitch() {
   changedTheme()
 }
 
-
-addListener(emitOrder.globalErrorMsgDisplay,(event) => {
-  let str = event.payload
-  console.log(event);
-  console.log();
+// 初始化弹窗及 AppHandle
+let appHandle = setAppHandle()
+appHandle.then(() => {
+  logB.success('AppHandle 初始化成功')
+}).catch((e) => {
+  logB.error('AppHandle 初始化报错', e)
 })
 
-const open1 = () => {
+
+addListener(emitOrder.globalErrorMsgDisplay, (event) => {
+  let str = event.payload as string
+  if (str === null || str === undefined) return
+  let parse: GlobalErrorMsg = JSON.parse(str)
+
+  console.log(parse)
+
+  // 弹窗
   ElNotification({
-    title: 'Title',
-    message: h('i', { style: 'color: teal' }, 'This is a reminder'),
-    position:"top-left"
+    title: parse.title || 'Title',
+    message: parse.msg || 'message',
+    position: 'bottom-right',
+    type: parse.type || '',
+    duration: parse.duration
   })
-}
+})
+
 
 </script>
 
@@ -110,7 +125,6 @@ const open1 = () => {
       </li>
       <!-- 顶部功能按钮 -->
       <ElButton class="button" @click="getSwitch">切换主题</ElButton>
-      <el-button plain @click="open1"> Closes automatically </el-button>
     </ul>
 
     <hr v-if="isShowGenerateRouter" />

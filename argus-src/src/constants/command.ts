@@ -40,12 +40,16 @@ export const getDirAllSubfoldersFirstImgCommand = 'get_dir_all_subfolders_first_
 /**
  * 生成保存压缩缩略图
  */
-export const generateSaveThumbnailCommand  = "generate_save_thumbnail"
+export const generateSaveThumbnailCommand = 'generate_save_thumbnail'
 /**
  * 获取指定的压缩图片地址
  */
-export const getImageThumbnailPathCommand  = "get_image_thumbnail_path"
+export const getImageThumbnailPathCommand = 'get_image_thumbnail_path'
 /**
  * 获取指定图片的缩略图【如果不存在，直接创建】
  */
-export const getImageThumbnailCommand  = "get_image_thumbnail"
+export const getImageThumbnailCommand = 'get_image_thumbnail'
+/**
+ * 初始化 app handle
+ */
+export const setAppHandleCommand = 'set_app_handle'

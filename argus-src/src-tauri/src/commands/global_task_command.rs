@@ -1,7 +1,7 @@
 use crate::global_task_manager::BackgroundImageLoadingTaskManager;
 use anyhow::Result;
 use std::sync::Arc;
-use tauri::State;
+use tauri::{AppHandle, State};
 use tokio::sync::Mutex;
 
 #[tauri::command]
@@ -34,4 +34,17 @@ pub async fn resume_task(
     let manager = global_task_manager.lock();
     manager.await.resume().await;
     Ok(String::from("完成"))
+}
+
+#[tauri::command]
+pub async fn set_app_handle(
+    app: AppHandle,
+    state: State<'_, Arc<Mutex<Option<AppHandle>>>>,
+) -> Result<String, String> {
+    // let mut state = state.lock().await;
+    // 
+    // // 解引用 MutexGuard 并更新其中的 Option<AppHandle>
+    // *state = Some(app);
+
+    Ok(String::from("保存成功!"))
 }
