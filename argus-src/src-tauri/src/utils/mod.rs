@@ -11,4 +11,4 @@ pub mod img_util;
 pub mod json_util;
 pub mod system_state_util;
 pub mod time_util;
-mod task_util;
+pub mod task_util;

@@ -4,10 +4,14 @@ import PathUtils from '@/utils/pathUtils'
 import StringUtils from '@/utils/stringUtils'
 import type { subRoute, subRouteList } from '@/types/views/dev/DevIndex.type'
 import app from '@/constants/app'
-import { emitInit } from '@/services/emits/base'
+import { addListener, emitInit } from '@/services/emits/base'
 import { changedTheme, isDark, toggleDark } from '@/utils/darkUtil'
 import { ref ,watch} from 'vue'
 import { useDark } from '@vueuse/core'
+
+import { ElNotification } from 'element-plus'
+import { h } from 'vue'
+import emitOrder from '@/constants/emitOrder'
 
 const router = useRouter()
 const isCollapse = ref(true)
@@ -74,6 +78,22 @@ if (nodeenv !== undefined && !StringUtils.isBlank(nodeenv) && nodeenv === app.DE
 function getSwitch() {
   changedTheme()
 }
+
+
+addListener(emitOrder.globalErrorMsgDisplay,(event) => {
+  let str = event.payload
+  console.log(event);
+  console.log();
+})
+
+const open1 = () => {
+  ElNotification({
+    title: 'Title',
+    message: h('i', { style: 'color: teal' }, 'This is a reminder'),
+    position:"top-left"
+  })
+}
+
 </script>
 
 <template>
@@ -90,6 +110,7 @@ function getSwitch() {
       </li>
       <!-- 顶部功能按钮 -->
       <ElButton class="button" @click="getSwitch">切换主题</ElButton>
+      <el-button plain @click="open1"> Closes automatically </el-button>
     </ul>
 
     <hr v-if="isShowGenerateRouter" />

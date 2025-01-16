@@ -18,7 +18,12 @@ const EmitOrder = {
   /**
    * 文件夹展示 - 图像压缩完成
    */
-  folderViewImageShow:"folder-view-image-show"
+  folderViewImageShow: 'folder-view-image-show',
+
+  /**
+   * 全局报错提示
+   */
+  globalErrorMsgDisplay: 'global-error-msg-display'
 } as const
 
 export default EmitOrder

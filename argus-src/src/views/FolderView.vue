@@ -69,7 +69,7 @@ const setItemRef = (info: ImageShowInfo) => (el: Element) => {
               info.isLoading = false
               info.compressedPath = convertFileSrc(res)
             })
-            .catch((err) => {
+              .catch((err) => {
               info.isLoading = false
               info.isError = true
               info.errorMsg = err.toString()

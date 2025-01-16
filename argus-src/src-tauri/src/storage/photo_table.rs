@@ -1,35 +1,35 @@
+use crate::constant::IMAGE_COMPRESSION_STORAGE_FORMAT;
 use crate::models::photo::{NewPhoto, Photo};
 use crate::storage::schema::photo_table::dsl::photo_table;
 use crate::storage::schema::photo_table::{hash, is_delete};
 use crate::utils::img_util::ImageOperate;
+use crate::utils::time_util::TimeUtils;
 use anyhow::{anyhow, Result};
+use diesel::associations::HasTable;
 use diesel::prelude::*;
 use diesel::{RunQueryDsl, SqliteConnection, TextExpressionMethods};
-use diesel::associations::HasTable;
-use crate::constant::IMAGE_COMPRESSION_STORAGE_FORMAT;
-use crate::utils::time_util::TimeUtils;
 // 获取图片 hash、基础信息（长、宽、比例）、exif 信息
 
 /// 把照片存储到数据库
-pub fn insert_photo(connection: &mut SqliteConnection, img_info: ImageOperate)->Result<()> {
+pub fn insert_photo(connection: &mut SqliteConnection, img_info: ImageOperate) -> Result<()> {
     let photos = search_photo_by_hash(connection, img_info.hash.clone()).expect("查询出错");
     log::debug!("找到 {} 照片", photos.len());
 
     let op = if let Some(x) = img_info.format {
         x.to_mime_type()
-    }else{
+    } else {
         ""
     };
     let timestamp = TimeUtils::current_timestamp();
-    let np = NewPhoto{
-        img_path:img_info.img_path ,
-        img_name:img_info.img_name ,
-        hash:img_info.hash ,
-        width:img_info.width,
-        height:img_info.height,
-        aspect_ratio:img_info.aspect_ratio,
-        file_size:img_info.file_size,
-        format:  op.to_string(),
+    let np = NewPhoto {
+        img_path: img_info.img_path,
+        img_name: img_info.img_name,
+        hash: img_info.hash,
+        width: img_info.width,
+        height: img_info.height,
+        aspect_ratio: img_info.aspect_ratio,
+        file_size: img_info.file_size,
+        format: op.to_string(),
         create_time: timestamp,
         update_time: timestamp,
     };
@@ -45,7 +45,7 @@ pub fn insert_photo(connection: &mut SqliteConnection, img_info: ImageOperate)->
         }
     } else {
         Ok(())
-    }
+    };
 }
 
 /// 查询照片是否存在

@@ -40,6 +40,8 @@ use tauri_plugin_shell::process::CommandEvent;
 use tauri_plugin_shell::ShellExt;
 use tauri_plugin_sql::{Migration, MigrationKind};
 use tokio::sync::{mpsc, watch};
+use crate::utils::img_util::ImageOperate;
+use crate::utils::task_util;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -49,6 +51,7 @@ pub fn run() {
     {
         let devtools = tauri_plugin_devtools::init();
         builder = builder.plugin(devtools);
+        // 调试日志集成至软件中
         // builder = builder.plugin(tauri_plugin_devtools::init()).plugin(tauri_plugin_devtools_app::init());
     }
 
@@ -104,24 +107,30 @@ pub fn run() {
     print!("配置完毕!!!!!!!!!!!!!");
 
     // 启动后台算法
-
     // 创建一个大小为 100 的通道
     let (tx, rx) = mpsc::channel::<String>(100);
     let (pause_tx, pause_rx) = watch::channel(false); // 创建暂停信号
     let (auto_manager_tx, auto_manager_rx)
         = watch::channel(BackgroundTaskAutoManager::default());
 
-    let (databases_tx, databases_rx) = mpsc::channel::<String>(100);
-    let (databases_pause_tx, databases_pause_rx) = watch::channel(false); // 创建暂停信号
-    let (databases_auto_manager_tx, databases_auto_manager_rx)
-        = watch::channel(BackgroundTaskAutoManager::default());
+    // 初始化图像数据库保存
+    // let (photo_handler_tx, photo_handler_rx) = mpsc::channel::<ImageOperate>(100);
+    // let photo_handler = task_util::PHOTO_LOAD_RECEIVER.lock().unwrap();
+    // *photo_handler = Some(photo_handler_tx);
+    // 
+    // let f = |io:ImageOperate|{
+    // 
+    // };
+    // 
+    // task_util::task_h(photo_handler_rx, f);
 
     // 启动 Tokio 运行时
     async_runtime::spawn(async {
         // 后台图像加载
         start_image_loading_background_task(rx, pause_rx, auto_manager_rx).await;
         // 数据库后台写入
-        // start_databases_write_background_task(databases_rx, databases_pause_rx, databases_auto_manager_rx).await;
+
+
     });
 
     let global_task_manager = tokio::sync::Mutex::new(

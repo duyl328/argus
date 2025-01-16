@@ -14,6 +14,7 @@ import {
 } from '@element-plus/icons-vue'
 import { useRoute } from 'vue-router'
 
+
 const route = useRoute()
 // region tab 项
 
@@ -24,6 +25,8 @@ const handleOpen = (key: string, keyPath: string[]) => {
 const handleClose = (key: string, keyPath: string[]) => {
   console.log(key, keyPath)
 }
+// endregion
+
 </script>
 
 <template>

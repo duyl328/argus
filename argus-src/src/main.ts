@@ -1,6 +1,8 @@
 import './assets/css/tailwind.scss'
 import "./assets/icon/ali/iconfont.css"
 
+import 'element-plus/dist/index.css'
+
 import { createApp } from 'vue'
 import { createPinia } from 'pinia'
 

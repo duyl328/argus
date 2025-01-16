@@ -1,20 +1,22 @@
-use tokio::sync::{mpsc, Mutex};
+use crate::models::photo::Photo;
+use crate::utils::img_util::ImageOperate;
+use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 use std::sync::Arc;
 use std::thread::sleep;
 use std::time::Duration;
+use tokio::sync::{mpsc, Mutex};
 
-// 后台任务处理线程
-async fn task_handler(mut rx: mpsc::Receiver<i32>, state: Arc<Mutex<i32>>) {
-    while let Some(task_id) = rx.recv().await {
+/// 数据库状态管理
+pub static PHOTO_LOAD_RECEIVER: Lazy<Arc<Mutex<Option<mpsc::Sender<ImageOperate>>>>> =
+    Lazy::new(|| Arc::new(Mutex::new(None)));
+
+pub async fn task_h<T, F>(mut rx: mpsc::Receiver<T>, f: F)
+where
+    F: Fn(T) ,
+{
+    while let Some(task) = rx.recv().await {
         // 处理每个任务，单线程串行执行
-        // write_to_database(task_id, state.clone()).await;
+        f(task)
     }
-    println!("No more tasks, waiting for new tasks...");
-}
-
-
-async fn write_to_database(task_id: i32) {
-    println!("Writing task {} to database...", task_id);
-    sleep(Duration::from_secs(1)).await;  // 模拟数据库写入延时
-    println!("Task {} written successfully", task_id);
 }
