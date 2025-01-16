@@ -41,10 +41,10 @@ pub async fn set_app_handle(
     app: AppHandle,
     state: State<'_, Arc<Mutex<Option<AppHandle>>>>,
 ) -> Result<String, String> {
-    // let mut state = state.lock().await;
-    // 
-    // // 解引用 MutexGuard 并更新其中的 Option<AppHandle>
-    // *state = Some(app);
+    let mut state = state.lock().await;
+    
+    // 解引用 MutexGuard 并更新其中的 Option<AppHandle>
+    *state = Some(app);
 
-    Ok(String::from("保存成功!"))
+    Ok(String::from("初始化成功!"))
 }

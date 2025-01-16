@@ -142,6 +142,7 @@ pub fn run() {
                 _ => {}
             }
         })
+        // 报错: state not managed for field state on command XXX. You must call .manage() before using this command
         // Tauri 通过类型来管理和注入状态，因此在 .manage() 中注册的类型必须是唯一的。
         // 如果你尝试注册同一个类型多次，Tauri 会抛出错误。
         // 使用时一定要注意类型一定要一致 !!!
