@@ -90,7 +90,6 @@ appHandle.then(() => {
   logB.error('AppHandle 初始化报错', e)
 })
 
-
 addListener(emitOrder.globalErrorMsgDisplay, (event) => {
   let str = event.payload as string
   if (str === null || str === undefined) return
@@ -107,7 +106,6 @@ addListener(emitOrder.globalErrorMsgDisplay, (event) => {
     duration: parse.duration
   })
 })
-
 
 </script>
 
