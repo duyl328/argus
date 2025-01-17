@@ -1,26 +1,39 @@
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
 use once_cell::sync::Lazy;
 use serde;
 use serde::{Deserialize, Serialize};
 use tauri::{AppHandle, Window};
+use tokio::sync::mpsc::Sender;
+use crate::utils::img_util::ImageOperate;
 
-#[derive(Deserialize, Serialize, Debug)]
+/// emit 状态是否初始化
+pub static GLOBAL_EMIT_IS_INIT: Lazy<Arc<Mutex<bool>>> = Lazy::new(||{
+    Arc::new(Mutex::new(false))
+});
+/// 全局触发实例
+pub static GLOBAL_EMIT_APP_HANDLE: Lazy<Arc<Mutex<Option<Sender<String>>>>> = Lazy::new(||{
+    Arc::new(Mutex::new(None::<Sender<String>>))
+});
+
+
+
+#[derive(Deserialize, Serialize, Debug,Clone)]
 pub struct GlobalErrorMsg {
     /// 标题
-    title: String,
+    pub title: String,
 
     /// 展示消息
-    msg: String,
+    pub msg: String,
 
     /// 展示时间【为 0 时则不会自动关闭】
-    duration: i32,
+    pub duration: i32,
 
     /// 通知类型
     #[serde(rename = "type")] // 指定序列化/反序列化时的字段名为 "type"
-    kind: GlobalErrorMsgTypeEnum,
+    pub kind: GlobalErrorMsgTypeEnum,
 }
 
-#[derive(Deserialize, Serialize, Debug)]
+#[derive(Deserialize, Serialize, Debug,Clone)]
 pub enum GlobalErrorMsgTypeEnum {
     #[serde(rename = "success")]
     Success,

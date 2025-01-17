@@ -166,6 +166,7 @@ pub fn run() {
             commands::global_task_command::pause_task,
             commands::global_task_command::resume_task,
             commands::global_task_command::emit_global_msg,
+            commands::global_task_command::global_msg_emit,
         ])
         .setup(main_setup())
         .run(tauri::generate_context!())

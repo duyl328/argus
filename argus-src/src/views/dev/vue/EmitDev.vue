@@ -54,6 +54,12 @@ const commands: CommandType[] = [
     result: null
   }, {
     name: 'emit_global_msg',
+    description: '全局 emit 测试报错',
+    params: [],
+    result: null
+  },
+  {
+    name: 'global_msg_emit',
     description: '全局 emit 报错测试',
     params: [],
     result: null
