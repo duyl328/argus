@@ -31,6 +31,7 @@ use crate::utils::img_util::ImageOperate;
 use crate::utils::task_util;
 use tauri::{App, Emitter, Listener, Manager, State, WindowEvent};
 use tokio::sync::{mpsc, watch};
+use crate::utils::task_util::PHOTO_LOAD_RECEIVER;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -214,26 +215,26 @@ fn main_setup() -> fn(&mut App) -> Result<(), Box<dyn Error>> {
 
 /// 后台服务
 async fn back_a_task() {
-    use tokio::sync::{mpsc, Mutex};  // 需要引入 mpsc 和 Mutex
-    use tokio::sync::mpsc::Sender;
-
-
-    // 使用 tokio 的 mpsc 通道
-    let (photo_handler_tx, photo_handler_rx) = mpsc::channel::<ImageOperate>(100);
-
-    // 使用 .await 获取 Mutex 锁
-    let mut photo_handler:Sender<ImageOperate> = task_util::PHOTO_LOAD_RECEIVER.lock().await.unwrap();
-
-    // 修改 photo_handler 中的值
-    *photo_handler = Some(photo_handler_tx);
-
-    // Define the function to process ImageOperate
-    let f = |io: ImageOperate| {
-        let mut conn = establish_connection();
-        // Read information and save to the database
-        insert_photo(&mut conn, io);
-    };
-
-    // Start the background task
-    task_util::task_h(photo_handler_rx, f);
+    let lazy = PHOTO_LOAD_RECEIVER.clone();
+    // use tokio::sync::{mpsc, Mutex};  // 需要引入 mpsc 和 Mutex
+    // 
+    // 
+    // // 使用 tokio 的 mpsc 通道
+    // let (photo_handler_tx, photo_handler_rx) = mpsc::channel::<ImageOperate>(100);
+    // 
+    // // 使用 .await 获取 Mutex 锁
+    // let mut photo_handler:tauri::async_runtime::Sender<ImageOperate> = task_util::PHOTO_LOAD_RECEIVER.lock().await.unwrap();
+    // 
+    // // 修改 photo_handler 中的值
+    // *photo_handler = Some(photo_handler_tx);
+    // 
+    // // Define the function to process ImageOperate
+    // let f = |io: ImageOperate| {
+    //     let mut conn = establish_connection();
+    //     // Read information and save to the database
+    //     insert_photo(&mut conn, io);
+    // };
+    // 
+    // // Start the background task
+    // task_util::task_h(photo_handler_rx, f);
 }

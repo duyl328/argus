@@ -136,7 +136,7 @@ pub fn get_all_dir_img(path: &str, img_num: Option<i32>) -> Vec<String> {
     } else {
         eprintln!("Failed to read directory.");
     }
-    return all_img;
+    all_img
 }
 
 /// 获取运行环境文件路径根目录

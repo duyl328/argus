@@ -43,6 +43,7 @@ onMounted(() => {
   )
 
   dirAllSubfoldersFirstImg.then((res) => {
+    console.log(res);
     res.forEach((item) => {
       let imageShowInfo = new ImageShowInfo(item.source_file_path, item.file_path)
       images.value.push(imageShowInfo)

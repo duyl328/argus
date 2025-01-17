@@ -49,7 +49,11 @@ pub struct Photo {
 
     diesel migration generate photo_table_add_info_field
 
+        图片查看次数
+
         */
+    
+    
     /// 是否经过算法【识别 人物、场景 等内容】
     pub is_algorithm: Option<bool>,
 

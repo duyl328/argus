@@ -61,7 +61,7 @@ pub async fn get_dir_all_subfolders_first_img(_app: AppHandle, path: String) -> 
     for x in &vec {
         let display = x.display().to_string();
 
-        let vec1 = get_all_dir_img(&display, Some(1)); // 获取文件夹中的图像路径
+        let vec1 = get_all_dir_img(&display, None); // 获取文件夹中的图像路径
         if !vec1.is_empty() {
             let path1 = vec1[0].clone();
             result.push(FolderImage {

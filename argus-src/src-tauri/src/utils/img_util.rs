@@ -26,6 +26,7 @@ use tokio::task;
 use tokio::task::JoinSet;
 use crate::storage::connection::establish_connection;
 use crate::storage::photo_table::insert_photo;
+use crate::utils::task_util::PHOTO_LOAD_RECEIVER;
 
 #[derive(Debug, Clone)]
 pub struct ImageOperate {
@@ -52,7 +53,6 @@ pub struct ImageOperate {
 impl ImageOperate {
     /// 读取基础图像信息
     pub async fn read_image(image_path: &str) -> Result<ImageOperate> {
-        let start_resize = Instant::now();
         // 检测文件是否存在
         if !file_exists(image_path) {
             return Err(anyhow!(AError::SpecifiedFileDoesNotExist.message()));
@@ -106,7 +106,8 @@ impl ImageOperate {
             height: height.clone() as i32,
             image_dynamic: None,
         };
-
+        let arc = PHOTO_LOAD_RECEIVER.clone();
+        arc.send(rs.clone());
         Ok(rs)
     }
 

@@ -1,5 +1,3 @@
-import { getImageThumbnailPath } from '@/services/imageService'
-
 /**
  * 获取图片绝对路径
  */
