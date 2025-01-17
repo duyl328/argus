@@ -43,3 +43,11 @@ pub async fn get_exif_info(path:String) -> Result<String, String> {
     let result = mt.pack_front_tags().expect("数据打包失败！");
     Ok(result)
 }
+
+
+// 全局异常通知
+#[tauri::command]
+pub fn global_exception_notifications(){
+    
+}
+

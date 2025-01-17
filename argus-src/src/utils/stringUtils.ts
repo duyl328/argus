@@ -24,7 +24,7 @@ export default class StringUtils {
    * @param str
    */
   static isEmpty (str: string | null) {
-    return str == null || str.length === 0
+    return str === null || str === undefined || str.length === 0
   }
   
   /**

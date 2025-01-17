@@ -4,6 +4,10 @@ import CommandManager from '@/components/dev/CommandManager.vue'
 import type { CommandType } from '@/types/command.type'
 import { addListener, clearListeners } from '@/services/emits/base'
 import emitOrder from '@/constants/emitOrder'
+import { GlobalErrorMsg } from '@/models/globalErrorMsg'
+import { ElNotification } from 'element-plus'
+import { watch } from 'vue'
+import { getAppStatus } from '@/AppStatus'
 
 // 注册监听器，统一处理图片数据
 // async function startImageListener() {
@@ -12,12 +16,27 @@ import emitOrder from '@/constants/emitOrder'
 //     console.log(batch)
 //   })
 // }
+let appStatus = getAppStatus()
 
 
-addListener(emitOrder.downloadStartedCommand,(event) => {
-  console.log(event);
-  console.log(event.payload);
+watch(appStatus.emitIsInit, (value, oldValue, onCleanup) => {
+  if (value) {
+    extracted()
+  }
 })
+if (appStatus.emitIsInit.value){
+  if (appStatus.emitIsInit.value) {
+    extracted()
+  }
+}
+function extracted() {
+  addListener(emitOrder.downloadStartedCommand, (event) => {
+    console.log(event)
+    console.log(event.payload)
+  })
+}
+
+
 
 const commands: CommandType[] = [
   {
@@ -31,6 +50,12 @@ const commands: CommandType[] = [
         value: '世界',
         placeholder: ''
       }
+    ],
+    result: null
+  }, {
+    name: 'emit_global_msg',
+    description: '全局 emit 报错测试',
+    params: [
     ],
     result: null
   }

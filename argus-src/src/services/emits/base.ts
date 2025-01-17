@@ -23,7 +23,8 @@ let emitFuncList: EmitListenerArrayType = {}
  * @param listener
  */
 export function addListener(type: EmitOrderTypes, listener: EmitListenerType) {
-  if (!emitFuncList[type]) {
+  let emitFuncListElement = emitFuncList[type]
+  if (!emitFuncListElement) {
     emitFuncList[type] = []
   }
 
@@ -67,7 +68,8 @@ export function clearListeners(type: string): void {
 
 // 触发指定类型的所有监听器
 function emit(type: string, args: any): void {
-  if (!emitFuncList[type]) return
+  let emitFuncListElement = emitFuncList[type]
+  if (!emitFuncListElement) return
 
   // 依次执行所有监听器
   for (const listener of emitFuncList[type]) {

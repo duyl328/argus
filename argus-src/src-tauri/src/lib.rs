@@ -17,10 +17,11 @@ mod tuples;
 mod utils;
 
 use crate::storage::connection;
-use crate::structs::config;
+use crate::structs::{config, global_error_msg};
 use std::error::Error;
 use std::sync::{Arc, Mutex};
-use tauri::{async_runtime, AppHandle};
+use once_cell::sync::Lazy;
+use tauri::{async_runtime, AppHandle, Window};
 
 use crate::bg_services::{BgServes, SERVES};
 use crate::global_task_manager::{start_image_loading_background_task, BackgroundTaskAutoManager};
@@ -32,6 +33,7 @@ use crate::utils::task_util;
 use tauri::{App, Emitter, Listener, Manager, State, WindowEvent};
 use tokio::sync::{mpsc, watch};
 use crate::utils::task_util::PHOTO_LOAD_RECEIVER;
+
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -113,9 +115,6 @@ pub fn run() {
         global_task_manager::BackgroundImageLoadingTaskManager::new(tx, pause_tx, auto_manager_tx),
     );
 
-    // 全局句柄
-    let app_handle = Arc::new(tokio::sync::Mutex::new(None::<AppHandle>));
-
     // 启动后台服务
     back_a_task();
     builder
@@ -140,7 +139,6 @@ pub fn run() {
         // 使用时一定要注意类型一定要一致 !!!
         .manage::<Option<tauri_plugin_shell::process::CommandChild>>(None)
         .manage(global_task_manager)
-        .manage(app_handle)
         .invoke_handler(tauri::generate_handler![
             commands::command::greet,
             commands::command::http_example,
@@ -167,7 +165,7 @@ pub fn run() {
             commands::global_task_command::add_task,
             commands::global_task_command::pause_task,
             commands::global_task_command::resume_task,
-            commands::global_task_command::set_app_handle,
+            commands::global_task_command::emit_global_msg,
         ])
         .setup(main_setup())
         .run(tauri::generate_context!())
@@ -199,7 +197,6 @@ fn main_setup() -> fn(&mut App) -> Result<(), Box<dyn Error>> {
 
         // 启用 python 算法
         bg_services::start_python_service().unwrap();
-        let app_handle = app.handle();
 
         // 打开控制台
         #[cfg(debug_assertions)] // 仅在调试版本中包含此代码
@@ -217,27 +214,4 @@ fn main_setup() -> fn(&mut App) -> Result<(), Box<dyn Error>> {
 fn back_a_task() {
     println!("后台服务 初始化");
     let sender = PHOTO_LOAD_RECEIVER.clone();
-    let lazy = PHOTO_LOAD_RECEIVER.clone();
-    
-    // use tokio::sync::{mpsc, Mutex};  // 需要引入 mpsc 和 Mutex
-    // 
-    // 
-    // // 使用 tokio 的 mpsc 通道
-    // let (photo_handler_tx, photo_handler_rx) = mpsc::channel::<ImageOperate>(100);
-    // 
-    // // 使用 .await 获取 Mutex 锁
-    // let mut photo_handler:tauri::async_runtime::Sender<ImageOperate> = task_util::PHOTO_LOAD_RECEIVER.lock().await.unwrap();
-    // 
-    // // 修改 photo_handler 中的值
-    // *photo_handler = Some(photo_handler_tx);
-    // 
-    // // Define the function to process ImageOperate
-    // let f = |io: ImageOperate| {
-    //     let mut conn = establish_connection();
-    //     // Read information and save to the database
-    //     insert_photo(&mut conn, io);
-    // };
-    // 
-    // // Start the background task
-    // task_util::task_h(photo_handler_rx, f);
 }

@@ -43,7 +43,6 @@ onMounted(() => {
   )
 
   dirAllSubfoldersFirstImg.then((res) => {
-    console.log(res);
     res.forEach((item) => {
       let imageShowInfo = new ImageShowInfo(item.source_file_path, item.file_path)
       images.value.push(imageShowInfo)
@@ -64,7 +63,6 @@ const setItemRef = (info: ImageShowInfo) => (el: Element) => {
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          console.log("开始读取");
           getImageThumbnail(info.sourceFilePath)
             .then((res) => {
               info.isLoading = false

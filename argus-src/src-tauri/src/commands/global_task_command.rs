@@ -1,14 +1,14 @@
 use crate::global_task_manager::BackgroundImageLoadingTaskManager;
 use anyhow::Result;
 use std::sync::Arc;
-use tauri::{AppHandle, State};
+use tauri::{AppHandle, Emitter, State};
 use tokio::sync::Mutex;
 
 #[tauri::command]
 pub async fn add_task(
     global_task_manager: State<'_, Mutex<BackgroundImageLoadingTaskManager>>,
     task: String,
-) -> anyhow::Result<String, String> {
+) -> Result<String, String> {
     println!("add_task: {}", task);
     global_task_manager.lock().await.send_task(task).await;
     // let manager = global_task_manager.lock();
@@ -20,7 +20,7 @@ pub async fn add_task(
 pub async fn pause_task(
     global_task_manager: State<'_, Arc<Mutex<BackgroundImageLoadingTaskManager>>>,
 ) -> Result<String, String> {
-    print!("pause_task");
+    println!("pause_task");
     let manager = global_task_manager.lock();
     manager.await.pause().await;
     Ok(String::from("完成"))
@@ -30,21 +30,17 @@ pub async fn pause_task(
 pub async fn resume_task(
     global_task_manager: State<'_, Arc<Mutex<BackgroundImageLoadingTaskManager>>>,
 ) -> Result<String, String> {
-    print!("resume_task");
+    println!("resume_task");
     let manager = global_task_manager.lock();
     manager.await.resume().await;
     Ok(String::from("完成"))
 }
 
 #[tauri::command]
-pub async fn set_app_handle(
-    app: AppHandle,
-    state: State<'_, Arc<Mutex<Option<AppHandle>>>>,
-) -> Result<String, String> {
-    let mut state = state.lock().await;
-    
-    // 解引用 MutexGuard 并更新其中的 Option<AppHandle>
-    *state = Some(app);
-
-    Ok(String::from("初始化成功!"))
+pub fn emit_global_msg(app: AppHandle) -> String {
+    println!("emit_global_msg");
+    // 访问存储的窗口实例
+    app.emit("global-error-msg-display", "你好,  来自后端!".to_string())
+        .unwrap();
+    String::from("111111111 测试内哦啊违法我欸")
 }

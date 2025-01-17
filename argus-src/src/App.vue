@@ -13,14 +13,20 @@ import { ElNotification } from 'element-plus'
 import { h } from 'vue'
 import emitOrder from '@/constants/emitOrder'
 import { GlobalErrorMsg } from '@/models/globalErrorMsg'
-import { setAppHandle } from '@/services/globalService'
 import { logB } from '@/utils/logHelper/logUtils'
+import { emitGlobalMsg } from '@/services/base'
+import { getAppStatus } from '@/AppStatus'
 
 const router = useRouter()
 const isCollapse = ref(true)
 
+// 获取状态实例
+let appStatus = getAppStatus()
+
 // 初始化后端监听器
-emitInit()
+emitInit().then(() => {
+  appStatus.emitIsInit.value = true
+})
 
 // 是否展示生成路由
 const isShowGenerateRouter = ref(false)
@@ -82,30 +88,50 @@ function getSwitch() {
   changedTheme()
 }
 
-// 初始化弹窗及 AppHandle
-let appHandle = setAppHandle()
-appHandle.then(() => {
-  logB.success('AppHandle 初始化成功')
-}).catch((e) => {
-  logB.error('AppHandle 初始化报错', e)
-})
-
-addListener(emitOrder.globalErrorMsgDisplay, (event) => {
-  let str = event.payload as string
-  if (str === null || str === undefined) return
-  let parse: GlobalErrorMsg = JSON.parse(str)
-
-  console.log(parse)
-
-  // 弹窗
-  ElNotification({
-    title: parse.title || 'Title',
-    message: parse.msg || 'message',
-    position: 'bottom-right',
-    type: parse.type || '',
-    duration: parse.duration
+function func() {
+  console.log('触发')
+  let stringPromise = emitGlobalMsg()
+  stringPromise.then((res) => {
+    console.log(res)
   })
+}
+
+watch(appStatus.emitIsInit, (value, oldValue, onCleanup) => {
+  if (value) {
+    extracted()
+  }
 })
+if (appStatus.emitIsInit.value){
+  if (appStatus.emitIsInit.value) {
+    extracted()
+  }
+}
+
+function extracted() {
+  addListener(emitOrder.globalErrorMsgDisplay, (event) => {
+    console.log('123123')
+    console.log(event)
+
+    let str = event.payload as string
+    if (StringUtils.isBlank(str)) return
+
+    let parse: GlobalErrorMsg | null = null
+    try {
+      parse = JSON.parse(str)
+    } catch (e) {
+      console.error('后端数据转换出错! ', e)
+    }
+
+    // 弹窗
+    ElNotification({
+      title: parse?.title || '后端信息',
+      message: parse?.msg || str,
+      position: 'bottom-right',
+      type: parse?.type || '',
+      duration: parse?.duration
+    })
+  })
+}
 
 </script>
 
@@ -123,6 +149,7 @@ addListener(emitOrder.globalErrorMsgDisplay, (event) => {
       </li>
       <!-- 顶部功能按钮 -->
       <ElButton class="button" @click="getSwitch">切换主题</ElButton>
+      <button @click="func">触发</button>
     </ul>
 
     <hr v-if="isShowGenerateRouter" />

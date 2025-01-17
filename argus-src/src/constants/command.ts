@@ -7,6 +7,10 @@ export const getImageAbsolutePathCommand = 'get_image_absolute_path'
  * 问候
  */
 export const greetCommand = 'greet'
+/**
+ * 全局报错 emit
+ */
+export const emitGlobalMsgCommand = 'emit_global_msg'
 
 /**
  * 检查指定路径是否有权限
@@ -48,11 +52,6 @@ export const getImageThumbnailPathCommand = 'get_image_thumbnail_path'
  */
 export const getImageThumbnailCommand = 'get_image_thumbnail'
 /**
- * 初始化 app handle
- */
-export const setAppHandleCommand = 'set_app_handle'
-/**
  * 获取所有照片路径
  */
 export const getAllImgsCommand = 'get_all_imgs'
-

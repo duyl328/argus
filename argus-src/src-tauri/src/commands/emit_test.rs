@@ -6,5 +6,3 @@ pub async fn emit_send_test(app: AppHandle, param: String) -> String {
         .unwrap();
     "12389128391".to_string()
 }
-
-

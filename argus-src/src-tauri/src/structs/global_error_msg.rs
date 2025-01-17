@@ -1,5 +1,8 @@
+use std::sync::Mutex;
+use once_cell::sync::Lazy;
 use serde;
 use serde::{Deserialize, Serialize};
+use tauri::{AppHandle, Window};
 
 #[derive(Deserialize, Serialize, Debug)]
 pub struct GlobalErrorMsg {
