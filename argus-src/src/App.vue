@@ -5,8 +5,8 @@ import StringUtils from '@/utils/stringUtils'
 import type { subRoute, subRouteList } from '@/types/views/dev/DevIndex.type'
 import app from '@/constants/app'
 import { addListener, emitInit } from '@/services/emits/base'
-import { changedTheme, isDark, toggleDark } from '@/utils/darkUtil'
-import { onMounted, ref, watch } from 'vue'
+import { changedTheme, toggleDark } from '@/utils/darkUtil'
+import { ref, watch, type WatchStopHandle } from 'vue'
 import { useDark } from '@vueuse/core'
 
 import { ElNotification } from 'element-plus'
@@ -96,22 +96,20 @@ function func() {
   })
 }
 
-watch(appStatus.emitIsInit, (value, oldValue, onCleanup) => {
+let stop: WatchStopHandle|null = null;
+ stop = watch(appStatus.emitIsInit, (value, onCleanup) => {
   if (value) {
     extracted()
+    if (stop != null){
+      stop()
+    }
   }
+},{
+  immediate:true
 })
-if (appStatus.emitIsInit.value){
-  if (appStatus.emitIsInit.value) {
-    extracted()
-  }
-}
 
 function extracted() {
   addListener(emitOrder.globalErrorMsgDisplay, (event) => {
-    console.log('123123')
-    console.log(event)
-
     let str = event.payload as string
     if (StringUtils.isBlank(str)) return
 
@@ -149,7 +147,7 @@ function extracted() {
       </li>
       <!-- 顶部功能按钮 -->
       <ElButton class="button" @click="getSwitch">切换主题</ElButton>
-      <button @click="func">触发</button>
+      <ElButton @click="func">触发</ElButton>
     </ul>
 
     <hr v-if="isShowGenerateRouter" />

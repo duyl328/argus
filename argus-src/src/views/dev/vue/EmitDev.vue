@@ -6,7 +6,7 @@ import { addListener, clearListeners } from '@/services/emits/base'
 import emitOrder from '@/constants/emitOrder'
 import { GlobalErrorMsg } from '@/models/globalErrorMsg'
 import { ElNotification } from 'element-plus'
-import { watch } from 'vue'
+import { watch, type WatchStopHandle } from 'vue'
 import { getAppStatus } from '@/AppStatus'
 
 // 注册监听器，统一处理图片数据
@@ -18,24 +18,24 @@ import { getAppStatus } from '@/AppStatus'
 // }
 let appStatus = getAppStatus()
 
-
-watch(appStatus.emitIsInit, (value, oldValue, onCleanup) => {
+let stop: WatchStopHandle|null = null;
+stop = watch(appStatus.emitIsInit, (value, oldValue, onCleanup) => {
   if (value) {
     extracted()
+    if (stop != null){
+      stop()
+    }
   }
+}, {
+  immediate: true
 })
-if (appStatus.emitIsInit.value){
-  if (appStatus.emitIsInit.value) {
-    extracted()
-  }
-}
+
 function extracted() {
   addListener(emitOrder.downloadStartedCommand, (event) => {
     console.log(event)
     console.log(event.payload)
   })
 }
-
 
 
 const commands: CommandType[] = [
@@ -55,8 +55,7 @@ const commands: CommandType[] = [
   }, {
     name: 'emit_global_msg',
     description: '全局 emit 报错测试',
-    params: [
-    ],
+    params: [],
     result: null
   }
 ]

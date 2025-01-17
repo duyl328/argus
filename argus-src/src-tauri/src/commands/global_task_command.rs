@@ -37,10 +37,9 @@ pub async fn resume_task(
 }
 
 #[tauri::command]
-pub fn emit_global_msg(app: AppHandle) -> String {
+pub fn emit_global_msg(app: AppHandle)  {
     println!("emit_global_msg");
     // 访问存储的窗口实例
     app.emit("global-error-msg-display", "你好,  来自后端!".to_string())
         .unwrap();
-    String::from("111111111 测试内哦啊违法我欸")
 }
