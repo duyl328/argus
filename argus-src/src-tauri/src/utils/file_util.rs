@@ -89,15 +89,16 @@ pub fn get_all_subfolders(path: &str) -> Vec<PathBuf> {
         .collect()
 }
 
-/// 获取指定路径的第一张图片
-pub fn get_all_img(path: &str) {
+/// 获取所有照片
+pub fn get_all_img(path: &str) -> Vec<String> {
     let vec = get_all_subfolders(path);
-
+    let mut res:Vec<String> = Vec::new();
     for x in vec {
         let display = x.display().to_string();
-        get_all_dir_img(&*display, Some(1));
-        // println!("{}", display);
+        get_all_dir_img(&*display, Some(-1));
+        res.push(display);
     }
+    res
 }
 
 /// 获取指定路径下所有图片
@@ -123,7 +124,6 @@ pub fn get_all_dir_img(path: &str, img_num: Option<i32>) -> Vec<String> {
                         if valid_extensions.contains(&extension.to_str().unwrap_or_default()) {
                             i += 1;
                             let x = i == nums;
-                            // println!("Found image: {:?} ,{},{}, {}", path, i, nums, x);
                             all_img.push(String::from(path.to_str().unwrap()));
                             if x {
                                 break;

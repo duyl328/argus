@@ -214,8 +214,11 @@ fn main_setup() -> fn(&mut App) -> Result<(), Box<dyn Error>> {
 }
 
 /// 后台服务
-async fn back_a_task() {
+fn back_a_task() {
+    println!("后台服务 初始化");
+    let sender = PHOTO_LOAD_RECEIVER.clone();
     let lazy = PHOTO_LOAD_RECEIVER.clone();
+    
     // use tokio::sync::{mpsc, Mutex};  // 需要引入 mpsc 和 Mutex
     // 
     // 

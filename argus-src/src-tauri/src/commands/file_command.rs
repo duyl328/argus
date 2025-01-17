@@ -39,15 +39,36 @@ pub fn read_image_as_base64(directory: String) -> Result<String, String> {
 
 /// 获取所有目录
 #[tauri::command]
-pub fn get_all_sub_dir(path: String) -> String {
+pub fn get_all_sub_dir(path: String) -> Vec<String> {
     let vec = get_all_subfolders(&*path);
-    JsonUtil::stringify(&vec).expect("JSON 转换失败")
+    let mut ans: Vec<String> = Vec::new();
+    for x in vec {
+        ans.push(x.to_str().unwrap_or_default().to_string())
+    }
+    ans
 }
 
 #[tauri::command]
-pub fn get_all_imgs(path: String) -> String {
-    let vec = get_all_img(&*path);
-    JsonUtil::stringify(&vec).expect("JSON 转换失败")
+pub fn get_all_imgs(path: String) -> Vec<FolderImage> {
+    let vec = get_all_subfolders(&path);
+    let mut result: Vec<FolderImage> = Vec::new();
+
+    // 使用并发处理文件夹
+    for x in &vec {
+        let display = x.display().to_string();
+
+        // 获取所有照片
+        let vec1 = get_all_dir_img(&display, Some(-1)); // 获取文件夹中的图像路径
+        if !vec1.is_empty() {
+            for x in vec1 {
+                result.push(FolderImage {
+                    source_file_path: x.clone(),
+                    file_path: display.clone(),
+                })
+            }
+        }
+    }
+    result
 }
 
 /// 获取指定路径下所有子文件夹的第一张图片
@@ -61,7 +82,19 @@ pub async fn get_dir_all_subfolders_first_img(_app: AppHandle, path: String) -> 
     for x in &vec {
         let display = x.display().to_string();
 
-        let vec1 = get_all_dir_img(&display, None); // 获取文件夹中的图像路径
+        // 获取所有照片
+        // let vec1 = get_all_dir_img(&display, None); // 获取文件夹中的图像路径
+        // if !vec1.is_empty() {
+        //     for x in vec1 {
+        //         result.push(FolderImage {
+        //             source_file_path: x.clone(),
+        //             file_path: display.clone(),
+        //         })
+        //     }
+        // }
+
+        // 获取当前照片
+        let vec1 = get_all_dir_img(&display, Some(1)); // 获取文件夹中的图像路径
         if !vec1.is_empty() {
             let path1 = vec1[0].clone();
             result.push(FolderImage {

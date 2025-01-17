@@ -1,5 +1,5 @@
 import { invoke } from '@tauri-apps/api/core'
-import { getDirAllSubfoldersFirstImgCommand, insertPostCommand } from '@/constants/command'
+import { getAllImgsCommand, getDirAllSubfoldersFirstImgCommand, insertPostCommand } from '@/constants/command'
 import type { FolderImage } from '@/types/rusts/FolderImage'
 import type { ImageDirRustInfo } from '@/models/ImageShowInfo'
 
@@ -19,6 +19,13 @@ import type { ImageDirRustInfo } from '@/models/ImageShowInfo'
  */
 export function getDirAllSubfoldersFirstImg(path: string) {
   return invoke<ImageDirRustInfo[]>(getDirAllSubfoldersFirstImgCommand, { path })
+}
+
+/**
+ * 获取指定路径下所有文件
+ */
+export function getAllImgs(path: string){
+  return invoke<ImageDirRustInfo[]>(getAllImgsCommand, { path })
 }
 
 

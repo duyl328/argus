@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, reactive, onMounted, watch, onUnmounted } from 'vue'
-import { getDirAllSubfoldersFirstImg } from '@/services/folderService'
+import { getAllImgs, getDirAllSubfoldersFirstImg } from '@/services/folderService'
 import type { FolderImage } from '@/types/rusts/FolderImage'
 import EmitOrder from '@/constants/emitOrder'
 import { convertFileSrc } from '@tauri-apps/api/core'
@@ -36,7 +36,7 @@ function updateColumns() {
 }
 
 onMounted(() => {
-  let dirAllSubfoldersFirstImg = getDirAllSubfoldersFirstImg(
+  let dirAllSubfoldersFirstImg = getAllImgs(
     // 'D:\\argus\\img\\jpg\\局部\\新建文件夹'
     'D:\\argus\\img'
     // 'E:\\整合',

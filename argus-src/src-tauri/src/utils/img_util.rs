@@ -106,8 +106,14 @@ impl ImageOperate {
             height: height.clone() as i32,
             image_dynamic: None,
         };
+
         let arc = PHOTO_LOAD_RECEIVER.clone();
-        arc.send(rs.clone());
+        let qqq = arc.send(rs.clone()).await;
+        
+        if qqq.is_err() { 
+            
+        }
+
         Ok(rs)
     }
 

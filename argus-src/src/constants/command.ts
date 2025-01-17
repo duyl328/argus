@@ -51,3 +51,8 @@ export const getImageThumbnailCommand = 'get_image_thumbnail'
  * 初始化 app handle
  */
 export const setAppHandleCommand = 'set_app_handle'
+/**
+ * 获取所有照片路径
+ */
+export const getAllImgsCommand = 'get_all_imgs'
+
