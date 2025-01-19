@@ -15,6 +15,7 @@ mod storage;
 mod structs;
 mod tuples;
 mod utils;
+mod global_front_emit;
 
 use crate::storage::connection;
 use crate::structs::{config, global_error_msg};
@@ -108,7 +109,6 @@ pub fn run() {
     async_runtime::spawn(async {
         // 后台图像加载
         start_image_loading_background_task(rx, pause_rx, auto_manager_rx).await;
-        // 数据库后台写入
     });
 
     let global_task_manager = tokio::sync::Mutex::new(
@@ -162,7 +162,7 @@ pub fn run() {
             commands::image_command::generate_save_thumbnail,
             commands::image_command::get_image_thumbnail_path,
             commands::image_command::get_image_thumbnail,
-            commands::global_task_command::add_task,
+            commands::global_task_command::add_photo_retrieve_task,
             commands::global_task_command::pause_task,
             commands::global_task_command::resume_task,
             commands::global_task_command::emit_global_msg,

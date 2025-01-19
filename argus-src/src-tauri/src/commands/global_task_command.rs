@@ -12,16 +12,16 @@ use std::sync::Arc;
 use std::thread;
 use tauri::{AppHandle, Emitter, State};
 use tokio::sync::{mpsc, Mutex};
+use crate::global_front_emit;
 
 #[tauri::command]
-pub async fn add_task(
+pub async fn add_photo_retrieve_task(
     global_task_manager: State<'_, Mutex<BackgroundImageLoadingTaskManager>>,
     task: String,
 ) -> Result<String, String> {
     println!("add_task: {}", task);
+    // 查询指定所有路径
     global_task_manager.lock().await.send_task(task).await;
-    // let manager = global_task_manager.lock();
-    // manager.await.send_task(task).await;
     Ok(String::from("完成"))
 }
 
@@ -51,14 +51,14 @@ pub fn emit_global_msg(app: AppHandle) {
     if is_init.clone() {
         return;
     }
-    println!("运行一次！！！！！！！！");
+    println!("前端 emit 初始化!");
     *is_init = true;
 
     let mut emit = GLOBAL_EMIT_APP_HANDLE.lock().unwrap();
     let (emit_tx, emit_rx) = mpsc::channel::<String>(100);
     *emit = Some(emit_tx);
     let f = move |info: String| {
-        app.clone().emit("global-error-msg-display", info).unwrap();
+        app.clone().emit(global_front_emit::GLOBAL_ERROR_MSG_DISPLAY, info).unwrap();
     };
 
     // 在一个新的线程中启动 Tokio 运行时

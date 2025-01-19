@@ -1,23 +1,18 @@
-use std::sync::{Arc, Mutex};
+use crate::utils::img_util::ImageOperate;
 use once_cell::sync::Lazy;
 use serde;
 use serde::{Deserialize, Serialize};
+use std::sync::{Arc, Mutex};
 use tauri::{AppHandle, Window};
 use tokio::sync::mpsc::Sender;
-use crate::utils::img_util::ImageOperate;
 
 /// emit 状态是否初始化
-pub static GLOBAL_EMIT_IS_INIT: Lazy<Arc<Mutex<bool>>> = Lazy::new(||{
-    Arc::new(Mutex::new(false))
-});
+pub static GLOBAL_EMIT_IS_INIT: Lazy<Arc<Mutex<bool>>> = Lazy::new(|| Arc::new(Mutex::new(false)));
 /// 全局触发实例
-pub static GLOBAL_EMIT_APP_HANDLE: Lazy<Arc<Mutex<Option<Sender<String>>>>> = Lazy::new(||{
-    Arc::new(Mutex::new(None::<Sender<String>>))
-});
+pub static GLOBAL_EMIT_APP_HANDLE: Lazy<Arc<Mutex<Option<Sender<String>>>>> =
+    Lazy::new(|| Arc::new(Mutex::new(None::<Sender<String>>)));
 
-
-
-#[derive(Deserialize, Serialize, Debug,Clone)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct GlobalErrorMsg {
     /// 标题
     pub title: String,
@@ -33,7 +28,7 @@ pub struct GlobalErrorMsg {
     pub kind: GlobalErrorMsgTypeEnum,
 }
 
-#[derive(Deserialize, Serialize, Debug,Clone)]
+#[derive(Deserialize, Serialize, Debug, Clone)]
 pub enum GlobalErrorMsgTypeEnum {
     #[serde(rename = "success")]
     Success,

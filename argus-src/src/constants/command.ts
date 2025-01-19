@@ -55,3 +55,7 @@ export const getImageThumbnailCommand = 'get_image_thumbnail'
  * 获取所有照片路径
  */
 export const getAllImgsCommand = 'get_all_imgs'
+/**
+ * 添加图像检索任务
+ */
+export const addPhotoRetrieveTaskCommand = 'add_photo_retrieve_task'

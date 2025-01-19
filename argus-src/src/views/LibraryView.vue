@@ -15,55 +15,6 @@ import { updatePhotoStorageCommand } from '@/constants/command'
 const input = ref('')
 // 所有的路径展示
 let folders: Reactive<photoStorageType[]> = reactive([])
-const checkList = ref([])
-const basicProcessColor: string = '#409dfe'
-const activeProcessColor: string = '#dcdfe6'
-
-//  UI 由 elementplus 转换为 vuetify
-
-/**
- * 是否正在加载
- */
-const isLoading = ref(false)
-
-/**
- * 监视任务属性
- */
-watch(isLoading, (value, oldValue, onCleanup) => {
-  if (value) {
-    processColor.value = basicProcessColor
-    processProgress.value = 0
-    processStriped.value = true
-    processStrokeWidth.value = 15
-  } else {
-    processColor.value = activeProcessColor
-    processProgress.value = 100
-    processStrokeWidth.value = 1
-    processStriped.value = false
-    taskName.value = ""
-  }
-})
-
-/**
- * 进度条进度
- */
-const processProgress = ref(100)
-
-/**
- * 进度条颜色
- */
-const processColor = ref<string>('')
-processColor.value = activeProcessColor
-
-/**
- * 进度条高度
- */
-const processStrokeWidth = ref(1)
-
-/**
- * 进度条条纹
- */
-const processStriped = ref(false)
 
 /**
  * 正在处理任务
@@ -166,6 +117,53 @@ function pathSelectChange(items: photoStorageType) {
 // endregion
 
 // region 进度条
+const basicProcessColor: string = '#409dfe'
+const activeProcessColor: string = '#dcdfe6'
+
+/**
+ * 是否正在加载
+ */
+const isLoading = ref(false)
+
+/**
+ * 监视任务属性
+ */
+watch(isLoading, (value, oldValue, onCleanup) => {
+  if (value) {
+    processColor.value = basicProcessColor
+    processProgress.value = 0
+    processStriped.value = true
+    processStrokeWidth.value = 15
+  } else {
+    processColor.value = activeProcessColor
+    processProgress.value = 100
+    processStrokeWidth.value = 1
+    processStriped.value = false
+    taskName.value = ''
+  }
+})
+
+/**
+ * 进度条进度
+ */
+const processProgress = ref(100)
+
+/**
+ * 进度条颜色
+ */
+const processColor = ref<string>('')
+processColor.value = activeProcessColor
+
+/**
+ * 进度条高度
+ */
+const processStrokeWidth = ref(1)
+
+/**
+ * 进度条条纹
+ */
+const processStriped = ref(false)
+
 /**
  * 进度条展示文字
  */
@@ -176,6 +174,39 @@ let processFormat = (): string => {
 onMounted(() => {
   // 绑定事件
 })
+
+// endregion
+
+// region 开始 和 取消
+
+/**
+ * 是否重新检索
+ */
+const isReRetrieve = ref(false)
+
+/**
+ * 开始
+ */
+function retrieveStart() {
+
+  /*
+  * 点击开始后，将需要检索的路径发送到后端
+  * 后端开始处理，于此同时，开启前端和后端的 emit 连接【如果页面返回，则不取消任务（或低效率任务）】
+  * 后端拿到路径，获取路径所有文件和文件夹，递归生成所有图片的缩略图
+  * 生成缩略图报错，将错误信息提示到前端
+  *
+  * */
+
+  // addPhotoRetrieveTaskCommand
+  console.log('开始')
+}
+
+/**
+ * 取消
+ */
+function retrieveCancel() {
+  console.log('取消')
+}
 
 // endregion
 </script>
@@ -251,9 +282,9 @@ onMounted(() => {
 
       <!--    重新检索【默认增量检索】-->
       <div class="flex lib-option w-64">
-        <span class="mt-1 iconfont icon-zhongxin search-again"></span>
+        <span class="mt-1.5 iconfont icon-zhongxin search-again"></span>
         <div class="flex flex-col">
-          <el-checkbox class="text-4xl" label="重新检索" size="large" />
+          <el-checkbox class="text-4xl" v-model="isReRetrieve" label="重新检索" size="large" />
           <span class="text-wrap">放弃所有已索引文件，全部重新检索，默认增量检索</span>
         </div>
       </div>
@@ -261,9 +292,15 @@ onMounted(() => {
       <!--    清理【清理缩略图】-->
     </div>
 
-<!--    Option-->
-    <div>
-      <button></button>
+    <!--    开始检索与选项-->
+    <div class="mt-10 ml-10">
+      <!--      取消-->
+      <el-button class="w-20" @click="retrieveStart">取消</el-button>
+      <!--      开始构建-->
+      <el-button type="primary" @click="retrieveCancel" class="ml-10 w-28">
+        开始
+        <el-icon class="el-icon--right"><span class="iconfont icon-zhongxinkaishi"></span></el-icon>
+      </el-button>
     </div>
   </div>
 </template>
@@ -282,6 +319,7 @@ onMounted(() => {
     .el-checkbox__inner {
       &::after {
         @apply h-3.5 w-1.5;
+        translate: 2px -1px;
       }
 
       @apply h-5 w-5;

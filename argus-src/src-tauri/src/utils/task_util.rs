@@ -38,7 +38,6 @@ where
     loop {
         match rx.recv().await {
             Some(task) => {
-                println!("接收到任务:");
                 f(task);
             }
             None => {

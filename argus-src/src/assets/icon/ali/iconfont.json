@@ -6,6 +6,13 @@
   "description": "",
   "glyphs": [
     {
+      "icon_id": "2743897",
+      "name": "重新开始",
+      "font_class": "zhongxinkaishi",
+      "unicode": "e648",
+      "unicode_decimal": 58952
+    },
+    {
       "icon_id": "29849119",
       "name": "重新",
       "font_class": "zhongxin",
