@@ -14,18 +14,14 @@ use image::io::Reader;
 use image::{imageops, DynamicImage, GenericImageView, ImageError, ImageFormat};
 use image::{imageops::FilterType, ImageReader};
 use log::{error, info, warn};
-use std::fs;
-use std::fs::File;
+use std::{fs, panic};
 use std::io::{BufReader, Cursor};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::Instant;
-use thiserror::__private::AsDisplay;
 use tokio::sync::{mpsc, Mutex};
 use tokio::task;
 use tokio::task::JoinSet;
-use crate::storage::connection::establish_connection;
-use crate::storage::photo_table::insert_photo;
 use crate::utils::task_util::PHOTO_LOAD_RECEIVER;
 
 #[derive(Debug, Clone)]
@@ -217,7 +213,6 @@ impl ImageOperate {
         let file_name = Arc::new(image_format_util::get_suffix_name(fmt.clone()));
 
         // 读取图片
-        // let img = ImageOperate::read_image(dir).await?;
         let img = Arc::new(ImageOperate::read_image(&dir.clone()).await?); // 使用 Arc 包装图像
         let mut join_set = JoinSet::new();
         let shared_img_dyc = Arc::new(Mutex::new(ComputedValue::<DynamicImage>::new()));
@@ -250,7 +245,13 @@ impl ImageOperate {
                 if !exists {
                     let mut img_dyc = shared_img_dyc_clone.lock().await;
                     let img = img_dyc.get_or_compute(|| {
-                        image.read_image_dynamic().expect("可计算图像获取失败！")
+                        let result1 = image.read_image_dynamic();
+                        if result1.is_err() {
+                            let result2 = result1.map_err(|e| e.to_string());
+                            panic!("{}", result2.err().expect("异常报错信息！"))
+                        }else{
+                            result1.expect("可计算图像获取失败！")
+                        }
                     });
                     // 压缩
                     let x1 = img.resize(level.size, level.size, FilterType::Triangle);
@@ -264,8 +265,14 @@ impl ImageOperate {
         }
 
         while let Some(res) = join_set.join_next().await {
-            if let Err(e) = res {
-                eprintln!("任务失败: {}", e);
+            match res {
+                Ok(result) => (),
+                Err(e) => {
+                    // 如果有错误，抛出
+                    // 捕获错误并精简输出
+                    let error_message = format!("Task failed: {}", e);
+                    anyhow::bail!("{}", error_message);
+                }
             }
         }
         let vec = {

@@ -1,8 +1,9 @@
+use crate::constant::{IMAGE_COMPRESSION_RATIO, IMAGE_COMPRESSION_STORAGE_FORMAT};
+use crate::utils::img_util::ImageOperate;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 use tokio::sync::{mpsc, watch};
 use tokio::task;
-
 
 /// 后台任务自动管理
 #[derive(Clone, Debug)]
@@ -84,7 +85,7 @@ pub async fn start_image_loading_background_task(
     mut pause_rx: watch::Receiver<bool>,
     auto_manager_rx: watch::Receiver<BackgroundTaskAutoManager>,
 ) {
-    let mut paused = false;
+    let mut paused = true;
 
     let mut wait_counter = 0; // 轮次计数器
 
@@ -104,9 +105,18 @@ pub async fn start_image_loading_background_task(
                     tokio::time::sleep(Duration::from_secs(auto_manager.pause_check_duration.into())).await;
                     continue;
                 }
-                println!("Processing task: {}", task);
-                tokio::time::sleep(Duration::from_secs(1)).await; // 模拟任务处理
-                println!("Completed task: {}", task);
+                // 读取图片压缩
+                let image_compression = ImageOperate::multi_level_image_compression(
+                    task,
+                    IMAGE_COMPRESSION_STORAGE_FORMAT,
+                    IMAGE_COMPRESSION_RATIO.to_vec(),
+                );
+                let s = image_compression.await;
+                if s.is_err(){
+                    println!("任务出错 ,{:?}",s.err());
+                    paused = true
+                }
+
                 // 清空计数
                 wait_counter = 0;
                 // 任务完成后，根据 auto_manager_rx 的状态来决定是否暂停

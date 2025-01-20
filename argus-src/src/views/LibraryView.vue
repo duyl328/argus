@@ -10,6 +10,7 @@ import {
   updatePhotoStorage
 } from '@/services/libraryService'
 import { updatePhotoStorageCommand } from '@/constants/command'
+import { addPhotoRetrieveTask } from '@/services/globalService'
 
 // 输入框输入的值
 const input = ref('')
@@ -188,14 +189,16 @@ const isReRetrieve = ref(false)
  * 开始
  */
 function retrieveStart() {
+  const newArray: string[] = folders.map((folder) => folder.img_paths as string)
+  addPhotoRetrieveTask(newArray)
 
   /*
-  * 点击开始后，将需要检索的路径发送到后端
-  * 后端开始处理，于此同时，开启前端和后端的 emit 连接【如果页面返回，则不取消任务（或低效率任务）】
-  * 后端拿到路径，获取路径所有文件和文件夹，递归生成所有图片的缩略图
-  * 生成缩略图报错，将错误信息提示到前端
-  *
-  * */
+   * 点击开始后，将需要检索的路径发送到后端
+   * 后端开始处理，于此同时，开启前端和后端的 emit 连接【如果页面返回，则不取消任务（或低效率任务）】
+   * 后端拿到路径，获取路径所有文件和文件夹，递归生成所有图片的缩略图
+   * 生成缩略图报错，将错误信息提示到前端
+   *
+   * */
 
   // addPhotoRetrieveTaskCommand
   console.log('开始')
@@ -295,9 +298,9 @@ function retrieveCancel() {
     <!--    开始检索与选项-->
     <div class="mt-10 ml-10">
       <!--      取消-->
-      <el-button class="w-20" @click="retrieveStart">取消</el-button>
+      <el-button class="w-20" @click="retrieveCancel">取消</el-button>
       <!--      开始构建-->
-      <el-button type="primary" @click="retrieveCancel" class="ml-10 w-28">
+      <el-button type="primary" @click="retrieveStart" class="ml-10 w-28">
         开始
         <el-icon class="el-icon--right"><span class="iconfont icon-zhongxinkaishi"></span></el-icon>
       </el-button>

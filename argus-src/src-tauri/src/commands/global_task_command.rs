@@ -1,3 +1,4 @@
+use crate::global_front_emit;
 use crate::global_task_manager::BackgroundImageLoadingTaskManager;
 use crate::storage::connection::establish_connection;
 use crate::storage::photo_table::insert_photo;
@@ -12,16 +13,36 @@ use std::sync::Arc;
 use std::thread;
 use tauri::{AppHandle, Emitter, State};
 use tokio::sync::{mpsc, Mutex};
-use crate::global_front_emit;
+use crate::commands::file_command::FolderImage;
+use crate::utils::file_util::{get_all_dir_img, get_all_subfolders};
 
 #[tauri::command]
 pub async fn add_photo_retrieve_task(
     global_task_manager: State<'_, Mutex<BackgroundImageLoadingTaskManager>>,
-    task: String,
+    tasks: Vec<String>,
 ) -> Result<String, String> {
-    println!("add_task: {}", task);
-    // 查询指定所有路径
-    global_task_manager.lock().await.send_task(task).await;
+    
+    println!("add_task: {:?}", tasks);
+    // 获取指定路径下所有的文件
+    let mut result: Vec<String> = Vec::new();
+    for x in tasks {
+        let vec = get_all_subfolders(&x);
+        // 使用并发处理文件夹
+        for x in &vec {
+            let display = x.display().to_string();
+
+            // 获取所有照片
+            let vec1 = get_all_dir_img(&display, Some(-1)); // 获取文件夹中的图像路径
+            
+            if !vec1.is_empty() {
+                result.extend(vec1)
+            }
+        }   
+    }
+    // 添加任务
+    for x in result {
+        global_task_manager.lock().await.send_task(x).await;
+    }
     Ok(String::from("完成"))
 }
 
@@ -58,7 +79,9 @@ pub fn emit_global_msg(app: AppHandle) {
     let (emit_tx, emit_rx) = mpsc::channel::<String>(100);
     *emit = Some(emit_tx);
     let f = move |info: String| {
-        app.clone().emit(global_front_emit::GLOBAL_ERROR_MSG_DISPLAY, info).unwrap();
+        app.clone()
+            .emit(global_front_emit::GLOBAL_ERROR_MSG_DISPLAY, info)
+            .unwrap();
     };
 
     // 在一个新的线程中启动 Tokio 运行时
