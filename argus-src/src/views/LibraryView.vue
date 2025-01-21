@@ -1,5 +1,14 @@
 <script setup lang="ts">
-import { onMounted, type Reactive, type Ref, reactive, ref, watch } from 'vue'
+import {
+  onMounted,
+  type Reactive,
+  type Ref,
+  reactive,
+  ref,
+  watch,
+  type WatchStopHandle,
+  onUnmounted
+} from 'vue'
 import { Delete, Plus } from '@element-plus/icons-vue'
 import type { photoStorageType } from '@/types/photoStorage.type'
 import { open } from '@tauri-apps/plugin-dialog'
@@ -11,6 +20,10 @@ import {
 } from '@/services/libraryService'
 import { updatePhotoStorageCommand } from '@/constants/command'
 import { addPhotoRetrieveTask } from '@/services/globalService'
+import { addListener, removeListener } from '@/services/emits/base'
+import emitOrder from '@/constants/emitOrder'
+import { getAppStatus } from '@/AppStatus'
+import type { Event } from '@tauri-apps/api/event'
 
 // 输入框输入的值
 const input = ref('')
@@ -21,11 +34,6 @@ let folders: Reactive<photoStorageType[]> = reactive([])
  * 正在处理任务
  */
 const taskName = ref('')
-
-// 页面挂在后，查询所有路径
-onMounted(() => {
-  getAllData()
-})
 
 // region 数据库操作
 /**
@@ -200,7 +208,6 @@ function retrieveStart() {
    *
    * */
 
-  // addPhotoRetrieveTaskCommand
   console.log('开始')
 }
 
@@ -211,7 +218,55 @@ function retrieveCancel() {
   console.log('取消')
 }
 
+/**
+ * 进度及现在正在加载的信息展示
+ */
+let errorListener = (event: unknown) => {
+  let event1 = event as Event<string>
+  console.log('进度', event1.payload)
+}
+/**
+ * 报错提示
+ */
+let msgListener = (event: unknown) => {
+  let event1 = event as Event<string>
+  console.log('报错', event1.payload)
+}
+
 // endregion
+
+// 获取状态实例
+let appStatus = getAppStatus()
+
+// 页面挂在后
+onMounted(() => {
+  // 查询所有路径
+  getAllData()
+
+  // 绑定后台事件
+  let stop: WatchStopHandle | null = null
+  stop = watch(
+    appStatus.emitIsInit,
+    (value, onCleanup) => {
+      if (value) {
+        addListener(emitOrder.photoLoadingMsgTip, msgListener)
+        addListener(emitOrder.photoLoadingErrTip, errorListener)
+        if (stop != null) {
+          stop()
+        }
+      }
+    },
+    {
+      immediate: true
+    }
+  )
+})
+
+// 页面卸载
+onUnmounted(() => {
+  removeListener(emitOrder.photoLoadingMsgTip, msgListener)
+  removeListener(emitOrder.photoLoadingErrTip, errorListener)
+})
 </script>
 
 <template>

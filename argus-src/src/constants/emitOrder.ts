@@ -23,7 +23,17 @@ const EmitOrder = {
   /**
    * 全局报错提示
    */
-  globalErrorMsgDisplay: 'global-error-msg-display'
+  globalErrorMsgDisplay: 'global-error-msg-display',
+
+  /**
+   * 照片后台加载报错提示
+   */
+  photoLoadingErrTip: 'photo-loading-err-tip',
+
+  /**
+   * 照片后台加载进度及信息提示
+   */
+  photoLoadingMsgTip: 'photo-loading-msg-tip'
 } as const
 
 export default EmitOrder

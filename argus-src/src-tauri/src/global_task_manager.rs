@@ -77,18 +77,36 @@ impl BackgroundImageLoadingTaskManager {
     pub(crate) async fn resume(&self) {
         let _ = self.pause_tx.send(false); // 向后台任务发送恢复信号
     }
+
+    // 监听报错信息
+    // pub (crate) fn listen_err_msg<F>(&mut self, f:F)
+    // where
+    //     F: FnOnce(String),
+    // {
+    //    let s =  self.err_msg_send.recv() => {}
+    // }
+
+    // 报错消息触发
+    pub (crate) fn err_msg_pop(msg:String){
+
+    }
 }
 
 // 启动后台任务，持续处理任务
-pub async fn start_image_loading_background_task(
+pub async fn start_image_loading_background_task<F>(
     mut rx: mpsc::Receiver<String>,
     mut pause_rx: watch::Receiver<bool>,
     auto_manager_rx: watch::Receiver<BackgroundTaskAutoManager>,
-) {
+    f:F
+) where
+    F:FnOnce(String)
+{
     let mut paused = true;
 
     let mut wait_counter = 0; // 轮次计数器
 
+    
+    
     loop {
         tokio::select! {
             Some(task) = rx.recv() => {
@@ -113,7 +131,9 @@ pub async fn start_image_loading_background_task(
                 );
                 let s = image_compression.await;
                 if s.is_err(){
-                    println!("任务出错 ,{:?}",s.err());
+                    let i_e = s.map_err(|e| e.to_string()).unwrap_err();
+                    println!("isError ,{}",i_e);
+                    // f(i_e);
                     paused = true
                 }
 

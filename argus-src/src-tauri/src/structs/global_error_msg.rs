@@ -12,6 +12,17 @@ pub static GLOBAL_EMIT_IS_INIT: Lazy<Arc<Mutex<bool>>> = Lazy::new(|| Arc::new(M
 pub static GLOBAL_EMIT_APP_HANDLE: Lazy<Arc<Mutex<Option<Sender<String>>>>> =
     Lazy::new(|| Arc::new(Mutex::new(None::<Sender<String>>)));
 
+/// 加载信息返回
+#[derive(Deserialize, Serialize, Debug, Clone)]
+pub struct LoadMsg{
+    /// 总任务数
+    pub all_task:u32,
+    /// 当前任务数（已完成）
+    pub current_task:u32,
+    /// 任务信息
+    pub task_msg:String,
+}
+
 #[derive(Deserialize, Serialize, Debug, Clone)]
 pub struct GlobalErrorMsg {
     /// 标题

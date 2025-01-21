@@ -270,7 +270,7 @@ impl ImageOperate {
                 Err(e) => {
                     // 如果有错误，抛出
                     // 捕获错误并精简输出
-                    let error_message = format!("Task failed: {}", e);
+                    let error_message = format!("{}", e);
                     anyhow::bail!("{}", error_message);
                 }
             }

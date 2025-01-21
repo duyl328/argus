@@ -1,3 +1,5 @@
+use crate::commands::file_command::FolderImage;
+use crate::constant::{IMAGE_COMPRESSION_RATIO, IMAGE_COMPRESSION_STORAGE_FORMAT};
 use crate::global_front_emit;
 use crate::global_task_manager::BackgroundImageLoadingTaskManager;
 use crate::storage::connection::establish_connection;
@@ -5,6 +7,7 @@ use crate::storage::photo_table::insert_photo;
 use crate::structs::global_error_msg::{
     GlobalErrorMsg, GLOBAL_EMIT_APP_HANDLE, GLOBAL_EMIT_IS_INIT,
 };
+use crate::utils::file_util::{get_all_dir_img, get_all_subfolders};
 use crate::utils::img_util::ImageOperate;
 use crate::utils::json_util::JsonUtil;
 use crate::utils::task_util::task_h;
@@ -13,15 +16,16 @@ use std::sync::Arc;
 use std::thread;
 use tauri::{AppHandle, Emitter, State};
 use tokio::sync::{mpsc, Mutex};
-use crate::commands::file_command::FolderImage;
-use crate::utils::file_util::{get_all_dir_img, get_all_subfolders};
+use tokio::task;
 
 #[tauri::command]
 pub async fn add_photo_retrieve_task(
+    app: AppHandle,
     global_task_manager: State<'_, Mutex<BackgroundImageLoadingTaskManager>>,
     tasks: Vec<String>,
 ) -> Result<String, String> {
-    
+    // 任务是否开始，如果开始则不能继续
+
     println!("add_task: {:?}", tasks);
     // 获取指定路径下所有的文件
     let mut result: Vec<String> = Vec::new();
@@ -30,19 +34,56 @@ pub async fn add_photo_retrieve_task(
         // 使用并发处理文件夹
         for x in &vec {
             let display = x.display().to_string();
-
             // 获取所有照片
             let vec1 = get_all_dir_img(&display, Some(-1)); // 获取文件夹中的图像路径
-            
             if !vec1.is_empty() {
                 result.extend(vec1)
             }
-        }   
+        }
     }
+
+    // let guard = global_task_manager.lock().await;
+
+    let (err_tx, mut err_rx) = mpsc::channel(32);
+    let (msg_tx, mut msg_rx) = mpsc::channel(32);
+
+
     // 添加任务
     for x in result {
-        global_task_manager.lock().await.send_task(x).await;
+        let e_tx = err_tx.clone();
+        let m_tx = msg_tx.clone();
+        task::spawn(async move {
+            // 读取图片压缩
+            let image_compression = ImageOperate::multi_level_image_compression(
+                x,
+                IMAGE_COMPRESSION_STORAGE_FORMAT,
+                IMAGE_COMPRESSION_RATIO.to_vec(),
+            );
+
+            match image_compression.await {
+                Ok(_) => {
+                    e_tx.send(String::from("报错信息1")).await.unwrap();
+                    m_tx.send(String::from("进度信息1")).await.unwrap();
+                }
+                Err(e) => {
+                    // 将错误传递到主线程
+                    println!("{}", e.to_string());
+                    e_tx.send(String::from("报错信息")).await.unwrap();
+                    m_tx.send(String::from("进度信息")).await.unwrap();
+                }
+            }
+        });
     }
+
+
+    while let Some(error_message) = err_rx.recv().await {
+        app.emit(global_front_emit::PHOTO_LOADING_ERR_TIP,"");
+        println!("err_rx: {}", error_message);
+    }
+    while let Some(error_message) = msg_rx.recv().await {
+        app.emit(global_front_emit::PHOTO_LOADING_MSG_TIP,"");
+    }
+
     Ok(String::from("完成"))
 }
 

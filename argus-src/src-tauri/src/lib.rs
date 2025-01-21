@@ -108,7 +108,9 @@ pub fn run() {
     // 启动 Tokio 运行时
     async_runtime::spawn(async {
         // 后台图像加载
-        start_image_loading_background_task(rx, pause_rx, auto_manager_rx).await;
+        start_image_loading_background_task(rx, pause_rx, auto_manager_rx,|s| {
+            println!("lib get err msg!");
+        }).await;
     });
 
     let global_task_manager = tokio::sync::Mutex::new(
