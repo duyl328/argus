@@ -1,7 +1,8 @@
 use crate::constant::{IMAGE_COMPRESSION_RATIO, IMAGE_COMPRESSION_STORAGE_FORMAT};
 use crate::global_front_emit;
 use crate::structs::global_error_msg::{
-    GlobalErrorMsg, LoadMsg, GLOBAL_EMIT_APP_HANDLE, GLOBAL_EMIT_IS_INIT, IMG_DISPOSE_IS_START,
+    GlobalErrorMsg, LoadMsg, GLOBAL_EMIT_APP_HANDLE, GLOBAL_EMIT_IS_INIT, IMG_DISPOSE_IS_CANCEL,
+    IMG_DISPOSE_IS_START,
 };
 use crate::tuples::Pair;
 use crate::utils::file_util::{get_all_dir_img, get_all_subfolders};
@@ -12,17 +13,18 @@ use anyhow::Result;
 use std::sync::{Arc, RwLock};
 use std::thread;
 use tauri::{AppHandle, Emitter};
-use tokio::sync::mpsc;
+use tokio::sync::{mpsc, Semaphore};
 use tokio::task;
 
 #[tauri::command]
-pub async fn add_photo_retrieve_task(app: AppHandle, tasks: Vec<String>) -> Result<String, String> {
-    // 任务是否开始，如果开始则不能继续
-    let mut is_init = IMG_DISPOSE_IS_START.lock().await;
-    if *is_init {
-        return Err(String::from("已开始运行"));
-    }
-    *is_init = true;
+pub async fn add_photo_retrieve_task(
+    app: AppHandle,
+    tasks: Vec<String>,
+    is_cancel: bool,
+) -> Result<String, String> {
+    // 任务是否取消
+    let mut is_cc = IMG_DISPOSE_IS_CANCEL.lock().await;
+    *is_cc = is_cancel;
 
     println!("add_task: {:?}", tasks);
     // 获取指定路径下所有的文件
@@ -44,12 +46,20 @@ pub async fn add_photo_retrieve_task(app: AppHandle, tasks: Vec<String>) -> Resu
     let lens = result.clone().len();
     // 当前任务数
     let data = Arc::new(RwLock::new(0));
-
-    // 添加任务
+    // 最多 10 个任务
+    let semaphore = Arc::new(Semaphore::new(10)); // 最多 10 个任务同时执行
+     // 添加任务
     for x in result {
         let data = Arc::clone(&data);
         let ap = app.clone();
+        let permit = Arc::clone(&semaphore);
         task::spawn(async move {
+            let _permit = permit.acquire().await.unwrap(); // 等待获取一个令牌
+            let is_cc = *IMG_DISPOSE_IS_CANCEL.lock().await;
+            if is_cc {
+                return;
+            }
+
             let image_compression = ImageOperate::multi_level_image_compression(
                 x.clone(),
                 IMAGE_COMPRESSION_STORAGE_FORMAT,
@@ -57,20 +67,14 @@ pub async fn add_photo_retrieve_task(app: AppHandle, tasks: Vec<String>) -> Resu
             );
             let result1 = image_compression.await;
 
-            let mut is_init = IMG_DISPOSE_IS_START.lock().await;
             let mut num = data.write().unwrap(); // 获取写锁
             *num += 1;
-
             let s = *num;
-            if s == (lens as u32) {
-                *is_init = false;
-            }
-            
             match result1 {
                 Ok(_) => {
                     let lm = LoadMsg {
                         all_task: lens as u32,
-                        current_task: s ,
+                        current_task: s,
                         task_msg: x,
                     };
                     let str = JsonUtil::stringify(&lm).unwrap();
@@ -82,18 +86,21 @@ pub async fn add_photo_retrieve_task(app: AppHandle, tasks: Vec<String>) -> Resu
                     // 将错误传递到主线程
                     let lm = LoadMsg {
                         all_task: lens as u32,
-                        current_task: s ,
+                        current_task: s,
                         task_msg: x,
                     };
                     let str = JsonUtil::stringify(&lm).unwrap();
 
                     ap.emit(global_front_emit::PHOTO_LOADING_MSG_TIP, str)
                         .unwrap();
-                    ap.emit(global_front_emit::PHOTO_LOADING_ERR_TIP, e.to_string())
-                        .unwrap();
+
+                    ap.emit(
+                        global_front_emit::PHOTO_LOADING_ERR_TIP,
+                        format!("{} 出错: {}", lm.task_msg, e.to_string()),
+                    )
+                    .unwrap();
                 }
             }
-
         });
     }
 

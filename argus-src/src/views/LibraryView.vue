@@ -1,9 +1,23 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted, reactive, type Reactive, type Ref, ref, watch, type WatchStopHandle } from 'vue'
+import {
+  onMounted,
+  onUnmounted,
+  reactive,
+  type Reactive,
+  type Ref,
+  ref,
+  watch,
+  type WatchStopHandle
+} from 'vue'
 import { Delete, Plus } from '@element-plus/icons-vue'
 import type { photoStorageType } from '@/types/photoStorage.type'
 import { open } from '@tauri-apps/plugin-dialog'
-import { addPhotoStorage, deletePhotoStorage, getAllLibrary, updatePhotoStorage } from '@/services/libraryService'
+import {
+  addPhotoStorage,
+  deletePhotoStorage,
+  getAllLibrary,
+  updatePhotoStorage
+} from '@/services/libraryService'
 import { addPhotoRetrieveTask } from '@/services/globalService'
 import { addListener, removeListener } from '@/services/emits/base'
 import emitOrder from '@/constants/emitOrder'
@@ -200,21 +214,28 @@ const isReRetrieve = ref(false)
  */
 function retrieveStart() {
   const newArray: string[] = folders.map((folder) => folder.img_paths as string)
-  let promise = addPhotoRetrieveTask(newArray)
-  if (isLoading.value) {
-    return
-  }
-  // 进度条状态调整
-  isLoading.value = true
-  processProgress.value = 0
-  doneTaskNum = 0
+  let promise = addPhotoRetrieveTask(newArray, false)
+  promise
+    .then(() => {
+      if (isLoading.value) {
+        return
+      }
+      // 进度条状态调整
+      isLoading.value = true
+      processProgress.value = 0
+      doneTaskNum = 0
+    })
+    .catch((e) => {
+      console.error(e)
+    })
 }
 
 /**
  * 取消
  */
 function retrieveCancel() {
-  console.log('取消')
+  let promise = addPhotoRetrieveTask([], true)
+  console.log('任务取消')
 }
 
 /**
@@ -366,7 +387,7 @@ onUnmounted(() => {
       </el-button>
     </div>
 
-    <hr class="mt-10 mb-10" v-if="!!errMsg">
+    <hr class="mt-10 mb-10" v-if="!!errMsg" />
 
     <!--    报错信息展示-->
     <div class="w-80" v-if="!!errMsg">
@@ -374,10 +395,9 @@ onUnmounted(() => {
         <span>
           {{ msg }}
         </span>
-        <hr>
+        <hr />
       </div>
     </div>
-
   </div>
 </template>
 

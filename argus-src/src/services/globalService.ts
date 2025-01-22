@@ -5,6 +5,6 @@ import { addPhotoRetrieveTaskCommand } from '@/constants/command'
 /**
  * 添加图像处理任务
  */
-export function addPhotoRetrieveTask(tasks: string[]) {
-  return invoke<string[]>(addPhotoRetrieveTaskCommand, { tasks })
+export function addPhotoRetrieveTask(tasks: string[], isCancel: boolean) {
+  return invoke<string[]>(addPhotoRetrieveTaskCommand, { tasks,  isCancel })
 }
