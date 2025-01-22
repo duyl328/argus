@@ -8,6 +8,8 @@ use tokio::sync::mpsc::Sender;
 
 /// emit 状态是否初始化
 pub static GLOBAL_EMIT_IS_INIT: Lazy<Arc<Mutex<bool>>> = Lazy::new(|| Arc::new(Mutex::new(false)));
+/// 后台处理任务是否已经开始
+pub static IMG_DISPOSE_IS_START: Lazy<Arc<tokio::sync::Mutex<bool>>> = Lazy::new(|| Arc::new(tokio::sync::Mutex::new(false)));
 /// 全局触发实例
 pub static GLOBAL_EMIT_APP_HANDLE: Lazy<Arc<Mutex<Option<Sender<String>>>>> =
     Lazy::new(|| Arc::new(Mutex::new(None::<Sender<String>>)));

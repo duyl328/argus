@@ -1,29 +1,15 @@
 <script setup lang="ts">
-import {
-  onMounted,
-  type Reactive,
-  type Ref,
-  reactive,
-  ref,
-  watch,
-  type WatchStopHandle,
-  onUnmounted
-} from 'vue'
+import { onMounted, onUnmounted, reactive, type Reactive, type Ref, ref, watch, type WatchStopHandle } from 'vue'
 import { Delete, Plus } from '@element-plus/icons-vue'
 import type { photoStorageType } from '@/types/photoStorage.type'
 import { open } from '@tauri-apps/plugin-dialog'
-import {
-  addPhotoStorage,
-  deletePhotoStorage,
-  getAllLibrary,
-  updatePhotoStorage
-} from '@/services/libraryService'
-import { updatePhotoStorageCommand } from '@/constants/command'
+import { addPhotoStorage, deletePhotoStorage, getAllLibrary, updatePhotoStorage } from '@/services/libraryService'
 import { addPhotoRetrieveTask } from '@/services/globalService'
 import { addListener, removeListener } from '@/services/emits/base'
 import emitOrder from '@/constants/emitOrder'
 import { getAppStatus } from '@/AppStatus'
 import type { Event } from '@tauri-apps/api/event'
+import type { loadMsg } from '@/models/globalErrorMsg'
 
 // 输入框输入的值
 const input = ref('')
@@ -126,8 +112,13 @@ function pathSelectChange(items: photoStorageType) {
 // endregion
 
 // region 进度条
-const basicProcessColor: string = '#409dfe'
+const basicProcessColor: string = ''
 const activeProcessColor: string = '#dcdfe6'
+
+/**
+ * 已完成任务数
+ */
+let doneTaskNum = 0
 
 /**
  * 是否正在加载
@@ -141,8 +132,9 @@ watch(isLoading, (value, oldValue, onCleanup) => {
   if (value) {
     processColor.value = basicProcessColor
     processProgress.value = 0
+    processStriped.value = false
     processStriped.value = true
-    processStrokeWidth.value = 15
+    processStrokeWidth.value = 18
   } else {
     processColor.value = activeProcessColor
     processProgress.value = 100
@@ -176,9 +168,19 @@ const processStriped = ref(false)
 /**
  * 进度条展示文字
  */
-let processFormat = (): string => {
-  return ''
+let processFormat = (percentage: number): string => {
+  if (processStriped.value) {
+    const factor = Math.pow(10, 2)
+    return Math.round(percentage * factor) / factor + '%'
+  } else {
+    return ''
+  }
 }
+
+/**
+ * 错误信息展示
+ */
+const errMsg: Ref<string[]> = ref([])
 
 onMounted(() => {
   // 绑定事件
@@ -198,17 +200,14 @@ const isReRetrieve = ref(false)
  */
 function retrieveStart() {
   const newArray: string[] = folders.map((folder) => folder.img_paths as string)
-  addPhotoRetrieveTask(newArray)
-
-  /*
-   * 点击开始后，将需要检索的路径发送到后端
-   * 后端开始处理，于此同时，开启前端和后端的 emit 连接【如果页面返回，则不取消任务（或低效率任务）】
-   * 后端拿到路径，获取路径所有文件和文件夹，递归生成所有图片的缩略图
-   * 生成缩略图报错，将错误信息提示到前端
-   *
-   * */
-
-  console.log('开始')
+  let promise = addPhotoRetrieveTask(newArray)
+  if (isLoading.value) {
+    return
+  }
+  // 进度条状态调整
+  isLoading.value = true
+  processProgress.value = 0
+  doneTaskNum = 0
 }
 
 /**
@@ -222,17 +221,22 @@ function retrieveCancel() {
  * 进度及现在正在加载的信息展示
  */
 let errorListener = (event: unknown) => {
-  console.log("报错");
   let event1 = event as Event<string>
+  errMsg.value.push(event1.payload)
   console.log('报错', event1.payload)
 }
 /**
  * 报错提示
  */
 let msgListener = (event: unknown) => {
-  console.log("进入");
   let event1 = event as Event<string>
-  console.log('进度', event1.payload)
+  let msg: loadMsg = JSON.parse(event1.payload)
+  processProgress.value = (msg.currentTask / msg.allTask) * 100
+  if (processProgress.value === 100) {
+    taskName.value = '任务完成!'
+  } else {
+    taskName.value = msg.taskMsg
+  }
 }
 
 // endregion
@@ -324,8 +328,7 @@ onUnmounted(() => {
       <el-progress
         :stroke-width="processStrokeWidth"
         :percentage="processProgress"
-        :striped="processStriped"
-        striped-flow
+        :text-inside="true"
         :color="processColor"
         :format="processFormat"
       />
@@ -362,6 +365,19 @@ onUnmounted(() => {
         <el-icon class="el-icon--right"><span class="iconfont icon-zhongxinkaishi"></span></el-icon>
       </el-button>
     </div>
+
+    <hr class="mt-10 mb-10" v-if="!!errMsg">
+
+    <!--    报错信息展示-->
+    <div class="w-80" v-if="!!errMsg">
+      <div v-for="msg in errMsg">
+        <span>
+          {{ msg }}
+        </span>
+        <hr>
+      </div>
+    </div>
+
   </div>
 </template>
 

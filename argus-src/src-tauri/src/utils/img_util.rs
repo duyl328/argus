@@ -7,6 +7,7 @@ use crate::utils::base64_util::base64_encode;
 use crate::utils::file_hash_util::FileHashUtils;
 use crate::utils::file_util::file_exists;
 use crate::utils::system_state_util::get_memory_as_percentage;
+use crate::utils::task_util::PHOTO_LOAD_RECEIVER;
 use crate::utils::{file_util, image_format_util};
 use anyhow::{anyhow, Context, Result};
 use env_logger::Target;
@@ -14,15 +15,14 @@ use image::io::Reader;
 use image::{imageops, DynamicImage, GenericImageView, ImageError, ImageFormat};
 use image::{imageops::FilterType, ImageReader};
 use log::{error, info, warn};
-use std::{fs, panic};
 use std::io::{BufReader, Cursor};
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 use std::time::Instant;
+use std::{fs, panic};
 use tokio::sync::{mpsc, Mutex};
 use tokio::task;
 use tokio::task::JoinSet;
-use crate::utils::task_util::PHOTO_LOAD_RECEIVER;
 
 #[derive(Debug, Clone)]
 pub struct ImageOperate {
@@ -105,10 +105,8 @@ impl ImageOperate {
 
         let arc = PHOTO_LOAD_RECEIVER.clone();
         let qqq = arc.send(rs.clone()).await;
-        
-        if qqq.is_err() { 
-            
-        }
+
+        if qqq.is_err() {}
 
         Ok(rs)
     }
@@ -187,9 +185,21 @@ impl ImageOperate {
         if let Some(parent) = output_path.parent() {
             fs::create_dir_all(parent).expect("Failed to create directory");
         }
-
         let start_time = Instant::now();
-        task::spawn_blocking(move || image.save_with_format(output_path, image_format)).await??;
+
+        // 如果保存为 jpg 格式，检查是否为 Rgb8
+        if &image_format == &ImageFormat::Jpeg {
+            let img = image.to_rgb8();
+            let result = img.save_with_format(output_path, image_format);
+            if result.is_err() {
+                return Err(anyhow!("{}", result.unwrap_err().to_string()));
+            }
+        } else {
+            let result = image.save_with_format(output_path, image_format);
+            if result.is_err() {
+                return Err(anyhow!("{}", result.unwrap_err().to_string()));
+            }
+        }
 
         println!("保存文件: {:?} 完成", start_time.elapsed());
         Ok(())
@@ -249,7 +259,7 @@ impl ImageOperate {
                         if result1.is_err() {
                             let result2 = result1.map_err(|e| e.to_string());
                             panic!("{}", result2.err().expect("异常报错信息！"))
-                        }else{
+                        } else {
                             result1.expect("可计算图像获取失败！")
                         }
                     });
@@ -311,7 +321,7 @@ impl ImageOperate {
         let save_path = FileHashUtils::hash_to_file_path(
             read_img.hash.as_str(),
             &root_dir,
-            &read_img.img_name,
+            &image_format_util::get_suffix_name(fmt),
             compression_level,
         )
         .display()
@@ -329,9 +339,9 @@ impl ImageOperate {
                 FilterType::Triangle,
             );
             let image1 = x1.await.expect("可处理信息获取失败! ");
-            let x = img.format.unwrap_or(fmt);
+            // let x = img.format.unwrap_or(fmt);
             // 保存
-            ImageOperate::save_image(save_path.clone(), image1, x)
+            ImageOperate::save_image(save_path.clone(), image1, fmt)
                 .await
                 .map_err(|e| anyhow!(AError::FileSaveFailed.message()))?;
         }

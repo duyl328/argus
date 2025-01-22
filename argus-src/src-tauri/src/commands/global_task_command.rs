@@ -1,11 +1,7 @@
-use crate::commands::file_command::FolderImage;
 use crate::constant::{IMAGE_COMPRESSION_RATIO, IMAGE_COMPRESSION_STORAGE_FORMAT};
 use crate::global_front_emit;
-use crate::global_task_manager::BackgroundImageLoadingTaskManager;
-use crate::storage::connection::establish_connection;
-use crate::storage::photo_table::insert_photo;
 use crate::structs::global_error_msg::{
-    GlobalErrorMsg, LoadMsg, GLOBAL_EMIT_APP_HANDLE, GLOBAL_EMIT_IS_INIT,
+    GlobalErrorMsg, LoadMsg, GLOBAL_EMIT_APP_HANDLE, GLOBAL_EMIT_IS_INIT, IMG_DISPOSE_IS_START,
 };
 use crate::tuples::Pair;
 use crate::utils::file_util::{get_all_dir_img, get_all_subfolders};
@@ -13,20 +9,20 @@ use crate::utils::img_util::ImageOperate;
 use crate::utils::json_util::JsonUtil;
 use crate::utils::task_util::task_h;
 use anyhow::Result;
-use std::arch::x86_64::_mm_sign_epi16;
-use std::sync::Arc;
+use std::sync::{Arc, RwLock};
 use std::thread;
-use tauri::{AppHandle, Emitter, State};
-use tokio::sync::{mpsc, Mutex};
+use tauri::{AppHandle, Emitter};
+use tokio::sync::mpsc;
 use tokio::task;
 
 #[tauri::command]
-pub async fn add_photo_retrieve_task(
-    app: AppHandle,
-    global_task_manager: State<'_, Mutex<BackgroundImageLoadingTaskManager>>,
-    tasks: Vec<String>,
-) -> Result<String, String> {
+pub async fn add_photo_retrieve_task(app: AppHandle, tasks: Vec<String>) -> Result<String, String> {
     // 任务是否开始，如果开始则不能继续
+    let mut is_init = IMG_DISPOSE_IS_START.lock().await;
+    if *is_init {
+        return Err(String::from("已开始运行"));
+    }
+    *is_init = true;
 
     println!("add_task: {:?}", tasks);
     // 获取指定路径下所有的文件
@@ -44,96 +40,63 @@ pub async fn add_photo_retrieve_task(
         }
     }
 
-    let (err_tx, mut err_rx) = mpsc::channel(100);
-
     // 总任务数
     let lens = result.clone().len();
     // 当前任务数
-    let mut current_task = 0;
+    let data = Arc::new(RwLock::new(0));
 
     // 添加任务
     for x in result {
-        let e_tx = err_tx.clone();
-        current_task += 1;
+        let data = Arc::clone(&data);
+        let ap = app.clone();
         task::spawn(async move {
-            // 读取图片压缩
             let image_compression = ImageOperate::multi_level_image_compression(
                 x.clone(),
                 IMAGE_COMPRESSION_STORAGE_FORMAT,
                 IMAGE_COMPRESSION_RATIO.to_vec(),
             );
+            let result1 = image_compression.await;
 
-            match image_compression.await {
+            let mut is_init = IMG_DISPOSE_IS_START.lock().await;
+            let mut num = data.write().unwrap(); // 获取写锁
+            *num += 1;
+
+            let s = *num;
+            if s == (lens as u32) {
+                *is_init = false;
+            }
+            
+            match result1 {
                 Ok(_) => {
                     let lm = LoadMsg {
                         all_task: lens as u32,
-                        current_task,
+                        current_task: s ,
                         task_msg: x,
                     };
                     let str = JsonUtil::stringify(&lm).unwrap();
-                    e_tx.send(Pair {
-                        first: global_front_emit::PHOTO_LOADING_MSG_TIP,
-                        second: str,
-                    })
-                    .await
-                    .unwrap();
+
+                    ap.emit(global_front_emit::PHOTO_LOADING_MSG_TIP, str)
+                        .unwrap();
                 }
                 Err(e) => {
                     // 将错误传递到主线程
                     let lm = LoadMsg {
                         all_task: lens as u32,
-                        current_task,
+                        current_task: s ,
                         task_msg: x,
                     };
                     let str = JsonUtil::stringify(&lm).unwrap();
 
-                    // 进度更新
-                    e_tx.send(Pair {
-                        first: global_front_emit::PHOTO_LOADING_MSG_TIP,
-                        second: str,
-                    })
-                        .await
+                    ap.emit(global_front_emit::PHOTO_LOADING_MSG_TIP, str)
                         .unwrap();
-
-                    // 报错信息
-                    e_tx.send(Pair {
-                        first: global_front_emit::PHOTO_LOADING_ERR_TIP,
-                        second: e.to_string(),
-                    })
-                    .await
-                    .unwrap();
+                    ap.emit(global_front_emit::PHOTO_LOADING_ERR_TIP, e.to_string())
+                        .unwrap();
                 }
             }
+
         });
     }
-    println!("运行到了");
 
-    while let Some(msg_info) = err_rx.recv().await {
-        app.emit(msg_info.first, msg_info.second).unwrap();
-    }
-
-    println!("jieshu");
-
-    Ok(String::from("完成"))
-}
-
-#[tauri::command]
-pub async fn pause_task(
-    global_task_manager: State<'_, Arc<Mutex<BackgroundImageLoadingTaskManager>>>,
-) -> Result<String, String> {
-    println!("pause_task");
-    let manager = global_task_manager.lock();
-    manager.await.pause().await;
-    Ok(String::from("完成"))
-}
-
-#[tauri::command]
-pub async fn resume_task(
-    global_task_manager: State<'_, Arc<Mutex<BackgroundImageLoadingTaskManager>>>,
-) -> Result<String, String> {
-    println!("resume_task");
-    let manager = global_task_manager.lock();
-    manager.await.resume().await;
     Ok(String::from("完成"))
 }
 

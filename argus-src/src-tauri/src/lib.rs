@@ -99,24 +99,6 @@ pub fn run() {
 
     print!("配置完毕!!!!!!!!!!!!!");
 
-    // 启动后台算法
-    // 创建一个大小为 100 的通道
-    let (tx, rx) = mpsc::channel::<String>(100);
-    let (pause_tx, pause_rx) = watch::channel(false); // 创建暂停信号
-    let (auto_manager_tx, auto_manager_rx) = watch::channel(BackgroundTaskAutoManager::default());
-
-    // 启动 Tokio 运行时
-    async_runtime::spawn(async {
-        // 后台图像加载
-        start_image_loading_background_task(rx, pause_rx, auto_manager_rx,|s| {
-            println!("lib get err msg!");
-        }).await;
-    });
-
-    let global_task_manager = tokio::sync::Mutex::new(
-        global_task_manager::BackgroundImageLoadingTaskManager::new(tx, pause_tx, auto_manager_tx),
-    );
-
     // 启动后台服务
     back_a_task();
     builder
@@ -140,7 +122,6 @@ pub fn run() {
         // 如果你尝试注册同一个类型多次，Tauri 会抛出错误。
         // 使用时一定要注意类型一定要一致 !!!
         .manage::<Option<tauri_plugin_shell::process::CommandChild>>(None)
-        .manage(global_task_manager)
         .invoke_handler(tauri::generate_handler![
             commands::command::greet,
             commands::command::http_example,
@@ -165,8 +146,6 @@ pub fn run() {
             commands::image_command::get_image_thumbnail_path,
             commands::image_command::get_image_thumbnail,
             commands::global_task_command::add_photo_retrieve_task,
-            commands::global_task_command::pause_task,
-            commands::global_task_command::resume_task,
             commands::global_task_command::emit_global_msg,
             commands::global_task_command::global_msg_emit,
         ])

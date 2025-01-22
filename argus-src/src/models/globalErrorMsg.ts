@@ -27,3 +27,16 @@ export class GlobalErrorMsg {
     this.type = type
   }
 }
+
+/**
+ * 进度信息提示
+ */
+export type loadMsg = {
+  // 总任务数
+  allTask: number,
+  // 当前任务数（已完成）
+  currentTask: number,
+  // 任务信息
+  taskMsg: string,
+
+}
