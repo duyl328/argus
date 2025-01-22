@@ -14,6 +14,7 @@ pub static GLOBAL_EMIT_APP_HANDLE: Lazy<Arc<Mutex<Option<Sender<String>>>>> =
 
 /// 加载信息返回
 #[derive(Deserialize, Serialize, Debug, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct LoadMsg{
     /// 总任务数
     pub all_task:u32,

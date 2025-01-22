@@ -258,7 +258,7 @@ impl ImageOperate {
                     // 保存
                     ImageOperate::save_image(save_path.clone(), x1, fmt)
                         .await
-                        .expect("文件报错失败! ");
+                        .expect("文件保存失败! ");
                 }
                 vec.push(save_path)
             });

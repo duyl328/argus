@@ -222,15 +222,17 @@ function retrieveCancel() {
  * 进度及现在正在加载的信息展示
  */
 let errorListener = (event: unknown) => {
+  console.log("报错");
   let event1 = event as Event<string>
-  console.log('进度', event1.payload)
+  console.log('报错', event1.payload)
 }
 /**
  * 报错提示
  */
 let msgListener = (event: unknown) => {
+  console.log("进入");
   let event1 = event as Event<string>
-  console.log('报错', event1.payload)
+  console.log('进度', event1.payload)
 }
 
 // endregion

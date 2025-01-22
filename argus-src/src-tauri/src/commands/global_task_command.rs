@@ -5,13 +5,15 @@ use crate::global_task_manager::BackgroundImageLoadingTaskManager;
 use crate::storage::connection::establish_connection;
 use crate::storage::photo_table::insert_photo;
 use crate::structs::global_error_msg::{
-    GlobalErrorMsg, GLOBAL_EMIT_APP_HANDLE, GLOBAL_EMIT_IS_INIT,
+    GlobalErrorMsg, LoadMsg, GLOBAL_EMIT_APP_HANDLE, GLOBAL_EMIT_IS_INIT,
 };
+use crate::tuples::Pair;
 use crate::utils::file_util::{get_all_dir_img, get_all_subfolders};
 use crate::utils::img_util::ImageOperate;
 use crate::utils::json_util::JsonUtil;
 use crate::utils::task_util::task_h;
 use anyhow::Result;
+use std::arch::x86_64::_mm_sign_epi16;
 use std::sync::Arc;
 use std::thread;
 use tauri::{AppHandle, Emitter, State};
@@ -42,47 +44,75 @@ pub async fn add_photo_retrieve_task(
         }
     }
 
-    // let guard = global_task_manager.lock().await;
+    let (err_tx, mut err_rx) = mpsc::channel(100);
 
-    let (err_tx, mut err_rx) = mpsc::channel(32);
-    let (msg_tx, mut msg_rx) = mpsc::channel(32);
-
+    // 总任务数
+    let lens = result.clone().len();
+    // 当前任务数
+    let mut current_task = 0;
 
     // 添加任务
     for x in result {
         let e_tx = err_tx.clone();
-        let m_tx = msg_tx.clone();
+        current_task += 1;
         task::spawn(async move {
             // 读取图片压缩
             let image_compression = ImageOperate::multi_level_image_compression(
-                x,
+                x.clone(),
                 IMAGE_COMPRESSION_STORAGE_FORMAT,
                 IMAGE_COMPRESSION_RATIO.to_vec(),
             );
 
             match image_compression.await {
                 Ok(_) => {
-                    e_tx.send(String::from("报错信息1")).await.unwrap();
-                    m_tx.send(String::from("进度信息1")).await.unwrap();
+                    let lm = LoadMsg {
+                        all_task: lens as u32,
+                        current_task,
+                        task_msg: x,
+                    };
+                    let str = JsonUtil::stringify(&lm).unwrap();
+                    e_tx.send(Pair {
+                        first: global_front_emit::PHOTO_LOADING_MSG_TIP,
+                        second: str,
+                    })
+                    .await
+                    .unwrap();
                 }
                 Err(e) => {
                     // 将错误传递到主线程
-                    println!("{}", e.to_string());
-                    e_tx.send(String::from("报错信息")).await.unwrap();
-                    m_tx.send(String::from("进度信息")).await.unwrap();
+                    let lm = LoadMsg {
+                        all_task: lens as u32,
+                        current_task,
+                        task_msg: x,
+                    };
+                    let str = JsonUtil::stringify(&lm).unwrap();
+
+                    // 进度更新
+                    e_tx.send(Pair {
+                        first: global_front_emit::PHOTO_LOADING_MSG_TIP,
+                        second: str,
+                    })
+                        .await
+                        .unwrap();
+
+                    // 报错信息
+                    e_tx.send(Pair {
+                        first: global_front_emit::PHOTO_LOADING_ERR_TIP,
+                        second: e.to_string(),
+                    })
+                    .await
+                    .unwrap();
                 }
             }
         });
     }
+    println!("运行到了");
 
+    while let Some(msg_info) = err_rx.recv().await {
+        app.emit(msg_info.first, msg_info.second).unwrap();
+    }
 
-    while let Some(error_message) = err_rx.recv().await {
-        app.emit(global_front_emit::PHOTO_LOADING_ERR_TIP,"");
-        println!("err_rx: {}", error_message);
-    }
-    while let Some(error_message) = msg_rx.recv().await {
-        app.emit(global_front_emit::PHOTO_LOADING_MSG_TIP,"");
-    }
+    println!("jieshu");
 
     Ok(String::from("完成"))
 }
