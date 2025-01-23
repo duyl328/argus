@@ -16,6 +16,7 @@ use tauri::{AppHandle, Emitter};
 use tokio::sync::{mpsc, Semaphore};
 use tokio::task;
 use crate::utils::exif_utils::exif_util;
+use crate::utils::exif_utils::exif_util::ExifUtil;
 use crate::utils::exif_utils::tag::Tags;
 
 #[tauri::command]
@@ -70,11 +71,12 @@ pub async fn add_photo_retrieve_task(
             );
             
             // 获取 exif 
-            // let exif_info = exif_util::ExifToolCmd::read_all_exif(&*path).expect("图像信息读取失败！");
+            // let exif_tool = exif_util::ExifToolCmd;
+            // let exif_info = exif_tool.read_all_exif(&*x).expect("图像信息读取失败！");
             // let tag = Tags::new(true);
             // let mt = tag.parse(&exif_info);
-            // let result = mt.pack_front_tags().expect("数据打包失败！");
-
+            // let result = mt.pack_object().expect("数据打包失败！");
+            // 
 
             let result1 = image_compression.await;
 
