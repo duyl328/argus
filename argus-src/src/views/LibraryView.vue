@@ -252,6 +252,7 @@ let errorListener = (event: unknown) => {
 let msgListener = (event: unknown) => {
   let event1 = event as Event<string>
   let msg: loadMsg = JSON.parse(event1.payload)
+  isLoading.value = true
   processProgress.value = (msg.currentTask / msg.allTask) * 100
   if (processProgress.value === 100) {
     taskName.value = '任务完成!'

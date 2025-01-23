@@ -47,7 +47,7 @@ pub async fn add_photo_retrieve_task(
     // 当前任务数
     let data = Arc::new(RwLock::new(0));
     // 最多 10 个任务
-    let semaphore = Arc::new(Semaphore::new(10)); // 最多 10 个任务同时执行
+    let semaphore = Arc::new(Semaphore::new(20)); // 最多 10 个任务同时执行
      // 添加任务
     for x in result {
         let data = Arc::clone(&data);
