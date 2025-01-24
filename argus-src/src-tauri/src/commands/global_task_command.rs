@@ -71,12 +71,12 @@ pub async fn add_photo_retrieve_task(
             );
             
             // 获取 exif 
-            // let exif_tool = exif_util::ExifToolCmd;
-            // let exif_info = exif_tool.read_all_exif(&*x).expect("图像信息读取失败！");
-            // let tag = Tags::new(true);
-            // let mt = tag.parse(&exif_info);
-            // let result = mt.pack_object().expect("数据打包失败！");
-            // 
+            let exif_tool = exif_util::ExifToolCmd;
+            let exif_info = exif_tool.read_all_exif(&*x).expect("图像信息读取失败！");
+            let tag = Tags::new(true);
+            let mt = tag.parse(&exif_info);
+            let result = mt.pack_object().expect("数据打包失败！");
+            
 
             let result1 = image_compression.await;
 

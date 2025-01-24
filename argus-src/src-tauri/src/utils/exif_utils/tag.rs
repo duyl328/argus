@@ -286,41 +286,41 @@ impl Tags {
 /// 图像的 exif 信息对象
 pub struct ImgExif {
     /// 相机制造商
-    make: Option<String>,
+    pub make: Option<String>,
     /// 相机型号
-    model: Option<String>,
+    pub model: Option<String>,
     /// 软件版本
-    software: Option<String>,
+    pub software: Option<String>,
     /// 曝光时间
-    exposure_time: Option<f64>,
+    pub exposure_time: Option<f64>,
     /// 闪光灯
-    flash: Option<String>,
+    pub flash: Option<String>,
     /// 光圈
-    f_number: Option<f64>,
+    pub f_number: Option<f64>,
     /// ISO
-    iso: Option<u32>,
+    pub iso: Option<u32>,
     /// exif 信息版本
     // exif_version:OptionString>,
     /// 创建日期
-    date_time_original: Option<DateTime<Utc>>,
+    pub date_time_original: Option<DateTime<Utc>>,
     /// 最大光圈值
-    max_aperture_value: Option<String>,
+    pub max_aperture_value: Option<String>,
     /// 焦距
-    focal_length: Option<f64>,
+    pub focal_length: Option<f64>,
     /// 宽度
-    image_width: Option<u32>,
+    pub image_width: Option<u32>,
     /// 长度
-    image_height: Option<u32>,
+    pub image_height: Option<u32>,
     /// gps 信息
-    gps_info: Option<GpsInfo>,
+    pub gps_info: Option<GpsInfo>,
     /// 曝光程序
-    exposure_program: Option<String>,
+    pub exposure_program: Option<String>,
     /// 测光模式
-    metering_mode: Option<String>,
+    pub metering_mode: Option<String>,
     /// 作者（艺术家）
-    artist: Option<String>,
+    pub artist: Option<String>,
     /// 等级【评分】
-    rating: Option<u32>,
+    pub rating: Option<u32>,
 }
 
 impl fmt::Display for ImgExif {

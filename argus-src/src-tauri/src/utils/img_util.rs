@@ -1,5 +1,4 @@
 use crate::computed_value::ComputedValue;
-use crate::constant;
 use crate::errors::AError;
 use crate::structs::config::SYS_CONFIG;
 use crate::structs::image_size::ImageSize;
@@ -10,8 +9,6 @@ use crate::utils::system_state_util::get_memory_as_percentage;
 use crate::utils::task_util::PHOTO_LOAD_RECEIVER;
 use crate::utils::{file_util, image_format_util};
 use anyhow::{anyhow, Context, Result};
-use env_logger::Target;
-use image::io::Reader;
 use image::{imageops, DynamicImage, GenericImageView, ImageError, ImageFormat};
 use image::{imageops::FilterType, ImageReader};
 use log::{error, info, warn};
@@ -21,7 +18,6 @@ use std::sync::Arc;
 use std::time::Instant;
 use std::{fs, panic};
 use tokio::sync::{mpsc, Mutex};
-use tokio::task;
 use tokio::task::JoinSet;
 
 #[derive(Debug, Clone)]
