@@ -45,7 +45,7 @@ function getAllData() {
     let parse: photoStorageType[] = JSON.parse(res)
     folders.length = 0
     folders.push(...parse)
-  })
+   })
 }
 
 /**
