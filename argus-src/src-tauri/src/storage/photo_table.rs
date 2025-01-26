@@ -52,7 +52,7 @@ pub fn insert_photo(connection: &mut SqliteConnection, img_info: ImageOperate) -
 /// 把照片存储及信息到数据库
 /// - 数据库连结
 /// - 图像信息
-/// - exif 信息
+/// - exif 信息1
 pub fn insert_photo_and_info(
     connection: &mut SqliteConnection,
     img_info: ImageOperate,
