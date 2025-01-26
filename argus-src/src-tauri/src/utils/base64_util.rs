@@ -1,5 +1,5 @@
 use base64::engine::general_purpose::STANDARD;
-use base64::{decode, encode, Engine};
+use base64::Engine;
 use std::fs;
 use std::io::{self, Write};
 
@@ -9,6 +9,7 @@ pub fn base64_encode<T: AsRef<[u8]>>(input: T) -> String {
 }
 
 /// Base64 转换为文本
+#[allow(dead_code)]
 pub fn base64_to_text(encoded: &str) -> Result<String, String> {
     match STANDARD.decode(encoded) {
         Ok(bytes) => match String::from_utf8(bytes) {
@@ -19,6 +20,7 @@ pub fn base64_to_text(encoded: &str) -> Result<String, String> {
     }
 }
 
+#[allow(dead_code)]
 /// Base64 转换为文件并写入
 pub fn base64_to_file(encoded: &str, output_file_path: &str) -> Result<(), String> {
     match STANDARD.decode(encoded) {

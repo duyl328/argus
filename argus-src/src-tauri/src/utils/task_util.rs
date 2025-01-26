@@ -3,17 +3,55 @@ use std::thread;
 use crate::models::photo::Photo;
 use crate::utils::img_util::ImageOperate;
 use once_cell::sync::Lazy;
-use tokio::sync::{mpsc, Mutex};
-use tauri::async_runtime::Sender;
 use crate::storage::connection::establish_connection;
 use crate::storage::photo_table::insert_photo;
 use crate::utils::task_util;
+use std::sync::mpsc::{self, Sender, Receiver};
+use diesel::SqliteConnection;
+use rusqlite::{params, Connection};
+use crate::storage::photo_table;
+// pub static PHOTO_LOAD_RECEIVER1: Lazy<Arc<Sender<ImageOperate>>> =
+//     Lazy::new(|| {
+//         let (photo_handler_tx, photo_handler_rx) = mpsc::channel::<ImageOperate>(100);
+//         let f = |io: ImageOperate| {
+//             let mut conn = establish_connection();
+//             insert_photo(&mut conn, io);
+//         };
+//         thread::spawn(move || {
+//             photo_handler_rx.for
+//         });
+// 
+//         Arc::new(photo_handler_tx)
+//     });
+
+enum DbTask {
+    PhotoBaseInsert(ImageOperate), // 插入任务：表名和数据
+}
+
+
+pub fn start_db_writer_thread(receiver: Receiver<DbTask>,conn: &mut SqliteConnection) {
+    thread::spawn(move || {
+        for task in receiver {
+            match task {
+                DbTask::PhotoBaseInsert(data) => {
+                    let mut conn = establish_connection();
+                    photo_table::insert_photo(&mut conn,data);
+                    // if let Err(e) = insert_data(&conn, &table, data) {
+                    //     eprintln!("Error inserting data: {}", e);
+                    // }
+                }
+            }
+        }
+    });
+}
+
+
 
 /// 数据库状态管理
-pub static PHOTO_LOAD_RECEIVER: Lazy<Arc<Sender<ImageOperate>>> =
+pub static PHOTO_LOAD_RECEIVER: Lazy<Arc<tauri::async_runtime::Sender<ImageOperate>>> =
     Lazy::new(|| {
         // 使用 tokio 的 mpsc 通道
-        let (photo_handler_tx, photo_handler_rx) = mpsc::channel::<ImageOperate>(100);
+        let (photo_handler_tx, photo_handler_rx) = tokio::sync::mpsc::channel::<ImageOperate>(100);
         let f = |io: ImageOperate| {
             let mut conn = establish_connection();
             insert_photo(&mut conn, io);
@@ -30,7 +68,7 @@ pub static PHOTO_LOAD_RECEIVER: Lazy<Arc<Sender<ImageOperate>>> =
         Arc::new(photo_handler_tx)
     });
 
-pub async fn task_h<T, F>(mut rx: mpsc::Receiver<T>, f: F)
+pub async fn task_h<T, F>(mut rx: tokio::sync::mpsc::Receiver<T>, f: F)
 where
     F: Fn(T),
 {
