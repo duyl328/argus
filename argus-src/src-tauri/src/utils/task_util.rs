@@ -10,17 +10,21 @@ use std::sync::mpsc::{self, Sender, Receiver};
 use diesel::SqliteConnection;
 use rusqlite::{params, Connection};
 use crate::storage::photo_table;
+
+
 // pub static PHOTO_LOAD_RECEIVER1: Lazy<Arc<Sender<ImageOperate>>> =
 //     Lazy::new(|| {
-//         let (photo_handler_tx, photo_handler_rx) = mpsc::channel::<ImageOperate>(100);
+//         let (photo_handler_tx, photo_handler_rx) = mpsc::channel::<ImageOperate>();
 //         let f = |io: ImageOperate| {
 //             let mut conn = establish_connection();
 //             insert_photo(&mut conn, io);
 //         };
 //         thread::spawn(move || {
-//             photo_handler_rx.for
+//             for x in photo_handler_rx {
+//
+//             }
 //         });
-// 
+//
 //         Arc::new(photo_handler_tx)
 //     });
 
@@ -29,13 +33,13 @@ enum DbTask {
 }
 
 
-pub fn start_db_writer_thread(receiver: Receiver<DbTask>,conn: &mut SqliteConnection) {
+pub fn start_db_writer_thread(receiver: Receiver<DbTask>, conn: &mut SqliteConnection) {
     thread::spawn(move || {
         for task in receiver {
             match task {
                 DbTask::PhotoBaseInsert(data) => {
                     let mut conn = establish_connection();
-                    photo_table::insert_photo(&mut conn,data);
+                    photo_table::insert_photo(&mut conn, data);
                     // if let Err(e) = insert_data(&conn, &table, data) {
                     //     eprintln!("Error inserting data: {}", e);
                     // }
@@ -44,7 +48,6 @@ pub fn start_db_writer_thread(receiver: Receiver<DbTask>,conn: &mut SqliteConnec
         }
     });
 }
-
 
 
 /// 数据库状态管理
@@ -60,7 +63,7 @@ pub static PHOTO_LOAD_RECEIVER: Lazy<Arc<tauri::async_runtime::Sender<ImageOpera
         thread::spawn(move || {
             // 创建 Tokio 运行时并运行异步任务
             let runtime = tokio::runtime::Runtime::new().unwrap();
-            runtime.block_on(async move{
+            runtime.block_on(async move {
                 task_h(photo_handler_rx, f).await;
             });
         });
