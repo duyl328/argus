@@ -6,7 +6,7 @@ use crate::utils::base64_util::base64_encode;
 use crate::utils::file_hash_util::FileHashUtils;
 use crate::utils::file_util::file_exists;
 use crate::utils::system_state_util::get_memory_as_percentage;
-use crate::utils::task_util::PHOTO_LOAD_RECEIVER;
+use crate::utils::task_util::{DbTask, DB_GLOBAL_TASK};
 use crate::utils::{file_util, image_format_util};
 use anyhow::{anyhow, Context, Result};
 use image::{imageops, DynamicImage, GenericImageView, ImageError, ImageFormat};
@@ -99,10 +99,13 @@ impl ImageOperate {
             image_dynamic: None,
         };
 
-        let arc = PHOTO_LOAD_RECEIVER.clone();
-        let qqq = arc.send(rs.clone()).await;
+        // let arc = PHOTO_LOAD_RECEIVER.clone();
+        // let qqq = arc.send(rs.clone()).await;
 
-        if qqq.is_err() {}
+        let db_task = DB_GLOBAL_TASK.clone();
+        db_task
+            .send(DbTask::PhotoBaseInsert(rs.clone()))
+            .expect("任务发送出错!");
 
         Ok(rs)
     }

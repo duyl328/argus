@@ -33,7 +33,6 @@ use crate::utils::img_util::ImageOperate;
 use crate::utils::task_util;
 use tauri::{App, Emitter, Listener, Manager, State, WindowEvent};
 use tokio::sync::{mpsc, watch};
-use crate::utils::task_util::PHOTO_LOAD_RECEIVER;
 
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
@@ -100,7 +99,6 @@ pub fn run() {
     print!("配置完毕!!!!!!!!!!!!!");
 
     // 启动后台服务
-    back_a_task();
     builder
         .plugin(tauri_plugin_sql::Builder::new().build())
         .plugin(tauri_plugin_dialog::init())
@@ -190,10 +188,4 @@ fn main_setup() -> fn(&mut App) -> Result<(), Box<dyn Error>> {
 
         Ok(())
     }
-}
-
-/// 后台服务
-fn back_a_task() {
-    println!("后台服务 初始化");
-    let sender = PHOTO_LOAD_RECEIVER.clone();
 }

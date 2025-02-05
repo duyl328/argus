@@ -8,7 +8,6 @@ use crate::tuples::Pair;
 use crate::utils::file_util::{get_all_dir_img, get_all_subfolders};
 use crate::utils::img_util::ImageOperate;
 use crate::utils::json_util::JsonUtil;
-use crate::utils::task_util::task_h;
 use anyhow::Result;
 use std::sync::{Arc, RwLock};
 use std::thread;
@@ -138,14 +137,6 @@ pub fn emit_global_msg(app: AppHandle) {
             .unwrap();
     };
 
-    // 在一个新的线程中启动 Tokio 运行时
-    thread::spawn(move || {
-        // 创建 Tokio 运行时并运行异步任务
-        let runtime = tokio::runtime::Runtime::new().unwrap();
-        runtime.block_on(async move {
-            task_h(emit_rx, f).await;
-        });
-    });
 }
 
 #[tauri::command]
