@@ -99,9 +99,6 @@ impl ImageOperate {
             image_dynamic: None,
         };
 
-        // let arc = PHOTO_LOAD_RECEIVER.clone();
-        // let qqq = arc.send(rs.clone()).await;
-
         let db_task = DB_GLOBAL_TASK.clone();
         db_task
             .send(DbTask::PhotoBaseInsert(rs.clone()))

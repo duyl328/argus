@@ -16,7 +16,8 @@ pub static DB_GLOBAL_TASK: Lazy<Arc<Sender<DbTask>>> = Lazy::new(|| {
 });
 
 pub enum DbTask {
-    PhotoBaseInsert(ImageOperate), // 插入任务：表名和数据
+    ///  插入基础图像信息（无 exif 信息）
+    PhotoBaseInsert(ImageOperate),
 }
 
 // todo: 2025/2/5 21:35 后期优化选项：根据任务条数，满足条数批量提交
