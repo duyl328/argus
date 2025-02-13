@@ -1,4 +1,4 @@
-use diesel::{Insertable, Queryable, Selectable};
+use diesel::{AsChangeset, Insertable, Queryable, Selectable};
 use serde::{Deserialize, Serialize};
 
 /// 图片信息
@@ -107,7 +107,7 @@ pub struct Photo {
     pub update_time: i64,
 }
 
-#[derive(Insertable)]
+#[derive(Insertable,AsChangeset)]
 #[diesel(table_name = crate::storage::schema::photo_table)]
 pub struct NewExifPhoto {
     /// 图像路径

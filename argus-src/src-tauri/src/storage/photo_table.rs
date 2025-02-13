@@ -9,6 +9,7 @@ use anyhow::{anyhow, Result};
 use diesel::associations::HasTable;
 use diesel::prelude::*;
 use diesel::{RunQueryDsl, SqliteConnection, TextExpressionMethods};
+use crate::storage::schema::photo_storages;
 // 获取图片 hash、基础信息（长、宽、比例）、exif 信息
 
 /// 把照片存储到数据库
@@ -68,9 +69,7 @@ pub fn insert_photo_and_info(
     };
     let timestamp = TimeUtils::current_timestamp();
 
-    println!("{:?}", img_exif.make);
-
-    // gps 信息整理
+    // 信息整理
     let gps_op: Option<String> = img_exif.gps_info.map(|info| info.to_string());
     let image_height_op = img_exif.image_height.map(|info| info as i32);
     let image_width_op = img_exif.image_width.map(|info| info as i32);
@@ -116,6 +115,7 @@ pub fn insert_photo_and_info(
         last_viewed_time: None,
         is_delete: false,
     };
+    // 如果数据为空，添加该数据
     return if photos.is_empty() {
         let res = diesel::insert_into(photo_table::table())
             .values(np)
@@ -127,10 +127,15 @@ pub fn insert_photo_and_info(
             Err(anyhow!(res.unwrap_err()))
         }
     } else {
-        Ok(())
+        // 更新数据
+        let res = diesel::update(photo_table.filter(hash.eq(np.hash.clone())))
+            .set(np).execute(connection);
+        if res.is_ok() {
+            Ok(())
+        } else {
+            Err(anyhow!(res.unwrap_err()))
+        }
     };
-
-    Ok(())
 }
 
 /// 查询照片是否存在

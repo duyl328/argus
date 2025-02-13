@@ -99,11 +99,6 @@ impl ImageOperate {
             image_dynamic: None,
         };
 
-        let db_task = DB_GLOBAL_TASK.clone();
-        db_task
-            .send(DbTask::PhotoBaseInsert(rs.clone()))
-            .expect("任务发送出错!");
-
         Ok(rs)
     }
 

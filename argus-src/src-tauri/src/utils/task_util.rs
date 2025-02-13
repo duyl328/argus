@@ -5,6 +5,7 @@ use once_cell::sync::Lazy;
 use std::sync::mpsc::{self, Receiver, Sender};
 use std::sync::Arc;
 use std::thread;
+use crate::utils::exif_utils::tag::ImgExif;
 
 /// 全局数据库任务管理
 pub static DB_GLOBAL_TASK: Lazy<Arc<Sender<DbTask>>> = Lazy::new(|| {
@@ -16,8 +17,10 @@ pub static DB_GLOBAL_TASK: Lazy<Arc<Sender<DbTask>>> = Lazy::new(|| {
 });
 
 pub enum DbTask {
-    ///  插入基础图像信息（无 exif 信息）
+    /// 插入基础图像信息（无 exif 信息）
     PhotoBaseInsert(ImageOperate),
+    /// 插入图像完整信息（包含 exif 信息）
+    PhotoFullInfoInsert(ImageOperate,ImgExif),
 }
 
 // todo: 2025/2/5 21:35 后期优化选项：根据任务条数，满足条数批量提交
@@ -29,6 +32,12 @@ pub fn start_db_writer_thread(receiver: Receiver<DbTask>) {
             match task {
                 DbTask::PhotoBaseInsert(data) => {
                     let result = photo_table::insert_photo(&mut conn, data);
+                    if let Err(e) = result {
+                        eprintln!("Error inserting data: {}", e);
+                    }
+                },
+                DbTask::PhotoFullInfoInsert(data,exif) => {
+                    let result = photo_table::insert_photo_and_info(&mut conn, data,exif);
                     if let Err(e) = result {
                         eprintln!("Error inserting data: {}", e);
                     }

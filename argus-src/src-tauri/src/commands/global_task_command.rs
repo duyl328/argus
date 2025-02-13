@@ -17,7 +17,9 @@ use tokio::task;
 use crate::utils::exif_utils::exif_util;
 use crate::utils::exif_utils::exif_util::ExifUtil;
 use crate::utils::exif_utils::tag::Tags;
+use crate::utils::task_util::{DbTask, DB_GLOBAL_TASK};
 
+/// 图像检索任务
 #[tauri::command]
 pub async fn add_photo_retrieve_task(
     app: AppHandle,
@@ -50,6 +52,9 @@ pub async fn add_photo_retrieve_task(
     let data = Arc::new(RwLock::new(0));
     // 最多 10 个任务
     let semaphore = Arc::new(Semaphore::new(20)); // 最多 10 个任务同时执行
+    // 更新前端界面
+    app.clone().emit(global_front_emit::PHOTO_LOADING_MSG_TIP, "后台正在处理!")
+        .unwrap();
      // 添加任务
     for x in result {
         let data = Arc::clone(&data);
@@ -75,7 +80,14 @@ pub async fn add_photo_retrieve_task(
             let tag = Tags::new(true);
             let mt = tag.parse(&exif_info);
             let result = mt.pack_object().expect("数据打包失败！");
-            
+
+            // 图像基础信息的获取
+            let image = ImageOperate::read_image(&x.clone()).await.expect("图像信息获取失败!");
+            // 数据写入数据库
+            let db_task = DB_GLOBAL_TASK.clone();
+            db_task
+                .send(DbTask::PhotoFullInfoInsert(image,result))
+                .expect("任务发送出错!");
 
             let result1 = image_compression.await;
 
@@ -121,7 +133,7 @@ pub async fn add_photo_retrieve_task(
 
 #[tauri::command]
 pub fn emit_global_msg(app: AppHandle) {
-    let mut is_init = GLOBAL_EMIT_IS_INIT.lock().unwrap();
+    let mut is_init = GLOBAL_EMIT_IS_INIT.lock().unwrap(); 
     if is_init.clone() {
         return;
     }
