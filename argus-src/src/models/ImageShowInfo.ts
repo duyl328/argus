@@ -19,6 +19,8 @@ export class ImageShowInfo {
   errorMsg = ''
   // 原图路径
   sourceFilePath = ''
+  // 原图展示路径
+  sourceFileShowPath = ''
   // 文件路径
   filePath = ''
   // 缩略图路径
@@ -27,12 +29,14 @@ export class ImageShowInfo {
 
   constructor(
     sourceFilePath = '',
+    sourceFileShowPath = '',
     filePath = '',
     isLoading: boolean = true,
     isError: boolean = false,
     errorMsg: string = ''
   ) {
     this.sourceFilePath = sourceFilePath
+    this.sourceFileShowPath = sourceFileShowPath
     this.filePath = filePath
     this.isLoading = isLoading
     this.isError = isError

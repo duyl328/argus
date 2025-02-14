@@ -27,7 +27,8 @@
         "scope": {
           "allow": [
             "$APPDATA/db/**",
-            "$RESOURCE/**"
+            "$RESOURCE/**",
+            "*/**"
           ],
           "deny": [
             "$APPDATA/db/*.stronghold"

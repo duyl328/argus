@@ -10,6 +10,8 @@ import LazyImage from '@/components/LazyImage.vue'
 import { ImageShowInfo } from '@/models/ImageShowInfo'
 
 const images = ref<ImageShowInfo[]>([])
+// 图像预览数组
+const preImages = ref<string[]>([])
 const columns = ref<number>(3) // 默认列数
 
 // 屏幕宽度判断
@@ -39,6 +41,7 @@ onMounted(() => {
   let dirAllSubfoldersFirstImg = getAllImgs(
     // 'D:\\argus\\img\\jpg\\局部\\新建文件夹'
     'D:\\argus\\img'
+    // 'D:\\argus\\argus-src\\src-tauri\\target\\debug\\局部'
     // 'E:\\整合',
   )
 
@@ -56,6 +59,10 @@ onUnmounted(() => {
   window.removeEventListener('resize', updateColumns) // 清除监听窗口变化
 })
 
+/**
+ * 展示的图像内容获取
+ * @param info
+ */
 const setItemRef = (info: ImageShowInfo) => (el: Element) => {
   if (info.isWhether) return undefined
   info.isWhether = true
@@ -67,8 +74,10 @@ const setItemRef = (info: ImageShowInfo) => (el: Element) => {
             .then((res) => {
               info.isLoading = false
               info.compressedPath = convertFileSrc(res)
+              info.sourceFileShowPath = convertFileSrc(info.sourceFilePath)
+              preImages.value.push(info.sourceFileShowPath)
             })
-              .catch((err) => {
+            .catch((err) => {
               info.isLoading = false
               info.isError = true
               info.errorMsg = err.toString()
@@ -120,8 +129,13 @@ updateColumns()
           />
         </div>
         <!--        成功-->
-        <div v-else class="relative w-full" style="padding-top: 100%">
-          <img
+        <div
+          v-else
+          class="relative w-full"
+          style="padding-top: 100%"
+        >
+          <el-image
+            :preview-src-list="preImages"
             :src="col.compressedPath"
             alt="Image"
             class="absolute top-0 left-0 w-full h-full object-cover rounded-t-lg"
