@@ -8,11 +8,32 @@ import { Picture as IconPicture } from '@element-plus/icons-vue'
 import { getImageThumbnail } from '@/services/imageService'
 import LazyImage from '@/components/LazyImage.vue'
 import { ImageShowInfo } from '@/models/ImageShowInfo'
+import ImagePreview from '@/views/ImagePreview.vue'
 
 const images = ref<ImageShowInfo[]>([])
 // 图像预览数组
 const preImages = ref<string[]>([])
-const columns = ref<number>(3) // 默认列数
+// 默认列数
+const columns = ref<number>(3)
+// 是否进行预览
+const isPreview = ref<boolean>(false)
+// 进行预览的图片
+const previewImage = ref<ImageShowInfo | undefined>(undefined)
+
+/**
+ * 预览关闭
+ */
+const closePreview = () => {
+  isPreview.value = false
+}
+
+/**
+ * 预览打开
+ */
+const openPreview = (info: ImageShowInfo) => {
+  previewImage.value = info
+  isPreview.value = true
+}
 
 // 屏幕宽度判断
 const colJudgement = [
@@ -96,6 +117,7 @@ const setItemRef = (info: ImageShowInfo) => (el: Element) => {
   }
   return undefined
 }
+
 updateColumns()
 </script>
 
@@ -129,13 +151,8 @@ updateColumns()
           />
         </div>
         <!--        成功-->
-        <div
-          v-else
-          class="relative w-full"
-          style="padding-top: 100%"
-        >
-          <el-image
-            :preview-src-list="preImages"
+        <div v-else @click="openPreview(col)" class="relative w-full" style="padding-top: 100%">
+          <img
             :src="col.compressedPath"
             alt="Image"
             class="absolute top-0 left-0 w-full h-full object-cover rounded-t-lg"
@@ -147,12 +164,14 @@ updateColumns()
         <span
           class="ellipsis mb-3 mr-3 ml-1 whitespace-nowrap overflow-hidden text-ellipsis text-left"
         >
-          {{ col.filePath }}
+          {{ col.folderPath }}
         </span>
         <!--        </el-tooltip>-->
       </div>
     </div>
   </div>
+
+  <ImagePreview v-if="isPreview" :closePreview="closePreview" :imgInfo="previewImage" />
 </template>
 
 <style scoped lang="scss">

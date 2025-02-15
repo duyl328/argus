@@ -23,12 +23,15 @@ export class ImageShowInfo {
   sourceFileShowPath = ''
   // 文件路径
   filePath = ''
+  // 文件夹路径
+  folderPath = ''
   // 缩略图路径
   compressedPath = ''
   public isWhether: boolean = false
 
   constructor(
     sourceFilePath = '',
+    folderPath = '',
     sourceFileShowPath = '',
     filePath = '',
     isLoading: boolean = true,
@@ -38,6 +41,7 @@ export class ImageShowInfo {
     this.sourceFilePath = sourceFilePath
     this.sourceFileShowPath = sourceFileShowPath
     this.filePath = filePath
+    this.folderPath = folderPath
     this.isLoading = isLoading
     this.isError = isError
     this.errorMsg = errorMsg
