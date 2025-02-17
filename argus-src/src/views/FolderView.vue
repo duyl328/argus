@@ -9,6 +9,8 @@ import { getImageThumbnail } from '@/services/imageService'
 import LazyImage from '@/components/LazyImage.vue'
 import { ImageShowInfo } from '@/models/ImageShowInfo'
 import ImagePreview from '@/views/ImagePreview.vue'
+import { getAllLibrary } from '@/services/libraryService'
+import type { photoStorageType } from '@/types/photoStorage.type'
 
 const images = ref<ImageShowInfo[]>([])
 // 图像预览数组
@@ -59,17 +61,20 @@ function updateColumns() {
 }
 
 onMounted(() => {
-  let dirAllSubfoldersFirstImg = getAllImgs(
-    // 'D:\\argus\\img\\jpg\\局部\\新建文件夹'
-    'D:\\argus\\img'
-    // 'D:\\argus\\argus-src\\src-tauri\\target\\debug\\局部'
-    // 'E:\\整合',
-  )
+  // 获取数据库存储地址
+  let basicSetting = getAllLibrary()
+  basicSetting.then((res) => {
+    let parse: photoStorageType[] = JSON.parse(res)
+    parse.forEach((item) => {
+      // 查询指定图片路径
+      let dirAllSubfoldersFirstImg = getAllImgs(item.img_paths as string)
 
-  dirAllSubfoldersFirstImg.then((res) => {
-    res.forEach((item) => {
-      let imageShowInfo = new ImageShowInfo(item.source_file_path, item.file_path)
-      images.value.push(imageShowInfo)
+      dirAllSubfoldersFirstImg.then((res) => {
+        res.forEach((item) => {
+          let imageShowInfo = new ImageShowInfo(item.source_file_path, item.file_path)
+          images.value.push(imageShowInfo)
+        })
+      })
     })
   })
 
@@ -125,6 +130,12 @@ updateColumns()
   <div>
     <!-- 瀑布流主容器 -->
     <div :style="{ gridTemplateColumns: `repeat(${columns}, 1fr)` }" class="grid">
+      <!--      如果没有照片，进行展示-->
+      <div v-if="images.length === 0" class="m-52 w-11/12 bg-red-200">
+        <h1>
+          未选择图片进行展示，请在资料库中添加路径
+        </h1>
+      </div>
       <!-- 每列的内容 -->
       <div
         v-for="(col, index) in images"

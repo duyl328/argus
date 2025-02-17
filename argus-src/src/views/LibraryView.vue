@@ -24,6 +24,7 @@ import emitOrder from '@/constants/emitOrder'
 import { getAppStatus } from '@/AppStatus'
 import type { Event } from '@tauri-apps/api/event'
 import type { loadMsg } from '@/models/globalErrorMsg'
+import StringUtils from '@/utils/stringUtils'
 
 // 输入框输入的值
 const input = ref('')
@@ -73,6 +74,7 @@ async function selectFolder() {
  * 添加文件路径
  */
 function addFolder() {
+  if (StringUtils.isBlank(input.value)) return
   let stringPromise = addPhotoStorage(input.value)
   stringPromise
     .then((value) => {

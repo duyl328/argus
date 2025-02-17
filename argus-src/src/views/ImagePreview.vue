@@ -25,8 +25,8 @@ if (props.imgInfo) {
   getImageInfo(props.imgInfo.sourceFilePath).then((res) => {
     imageInfo.value = JSON.parse(res)
     windowSizeChange()
-    console.log(imageStyle.value)
     console.log(imageInfo.value?.width, imageInfo.value?.height)
+    minSize = Math.min(imgHeight, imgWidth) / 2
   })
 }
 
@@ -62,6 +62,8 @@ let isDragging = false
 
 // 是否被拖拽过
 let isDragged = false
+// 是否放大或缩小过
+let isAdjust = false
 
 // 图像的当前偏移位置
 let offsetX = 0
@@ -74,7 +76,7 @@ let lastOffsetY = 0
 // 图像是否在视口
 let isInViewport = ref(true)
 // 图像最少在画面中出现的大小
-let minSize = 100
+let minSize = Math.min(imgHeight, imgWidth) / 2
 
 // 获取容器和图像的引用
 const imageWrapper = ref(undefined)
@@ -99,7 +101,6 @@ const computeImageStyle = function () {
     lastOffsetX = offsetX
     lastOffsetY = offsetY
   }
-  imageStyle.value = 'left:' + offsetX + 'px;' + 'top:' + offsetY + 'px;' + size
 
   // 计算图像是否在视口内
   isInViewport.value =
@@ -107,6 +108,8 @@ const computeImageStyle = function () {
     window.innerHeight - offsetY > minSize &&
     imgWidth + offsetX > minSize &&
     imgHeight + offsetY > minSize
+
+  imageStyle.value = 'left:' + offsetX + 'px;' + 'top:' + offsetY + 'px;' + size
 }
 
 // 重置图片位置
@@ -127,27 +130,28 @@ computeCursorStyle()
 // 鼠标滚轮事件，缩放图像
 function onWheel(event: WheelEvent) {
   event.preventDefault() // 阻止默认的滚动行为
+  isAdjust = true
   let scale = 1
-  let d = 0
   if (event.deltaY > 0) {
-    scale = Math.max(minScale, scale - scaleInterval) // 向下滚动，缩小，保证不小于 minScale
-    d = -scaleInterval
+    scale = Math.max(minScale, scale - scaleInterval)
   } else {
-    scale = Math.min(maxScale, scale + scaleInterval) // 向上滚动，放大，保证不大于 maxScale
-    d = scaleInterval
+    scale = Math.min(maxScale, scale + scaleInterval)
   }
 
   // 按照图片中心放大缩小
   // offsetX += (imgWidth - imgWidth * scale) / 2
   // offsetY += (imgHeight - imgHeight * scale) / 2
 
-  // 按照鼠标位置放大缩小
-  // todo: 2025/2/16 20:44 按照屏幕中心的位置进行放大
+  // 按照图片中心放大缩小
+  // todo: 2025/2/16 20:44 按照图片在屏幕中心的位置进行放大，参照 honeyView
+  offsetX += (imgWidth - imgWidth * scale) / 2
+  offsetY += (imgHeight - imgHeight * scale) / 2
+  console.log(offsetY)
 
   imgWidth *= scale
   imgHeight *= scale
-  // lastOffsetX = offsetX
-  // lastOffsetY = offsetY
+  lastOffsetX = offsetX
+  lastOffsetY = offsetY
 
   computeImageStyle()
 }
@@ -179,10 +183,12 @@ function onMouseUp() {
 
 // 鼠标移动时拖动图像
 function onMouseMove(event: MouseEvent) {
-  isDragged = true
   if (isDragging) {
-    offsetX = lastOffsetX + event.clientX - startX
-    offsetY = lastOffsetY + event.clientY - startY
+    isDragged = true
+    let offsetX1 = lastOffsetX + event.clientX - startX
+    let offsetY1 = lastOffsetY + event.clientY - startY
+    offsetX = offsetX1
+    offsetY = offsetY1
     computeImageStyle()
   }
 }
