@@ -52,6 +52,10 @@ export const getImageThumbnailPathCommand = 'get_image_thumbnail_path'
  */
 export const getImageThumbnailCommand = 'get_image_thumbnail'
 /**
+ * 获取图像所有信息
+ */
+export const getImageInfoCommand = 'get_image_info'
+/**
  * 获取所有照片路径
  */
 export const getAllImgsCommand = 'get_all_imgs'

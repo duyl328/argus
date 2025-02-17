@@ -1,4 +1,3 @@
-use crate::constant::IMAGE_COMPRESSION_STORAGE_FORMAT;
 use crate::models::photo::{NewExifPhoto, NewPhoto, Photo};
 use crate::storage::schema::photo_table::dsl::photo_table;
 use crate::storage::schema::photo_table::{hash, is_delete};
@@ -9,8 +8,6 @@ use anyhow::{anyhow, Result};
 use diesel::associations::HasTable;
 use diesel::prelude::*;
 use diesel::{RunQueryDsl, SqliteConnection, TextExpressionMethods};
-use crate::storage::schema::photo_storages;
-// 获取图片 hash、基础信息（长、宽、比例）、exif 信息
 
 /// 把照片存储到数据库
 pub fn insert_photo(connection: &mut SqliteConnection, img_info: ImageOperate) -> Result<()> {
@@ -50,18 +47,11 @@ pub fn insert_photo(connection: &mut SqliteConnection, img_info: ImageOperate) -
     };
 }
 
-/// 把照片存储及信息到数据库
-/// - 数据库连结
-/// - 图像信息
-/// - exif 信息1
-pub fn insert_photo_and_info(
-    connection: &mut SqliteConnection,
+/// 合并信息
+pub fn merge_info(
     img_info: ImageOperate,
     img_exif: ImgExif,
-) -> Result<()> {
-    let photos = search_photo_by_hash(connection, img_info.hash.clone()).expect("查询出错");
-    log::debug!("找到 {} 照片", photos.len());
-
+) -> NewExifPhoto {
     let op = if let Some(x) = img_info.format {
         x.to_mime_type()
     } else {
@@ -115,6 +105,23 @@ pub fn insert_photo_and_info(
         last_viewed_time: None,
         is_delete: false,
     };
+    
+    return np;
+}
+
+/// 把照片存储及信息到数据库
+/// - 数据库连结
+/// - 图像信息
+/// - exif 信息1
+pub fn insert_photo_and_info(
+    connection: &mut SqliteConnection,
+    img_info: ImageOperate,
+    img_exif: ImgExif,
+) -> Result<()> {
+    let photos = search_photo_by_hash(connection, img_info.hash.clone()).expect("查询出错");
+    log::debug!("找到 {} 照片", photos.len());
+
+    let np = merge_info(img_info, img_exif);
     // 如果数据为空，添加该数据
     return if photos.is_empty() {
         let res = diesel::insert_into(photo_table::table())
@@ -148,6 +155,25 @@ pub fn search_photo_by_hash(
         .filter(hash.like(hash_str))
         .load::<Photo>(connection)?;
     return Ok(results);
+}
+
+// 查询指定照片
+pub fn find_photo_by_hash(
+    connection: &mut SqliteConnection,
+    img_hash: String,
+) -> Result<Option<Photo>> {
+    let results = photo_table
+        .filter(is_delete.eq(false))
+        .filter(crate::storage::schema::photo_table::hash.eq(img_hash))
+        .load::<Photo>(connection)?;
+    return if results.is_empty() {
+        Ok(None)
+    } else {
+        if results.len() != 1 { 
+            log::warn!("查询到多个相同 hash 的照片");
+        }
+        Ok(Some(results[0].clone()))
+    }
 }
 
 pub fn search_photo_by_file_path(

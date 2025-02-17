@@ -1,14 +1,25 @@
+use crate::commands::command::get_exif_info;
 use crate::constant::{
     DEFAULT_THUMBNAIL_SIZE, IMAGE_COMPRESSION_RATIO, IMAGE_COMPRESSION_STORAGE_FORMAT,
 };
 use crate::errors::AError;
+use crate::models::photo::Photo;
+use crate::storage::connection::establish_connection;
+use crate::storage::photo_table;
+use crate::storage::schema::photo_table::img_path;
 use crate::structs::config::SYS_CONFIG;
+use crate::utils::exif_utils::exif_util;
+use crate::utils::exif_utils::exif_util::ExifUtil;
+use crate::utils::exif_utils::tag::Tags;
 use crate::utils::file_hash_util::FileHashUtils;
 use crate::utils::file_util::{get_all_dir_img, get_all_subfolders};
 use crate::utils::img_util::ImageOperate;
+use crate::utils::json_util::JsonUtil;
 use crate::utils::{file_util, image_format_util};
 use anyhow::Result;
 use tokio::task;
+use crate::utils::hash_util::HashUtil;
+use crate::utils::task_util::{DbTask, DB_GLOBAL_TASK};
 
 /// 压缩图片地址获取
 ///
@@ -120,4 +131,54 @@ pub async fn get_image_thumbnail(image_path: String) -> Result<String, String> {
     })?;
 
     Ok(string)
+}
+
+/// 获取图像信息
+#[tauri::command]
+pub async fn get_image_info(image_path: String) -> Result<String, String> {
+    // 判断文件是否存在
+    if !file_util::file_exists(&image_path) {
+        let string = "指定文件不存在".parse().unwrap();
+        log::error!("指定文件不存在 {} !", string);
+        return Err(string);
+    };
+    // 获取指定图像的 Hash
+    let hash = FileHashUtils::sha256_async(&*image_path)
+        .await
+        .expect("获取文件 Hash 失败");
+
+    let mut conn = establish_connection();
+    // 查询数据库是否存在
+    let option = photo_table::find_photo_by_hash(&mut conn, hash).expect("查询出错");
+    return match option {
+        // 如果不存在，则创建
+        None => {
+            // 读取普通信息
+            let image = ImageOperate::read_image(&image_path)
+                .await
+                .expect("图像信息读取失败！");
+            // 读取 exif 信息
+            let exif_tool = exif_util::ExifToolCmd;
+            let exif_info = exif_tool
+                .read_all_exif(&*image_path)
+                .expect("图像信息读取失败！");
+            let tag = Tags::new(true);
+            let mt = tag.parse(&exif_info);
+            let result = mt.pack_object().expect("数据打包失败！");
+
+            let photo = photo_table::merge_info(image.clone(), result.clone());
+            let result1 = JsonUtil::stringify(&photo).expect("序列化失败");
+            
+            // 数据保存到数据库
+            let db_task = DB_GLOBAL_TASK.clone();
+            db_task
+                .send(DbTask::PhotoFullInfoInsert(image,result))
+                .expect("任务发送出错!");
+            Ok(result1)
+        }
+        Some(res) => {
+            let result = JsonUtil::stringify(&res).expect("序列化失败");
+            Ok(result)
+        }
+    }
 }

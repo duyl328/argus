@@ -143,6 +143,7 @@ pub fn run() {
             commands::image_command::generate_save_thumbnail,
             commands::image_command::get_image_thumbnail_path,
             commands::image_command::get_image_thumbnail,
+            commands::image_command::get_image_info,
             commands::global_task_command::add_photo_retrieve_task,
             commands::global_task_command::emit_global_msg,
             commands::global_task_command::global_msg_emit,

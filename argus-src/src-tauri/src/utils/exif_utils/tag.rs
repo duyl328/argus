@@ -284,6 +284,7 @@ impl Tags {
 }
 
 /// 图像的 exif 信息对象
+#[derive(Debug, Clone)]
 pub struct ImgExif {
     /// 相机制造商
     pub make: Option<String>,
