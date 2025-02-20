@@ -127,6 +127,7 @@ updateColumns()
 </script>
 
 <template>
+
   <div>
     <!-- 瀑布流主容器 -->
     <div :style="{ gridTemplateColumns: `repeat(${columns}, 1fr)` }" class="grid">
