@@ -47,18 +47,25 @@ const imageCursorStyle = ref('')
 let imgWidth = 0
 let imgHeight = 0
 // 最大缩放比例
-let maxScale = 3
+let maxScale = 5
 // 最小缩放比例
-let minScale = 0.5
+let minScale = 0.1
 // 比例间隔
-let scaleInterval = 0.2
+let scaleInterval = 0.5
+// 当前倍率
+let scale = 0.2
+
+// 图片缩放动画时间
+let scaleTime = 50
+// 动画是否在进行中
+let isScaling = false
 
 // 拖动起始位置
 let startX = 0
 let startY = 0
 
 // 是否正在拖动
-let isDragging = false
+let isDragging = ref(false)
 
 // 是否被拖拽过
 let isDragged = false
@@ -116,50 +123,79 @@ const computeImageStyle = function () {
 const resetImagePosition = function () {
   offsetX = 0
   offsetY = 0
+  lastOffsetY = offsetY
+  lastOffsetX = offsetX
   isDragged = false
+  isAdjust = false
   windowSizeChange()
 }
 
 // 计算鼠标样式
 const computeCursorStyle = function () {
-  imageCursorStyle.value = 'cursor:' + (isDragging ? 'grabbing' : 'grab') + ';'
+  imageCursorStyle.value = 'cursor:' + (isDragging.value ? 'grabbing' : 'grab') + ';'
 }
 
 computeCursorStyle()
 
 // 鼠标滚轮事件，缩放图像
 function onWheel(event: WheelEvent) {
+  if (isScaling) {
+    return
+  }
+  setTimeout(() => {
+    isScaling = false
+  }, scaleTime)
+  isScaling = true
   event.preventDefault() // 阻止默认的滚动行为
   isAdjust = true
-  let scale = 1
+  let _scale = 1
+  console.log(scale);
+  // 是否达到最大或最小缩放比例
+  if (scale < minScale && event.deltaY > 0) {
+    return
+  }
+  if (scale > maxScale && event.deltaY < 0) {
+    return
+  }
+
   if (event.deltaY > 0) {
-    scale = Math.max(minScale, scale - scaleInterval)
+    _scale = Math.max(minScale, _scale - scaleInterval)
+    scale -= _scale
   } else {
-    scale = Math.min(maxScale, scale + scaleInterval)
+    _scale = Math.min(maxScale, _scale + scaleInterval)
+    scale += _scale
   }
 
   // 按照图片中心放大缩小
   // offsetX += (imgWidth - imgWidth * scale) / 2
   // offsetY += (imgHeight - imgHeight * scale) / 2
 
-  // 按照图片中心放大缩小
-  // todo: 2025/2/16 20:44 按照图片在屏幕中心的位置进行放大，参照 honeyView
-  offsetX += (imgWidth - imgWidth * scale) / 2
-  offsetY += (imgHeight - imgHeight * scale) / 2
-  console.log(offsetY)
+  // ======================== 按照图片中心放大缩小 =======================
+  // 新的宽高
+  let newWidth = imgWidth * _scale
+  let newHeight = imgHeight * _scale
+  // 获取鼠标位置
+  // 前后宽度、高度差异
+  let offsetWidth = newWidth - imgWidth
+  let offsetHeight = newHeight - imgHeight
 
-  imgWidth *= scale
-  imgHeight *= scale
+  // 计算偏移位置
+  offsetX -= (offsetWidth * (event.x - offsetX)) / imgWidth
+  offsetY -= (offsetHeight * (event.y - offsetY)) / imgHeight
+
+  imgWidth *= _scale
+  imgHeight *= _scale
   lastOffsetX = offsetX
   lastOffsetY = offsetY
 
   computeImageStyle()
 }
 
+
 // 鼠标按下开始拖动
 function onMouseDown(event: MouseEvent) {
   if (event.button === 0) {
-    isDragging = true
+    isDragging.value = true
     startX = event.clientX
     startY = event.clientY
     computeCursorStyle()
@@ -174,7 +210,7 @@ function onMouseDown(event: MouseEvent) {
 
 // 鼠标松开停止拖动
 function onMouseUp() {
-  isDragging = false
+  isDragging.value = false
   // 鼠标抬起记录位置
   lastOffsetX = offsetX
   lastOffsetY = offsetY
@@ -183,7 +219,7 @@ function onMouseUp() {
 
 // 鼠标移动时拖动图像
 function onMouseMove(event: MouseEvent) {
-  if (isDragging) {
+  if (isDragging.value) {
     isDragged = true
     let offsetX1 = lastOffsetX + event.clientX - startX
     let offsetY1 = lastOffsetY + event.clientY - startY
@@ -195,7 +231,7 @@ function onMouseMove(event: MouseEvent) {
 
 // 鼠标移出元素，取消拖动事件
 function onMouseLeave() {
-  if (isDragging) {
+  if (isDragging.value) {
     onMouseUp()
   }
 }
@@ -204,6 +240,9 @@ function onMouseLeave() {
 
 // 监听窗口变动事件（调整图像展示大小）
 function windowSizeChange() {
+  if (isDragged || isAdjust) {
+    return
+  }
   // 计算图像展示的的大小
   let width = window.innerWidth
   let height = window.innerHeight
@@ -273,20 +312,21 @@ onBeforeUnmount(() => {
     <div v-if="previewImage !== undefined" class="relative w-full h-full flex flex-row" @click.stop>
       <!-- 预览图片 -->
       <div
-        @wheel="onWheel($event)"
+        @mousewheel="onWheel($event)"
         @mousedown="onMouseDown($event)"
         @mouseup="onMouseUp"
         @mousemove="onMouseMove($event)"
         @mouseleave="onMouseLeave"
         ref="imageContainer"
         :style="imageCursorStyle"
-        class="flex-1 relative bg-red-200 p-4"
+        class="flex-1 relative p-4"
       >
         <img
           ref="imageWrapper"
-          class="absolute top-0 left-0 img-transition max-w-fit"
+          class="absolute top-0 left-0 max-w-fit"
           :src="previewImage.sourceFileShowPath"
           alt="Image"
+          :class="!isDragging ? 'img-transition' : ''"
           :style="imageStyle"
         />
       </div>
@@ -324,6 +364,6 @@ onBeforeUnmount(() => {
 
 <style scoped lang="scss">
 .img-transition {
-  //transition: all 0.2s
+  transition: all 0.2s;
 }
 </style>
