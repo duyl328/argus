@@ -25,8 +25,13 @@ if (props.imgInfo) {
   getImageInfo(props.imgInfo.sourceFilePath).then((res) => {
     imageInfo.value = JSON.parse(res)
     windowSizeChange()
-    console.log(imageInfo.value?.width, imageInfo.value?.height)
+    // 计算图像缩放比例
+    if (imageInfo.value && imageInfo.value.width) {
+      scale = imgWidth / imageInfo.value.width
+    }
     minSize = Math.min(imgHeight, imgWidth) / 2
+    // 图像原始比例展示
+    // imageRawScaleShow()
   })
 }
 
@@ -47,11 +52,11 @@ const imageCursorStyle = ref('')
 let imgWidth = 0
 let imgHeight = 0
 // 最大缩放比例
-let maxScale = 5
+let maxScale = 20
 // 最小缩放比例
-let minScale = 0.1
+let minScale = 0.01
 // 比例间隔
-let scaleInterval = 0.5
+let scaleInterval = 0.2
 // 当前倍率
 let scale = 0.2
 
@@ -91,6 +96,7 @@ const imageContainer = ref(undefined)
 
 // 图像样式
 const computeImageStyle = function () {
+  console.log("1111");
   let size = 'width:' + imgWidth + 'px;height:' + imgHeight + 'px;'
   // 根据图像大小，计算偏移量
   if (!isDragged) {
@@ -115,6 +121,10 @@ const computeImageStyle = function () {
     window.innerHeight - offsetY > minSize &&
     imgWidth + offsetX > minSize &&
     imgHeight + offsetY > minSize
+  // 计算当前图像比例
+  if (imageInfo.value && imageInfo.value.width) {
+    scale = imgWidth / imageInfo.value.width
+  }
 
   imageStyle.value = 'left:' + offsetX + 'px;' + 'top:' + offsetY + 'px;' + size
 }
@@ -149,7 +159,6 @@ function onWheel(event: WheelEvent) {
   event.preventDefault() // 阻止默认的滚动行为
   isAdjust = true
   let _scale = 1
-  console.log(scale);
   // 是否达到最大或最小缩放比例
   if (scale < minScale && event.deltaY > 0) {
     return
@@ -159,13 +168,10 @@ function onWheel(event: WheelEvent) {
   }
 
   if (event.deltaY > 0) {
-    _scale = Math.max(minScale, _scale - scaleInterval)
-    scale -= _scale
+    _scale = _scale - scaleInterval
   } else {
-    _scale = Math.min(maxScale, _scale + scaleInterval)
-    scale += _scale
+    _scale = _scale + scaleInterval * 1.25
   }
-
   // 按照图片中心放大缩小
   // offsetX += (imgWidth - imgWidth * scale) / 2
   // offsetY += (imgHeight - imgHeight * scale) / 2
@@ -185,12 +191,12 @@ function onWheel(event: WheelEvent) {
 
   imgWidth *= _scale
   imgHeight *= _scale
+
   lastOffsetX = offsetX
   lastOffsetY = offsetY
 
   computeImageStyle()
 }
-
 
 // 鼠标按下开始拖动
 function onMouseDown(event: MouseEvent) {
@@ -272,6 +278,23 @@ function windowSizeChange() {
   imgWidth = newWidth
   imgHeight = newHeight
   computeImageStyle()
+}
+
+// 图像原始比例（大小）展示
+function imageRawScaleShow() {
+  if (imageInfo.value && imageInfo.value.width && imageInfo.value.height) {
+    // 计算偏移位置
+    offsetX += (imgWidth - imageInfo.value.width) / 2
+    offsetY += (imgHeight - imageInfo.value.height) / 2
+
+    imgWidth = imageInfo.value.width
+    imgHeight = imageInfo.value.height
+
+    lastOffsetX = offsetX
+    lastOffsetY = offsetY
+
+    computeImageStyle()
+  }
 }
 
 // 全屏
