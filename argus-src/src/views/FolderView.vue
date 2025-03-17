@@ -11,6 +11,7 @@ import { ImageShowInfo } from '@/models/ImageShowInfo'
 import ImagePreview from '@/views/ImagePreview.vue'
 import { getAllLibrary } from '@/services/libraryService'
 import type { photoStorageType } from '@/types/photoStorage.type'
+import ImageInfoPreview from '@/views/ImageInfoPreview.vue'
 
 const images = ref<ImageShowInfo[]>([])
 // 图像预览数组
@@ -183,7 +184,7 @@ updateColumns()
     </div>
   </div>
 
-  <ImagePreview v-if="isPreview" :closePreview="closePreview" :imgInfo="previewImage" />
+  <ImageInfoPreview v-if="isPreview" :closePreview="closePreview" :imgInfo="previewImage" />
 </template>
 
 <style scoped lang="scss">

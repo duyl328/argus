@@ -12,7 +12,6 @@ const props = defineProps({
   imgInfo: Object as () => ImageShowInfo,
   closePreview: Function
 })
-console.log(props.imgInfo);
 // 正在预览的图像
 const previewImage = ref<ImageShowInfo | undefined>(props.imgInfo)
 // 是否展示详细信息
@@ -250,7 +249,7 @@ function onMouseLeave() {
 
 // 监听窗口变动事件（调整图像展示大小）
 function windowSizeChange() {
-  if (isDragged || isAdjust||!imageContainer.value) {
+  if (isDragged || isAdjust || !imageContainer.value) {
     return
   }
   // 计算图像展示的的大小
@@ -323,7 +322,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <div class="fixed inset-0 z-50 flex justify-center items-center bg-black bg-opacity-90">
+  <div class="">
     <div
       v-if="previewImage !== undefined"
       @wheel.prevent
@@ -336,8 +335,8 @@ onBeforeUnmount(() => {
       @drag.prevent
       @focus.prevent
       @mousedown.prevent
-      class="flex-1 bg-red-500 overflow-hidden relative w-full h-full flex flex-row"
       @click.stop
+      class="bg-blue-500 overflow-hidden relative w-full h-full "
     >
       <!-- 预览图片 -->
       <div
@@ -348,7 +347,7 @@ onBeforeUnmount(() => {
         @mouseleave="onMouseLeave"
         ref="imageContainer"
         :style="imageCursorStyle"
-        class="flex-1 relative p-4"
+        class=" relative p-4 w-full h-full"
       >
         <img
           v-show="isImageShow"
@@ -370,45 +369,6 @@ onBeforeUnmount(() => {
     </div>
     <!--    图像预览失败-->
     <div v-else>图像预览失败</div>
-
-    <!--
-    上一个
-    下一个
-    放大
-    缩小
-    旋转（左右）
-    镜像（待定）
-    -->
-
-    <!-- 操作菜单 -->
-    <div class="w-80 h-full bg-green-200 p-4" :class="isShowInfo ? 'block' : 'hidden'">
-      <el-tabs  class="demo-tabs" >
-        <el-tab-pane label="User" name="first">User</el-tab-pane>
-        <el-tab-pane label="Config" name="second">Config</el-tab-pane>
-        <el-tab-pane label="Role" name="third">Role</el-tab-pane>
-        <el-tab-pane label="Task" name="fourth">Task</el-tab-pane>
-      </el-tabs>
-      基础信息
-        HASH、
-        文件名、日期、时区、位置（海拔、经纬度）、拍摄设备、
-        ISO、曝光时间、光圈、焦距、软件版本、评分、相机制造商、相机型号、软件版本、闪光灯
-        创建日期、最大光圈值、曝光程序、测光模式、艺术家、
-      标签
-      人物
-      文件
-        路径、文件名称、HASH、宽高、文件大小、图像比例、图片格式
-      其他
-        是否经过算法、算法评分、上次查看时间、创建日期、更新时间
-
-    </div>
-
-    <!-- 关闭按钮 -->
-    <button
-      @click="closePreview"
-      class="absolute top-12 right-12 bg-white text-black rounded-full p-2 pl-3.5 pr-3.5 hover:bg-gray-300"
-    >
-      ✖
-    </button>
   </div>
 </template>
 
