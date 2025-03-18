@@ -142,7 +142,7 @@ failed to bundle project: https://github.com/wixtoolset/wix3/releases/download/w
 
 > # Download wix package fail...help #3770
 >
-> ## [![img](../tauri.assets/59404696-1733491695592-1.png)peterroe](https://github.com/peterroe)[on Mar 24, 2022](https://github.com/tauri-apps/tauri/discussions/3770#discussion-3960065)
+> ## [![img](tauri.assets/59404696-1733491695592-1.png)peterroe](https://github.com/peterroe)[on Mar 24, 2022](https://github.com/tauri-apps/tauri/discussions/3770#discussion-3960065)
 >
 > When I run:
 >
@@ -201,7 +201,7 @@ failed to bundle project: https://github.com/wixtoolset/wix3/releases/download/w
 >
 > ## Replies:1 comment · 6 replies
 >
-> ### [![img](../tauri.assets/30730186.jpeg)FabianLars](https://github.com/FabianLars)[on Mar 24, 2022](https://github.com/tauri-apps/tauri/discussions/3770#discussioncomment-2430117)Maintainer
+> ### [![img](tauri.assets/30730186.jpeg)FabianLars](https://github.com/FabianLars)[on Mar 24, 2022](https://github.com/tauri-apps/tauri/discussions/3770#discussioncomment-2430117)Maintainer
 >
 > It's probably blocked by a firewall or something. Can you try downloading [it](https://github.com/wixtoolset/wix3/releases/download/wix3112rtm/wix311-binaries.zip) manually and unpack it into the src-tauri dir so that the project structure looks similar to this:
 >
@@ -213,7 +213,7 @@ failed to bundle project: https://github.com/wixtoolset/wix3/releases/download/w
 >       many files, for example "candle.exe"
 > ```
 >
-> [![@FabianLars](../tauri.assets/30730186-1733491695593-3.jpeg)](https://github.com/FabianLars)
+> [![@FabianLars](tauri.assets/30730186-1733491695593-3.jpeg)](https://github.com/FabianLars)
 >
 > #### [FabianLars](https://github.com/FabianLars)[on Aug 28, 2022](https://github.com/tauri-apps/tauri/discussions/3770#discussioncomment-3490109)Maintainer
 >
@@ -223,7 +223,7 @@ failed to bundle project: https://github.com/wixtoolset/wix3/releases/download/w
 >
 > 
 >
-> [![@liudonghua123](../tauri.assets/2276718.jpeg)](https://github.com/liudonghua123)
+> [![@liudonghua123](tauri.assets/2276718.jpeg)](https://github.com/liudonghua123)
 >
 > 
 >
@@ -235,7 +235,7 @@ failed to bundle project: https://github.com/wixtoolset/wix3/releases/download/w
 >
 > 
 >
-> [![@liudonghua123](../tauri.assets/2276718.jpeg)](https://github.com/liudonghua123)
+> [![@liudonghua123](tauri.assets/2276718.jpeg)](https://github.com/liudonghua123)
 >
 > 
 >
