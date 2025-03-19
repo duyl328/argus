@@ -14,3 +14,8 @@
  * @see ArrayUtils#isNoEmpty
  */
 export type arrayUtilsNotEmptyCallback<T> = (arr: any[]) => T
+
+/**
+ * 文件大小单位
+ */
+export type FILE_SIZE_UNIT_STR = "B" | "KB" | "MB" | "GB" | "TB";
