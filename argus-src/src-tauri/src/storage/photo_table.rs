@@ -67,7 +67,8 @@ pub fn merge_info(
     let exposure_time_op = img_exif.exposure_time.map(|info| info as f32);
     let f_number_op = img_exif.f_number.map(|info| info as f32);
     let iso_op = img_exif.iso.map(|info| info as i32);
-    let date_time_original_op = img_exif.date_time_original.map(|info| info.timestamp());
+    let date_time_original_op = img_exif.date_time_original.map(|info| info.timestamp_millis());
+    let offset_time_op = img_exif.date_time_original.map(|info| info.offset().clone().to_string());
     let focal_length_op = img_exif.focal_length.map(|info| info as f32);
     let np = NewExifPhoto {
         img_path: img_info.img_path,
@@ -84,7 +85,7 @@ pub fn merge_info(
         create_time: timestamp,
         update_time: timestamp,
 
-        offset_time: None,
+        offset_time: offset_time_op,
         rating: rating_op,
         make: img_exif.make,
         model: img_exif.model,

@@ -26,6 +26,7 @@
     "@tauri-apps/plugin-shell": "^2",
     "@tauri-apps/plugin-sql": "^2.0.2",
     "@types/gsap": "^3.0.0",
+    "dayjs": "^1.11.13",
     "element-plus": "^2.7.8",
     "fonts.css": "^2.0.0",
     "gsap": "^3.12.5",

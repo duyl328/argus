@@ -3,7 +3,7 @@ use crate::utils::exif_utils::gps_util::GpsInfo;
 use crate::utils::exif_utils::value::ValueType;
 use crate::utils::json_util::JsonUtil;
 use anyhow::{anyhow, Result};
-use chrono::{DateTime, FixedOffset, Utc};
+use chrono::{DateTime, FixedOffset, NaiveDateTime, TimeZone};
 use std::borrow::Cow;
 use std::collections::HashMap;
 use std::fmt;
@@ -146,7 +146,7 @@ impl Tags {
         let flash: Option<String>;
         let f_number: Option<f64>;
         let iso: Option<u32>;
-        let date_time_original: Option<DateTime<Utc>>;
+        let date_time_original: Option<DateTime<FixedOffset>>;
         let max_aperture_value: Option<String>;
         let focal_length: Option<f64>;
         let image_width: Option<u32>;
@@ -178,6 +178,7 @@ impl Tags {
         gps_info = Option::from(GpsInfo::parse(self, self.continue_on_error)?);
         // 解析时间
         date_time_original = self.parse_create_time();
+        println!("date_time_original11: {}", date_time_original.clone().unwrap_or_default());
         // 评分
         rating = self.parse_number_data(ExifToolDesc::RATING.exif_tool_desc)?;
         Ok(ImgExif {
@@ -202,24 +203,23 @@ impl Tags {
     }
 
     /// 解析时间
-    pub fn parse_create_time(&self) -> Option<DateTime<Utc>> {
+    pub fn parse_create_time(&self) -> Option<DateTime<FixedOffset>> {
         let create_time: Option<String> = self.get(ExifToolDesc::DATE_TIME_ORIGINAL.exif_tool_desc);
         let offset_time: Option<String> = self.get(ExifToolDesc::OFFSET_TIME.exif_tool_desc);
-
+       
         // 如果 create_time 是 None，直接返回 None
         let date_str = create_time?;
+        let offset_str = offset_time.unwrap_or_else(|| "+00:00".to_string());
+        
+        let format = "%Y:%m:%d %H:%M:%S%.3f%:z";
+        let naive_datetime = NaiveDateTime::parse_from_str(&date_str, format).unwrap();
 
-        // 如果 offset_time 是 None，则使用默认的东八区时区 "+08:00"
-        let offset_str = offset_time.unwrap_or_else(|| "+08:00".to_string());
+        // 解析偏移量字符串
+        let offset = offset_str.parse::<FixedOffset>().unwrap();
 
-        // 解析 Date/Time Original 字符串为 DateTime<FixedOffset>
-        let date_time = DateTime::parse_from_str(&date_str, "%Y:%m:%d %H:%M:%S").ok()?;
-
-        // 解析 Offset Time 字符串为 FixedOffset
-        let offset = FixedOffset::from_str(&offset_str).ok()?;
-
-        // 使用时区偏移创建 DateTime<FixedOffset>，然后转换为 UTC 时间
-        Some(date_time.with_timezone(&offset).with_timezone(&Utc))
+        // 组合成 DateTime<FixedOffset>
+        let datetime_fixed = offset.from_local_datetime(&naive_datetime).unwrap();
+        Some(datetime_fixed)
     }
 
     pub fn parse_number_data<T>(&self, str: &str) -> Result<Option<T>>
@@ -303,7 +303,7 @@ pub struct ImgExif {
     /// exif 信息版本
     // exif_version:OptionString>,
     /// 创建日期
-    pub date_time_original: Option<DateTime<Utc>>,
+    pub date_time_original: Option<DateTime<FixedOffset>>,
     /// 最大光圈值
     pub max_aperture_value: Option<String>,
     /// 焦距
@@ -582,3 +582,32 @@ pub struct ExifInfo {
 // }
 //
 // generate_tag_constants!();
+
+#[cfg(test)]
+mod test{
+    use crate::storage::photo_table;
+    use crate::utils::exif_utils::exif_util;
+    use crate::utils::exif_utils::exif_util::ExifUtil;
+    use crate::utils::exif_utils::tag::Tags;
+    use crate::utils::img_util::ImageOperate;
+    use crate::utils::json_util::JsonUtil;
+
+    // 读取图像 exif
+    #[tokio::test]
+    async fn test_read_exif() {
+        let image_path = "D:\\argus\\img\\jpg\\花\\P1014557-PS.JPG";
+        let image = ImageOperate::read_image(&image_path)
+            .await
+            .expect("图像信息读取失败！");
+        // 读取 exif 信息
+        let exif_tool = exif_util::ExifToolCmd;
+        let exif_info = exif_tool
+            .read_all_exif(&*image_path)
+            .expect("图像信息读取失败！");
+        let tag = Tags::new(true);
+        let mt = tag.parse(&exif_info);
+        let result = mt.pack_object().expect("数据打包失败！");
+
+        let photo = photo_table::merge_info(image.clone(), result.clone());
+    }
+}
