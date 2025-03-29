@@ -323,6 +323,16 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="">
+
+    <!--
+    上一个
+    下一个
+    放大
+    缩小
+    旋转（左右）
+    镜像（待定）
+    -->
+
     <div
       v-if="previewImage !== undefined"
       @wheel.prevent
@@ -336,7 +346,7 @@ onBeforeUnmount(() => {
       @focus.prevent
       @mousedown.prevent
       @click.stop
-      class="bg-blue-500 overflow-hidden relative w-full h-full "
+      class="overflow-hidden relative w-full h-full "
     >
       <!-- 预览图片 -->
       <div

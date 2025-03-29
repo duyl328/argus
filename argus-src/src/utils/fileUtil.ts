@@ -20,15 +20,15 @@ import type { FILE_SIZE_UNIT_STR } from '@/types/utils'
  * @param decimalPlaces 小数位数
  * @returns { size: number, unit: string } 转换后的大小和单位
  */
-export const formatFileSize = (
+export const convertFileSize = (
   size: number,
   unit: FILE_SIZE_UNIT_STR | FILE_SIZE_UNIT_ENUM,
   decimalPlaces = 2
 ): { size: number; unit: string } => {
   if (size < 0) throw new Error('文件大小不能为负数')
   // 重新计算字节数
-  let element = FILE_SIZE_UNIT_SIZE[FILE_SIZE_UNIT_ENUM[unit]]
-  let values = Object.values(FILE_SIZE_UNIT_SIZE)
+  const element = FILE_SIZE_UNIT_SIZE[FILE_SIZE_UNIT_ENUM[unit]]
+  const values = Object.values(FILE_SIZE_UNIT_SIZE)
 
   // 选择合适单位
   let bestUnitIndex = 0

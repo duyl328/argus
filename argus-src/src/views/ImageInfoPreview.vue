@@ -1,6 +1,8 @@
 <script setup lang="ts">
 import { Window } from '@tauri-apps/api/window'
-import { ref, computed, onBeforeUnmount } from 'vue'
+import { ref, reactive, computed, onBeforeUnmount } from 'vue'
+import type { FormItemProps, FormProps } from 'element-plus'
+import { convertFileSize } from '@/utils/fileUtil'
 
 // 接收关闭状态
 import { onMounted } from 'vue'
@@ -8,13 +10,13 @@ import type { ImageShowInfo } from '@/models/ImageShowInfo'
 import { getImageInfo } from '@/services/imageService'
 import type { ImageInfo } from '@/types/image.type'
 import ImagePreview from '@/views/ImagePreview.vue'
+import dayjs from 'dayjs'
 
 // 接收关闭事件
 const props = defineProps({
   imgInfo: Object as () => ImageShowInfo,
   closePreview: Function
 })
-console.log(props.imgInfo)
 // 正在预览的图像
 const previewImage = ref<ImageShowInfo | undefined>(props.imgInfo)
 // 是否展示详细信息
@@ -27,6 +29,9 @@ const imageInfo = ref<ImageInfo | undefined>(undefined)
 if (props.imgInfo) {
   getImageInfo(props.imgInfo.sourceFilePath).then((res) => {
     imageInfo.value = JSON.parse(res)
+    console.log(imageInfo.value)
+    console.log(dayjs(imageInfo.value!.createTime).format('YYYY/MM/DD HH:mm:ss'))
+    console.log(dayjs(imageInfo.value!.dateTimeOriginal).format('YYYY/MM/DD HH:mm:ss'))
   })
 }
 
@@ -54,59 +59,92 @@ async function setFullScreen() {
     @wheel.prevent
     @touchmove.prevent
     @keydown.prevent
-    @click.prevent
     @blur.prevent
     @abort.prevent
     @scroll.prevent
     @drag.prevent
     @focus.prevent
     @mousedown.prevent
-    @click.stop
-    class="fixed inset-0 z-50 flex bg-black bg-opacity-90"
+    class="fixed inset-0 z-50 bg-black bg-opacity-90"
   >
-    <ImagePreview class="flex-1" :imgInfo="previewImage" />
-    <div class="w-96 h-full bg-red-600">
-
-      <!--  重置图片位置 -->
-      <!--    <el-button-->
-      <!--      v-if="!isInViewport"-->
-      <!--      @click="resetImagePosition"-->
-      <!--      class="absolute bottom-10 left-1/2 transform -translate-x-1/2 -translate-y-1/2"-->
-      <!--    >重置图片-->
-      <!--    </el-button>-->
-
-      <!--
-      上一个
-      下一个
-      放大
-      缩小
-      旋转（左右）
-      镜像（待定）
-      -->
-
-      <!-- 操作菜单 -->
-      <div class="w-full h-full bg-green-200 p-4" :class="isShowInfo ? 'block' : 'hidden'">
-        <el-tabs class="demo-tabs">
-          <el-tab-pane label="User" name="first">User</el-tab-pane>
-          <el-tab-pane label="Config" name="second">Config</el-tab-pane>
-          <el-tab-pane label="Role" name="third">Role</el-tab-pane>
-          <el-tab-pane label="Task" name="fourth">Task</el-tab-pane>
-        </el-tabs>
-        基础信息 HASH、 文件名、日期、时区、位置（海拔、经纬度）、拍摄设备、
-        ISO、曝光时间、光圈、焦距、软件版本、评分、相机制造商、相机型号、软件版本、闪光灯
-        创建日期、最大光圈值、曝光程序、测光模式、艺术家、标签 人物 文件
-        路径、文件名称、HASH、宽高、文件大小、图像比例、图片格式 其他
-        是否经过算法、算法评分、上次查看时间、创建日期、更新时间
+    <!--    图像预览-->
+    <ImagePreview class="w-full h-full" :imgInfo="previewImage" />
+    <!--    信息展示-->
+    <div
+      v-if="isShowInfo && imageInfo !== undefined && imageInfo !== null"
+      class="text-white pointer-events-none font-light absolute top-0 left-0 z-51 p-4 pt-8"
+    >
+      <div v-if="imageInfo!.imgName">
+        <span>文件名:</span>
+        {{ imageInfo!.imgName }}
       </div>
-
-      <!-- 关闭按钮 -->
-      <button
-        @click="closePreview"
-        class="absolute top-12 right-12 bg-white text-black rounded-full p-2 pl-3.5 pr-3.5 hover:bg-gray-300"
-      >
-        ✖
-      </button>
+      <div v-if="imageInfo!.fileSize">
+        <span>图片大小:</span>
+        {{ convertFileSize(imageInfo!.fileSize, 'B').size }}
+        {{ convertFileSize(imageInfo!.fileSize, 'B').unit }}
+      </div>
+      <div v-if="imageInfo!.updateTime">
+        <span>修改日期:</span>
+        {{ dayjs(imageInfo!.dateTimeOriginal).format('YYYY/MM/DD HH:mm:ss') }}
+      </div>
+      <div v-if="imageInfo!.height && imageInfo!.width">
+        <span>图片信息:</span>
+        {{ imageInfo!.height }}×{{ imageInfo!.width }} ({{ imageInfo!.format }})
+      </div>
+      <br />
+      <div v-if="imageInfo!.make">
+        <span>相机制造商:</span>
+        {{ imageInfo!.make }}
+      </div>
+      <div v-if="imageInfo!.model">
+        <span>相机型号:</span>
+        {{ imageInfo!.model }}
+      </div>
+      <div v-if="imageInfo!.software">
+        <span>软件:</span>
+        {{ imageInfo!.software }}
+      </div>
+      <div v-if="imageInfo!.dateTimeOriginal">
+        <span>拍摄日期:</span>
+        {{ dayjs(imageInfo!.dateTimeOriginal).format('YYYY/MM/DD HH:mm:ss') }}
+      </div>
+      <div v-if="imageInfo!.flash">
+        <span>闪光灯:</span>
+        {{ imageInfo!.flash }}
+      </div>
+      <div v-if="imageInfo!.focalLength">
+        <span>焦距:</span>
+        {{ imageInfo!.focalLength }}mm (焦距 (35mm): {{ imageInfo!.focalLength }}mm)
+      </div>
+      <div v-if="imageInfo!.exposureTime">
+        <span>快门速度:</span>
+        {{ imageInfo!.exposureTime }}s (1/13)
+      </div>
+      <div v-if="imageInfo!.fNumber">
+        <span>光圈数:</span>
+        f/{{ imageInfo!.fNumber }}
+      </div>
+      <div v-if="imageInfo!.iso">
+        <span>ISO 感光度:</span>
+        {{ imageInfo!.iso }}
+      </div>
+      <div v-if="imageInfo!.exposureProgram">
+        <span>曝光程序:</span>
+        {{ imageInfo!.exposureProgram }}
+      </div>
+      <div v-if="imageInfo!.meteringMode">
+        <span>测光模式:</span>
+        {{ imageInfo!.meteringMode }}
+      </div>
     </div>
+
+    <!-- 关闭按钮 -->
+    <button
+      @click="closePreview"
+      class="absolute top-5 right-5 bg-white text-black rounded-full p-2 pl-3.5 pr-3.5 hover:bg-gray-300"
+    >
+      ✖
+    </button>
   </div>
 </template>
 
