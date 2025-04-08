@@ -90,3 +90,18 @@ console.log(isValidUnit("XX")); // ❌ false
 ```
 
 ✅ **这样 `const enum` 仍然可以在编译时优化，但 `FILE_SIZE_UNIT_VALUES` 在运行时是可用的**。
+
+
+
+
+
+# TS中常见DOM泛型
+
+| 元素       | 类型                |
+| ---------- | ------------------- |
+| `<div>`    | `HTMLDivElement`    |
+| `<img>`    | `HTMLImageElement`  |
+| `<canvas>` | `HTMLCanvasElement` |
+| `<input>`  | `HTMLInputElement`  |
+| `<video>`  | `HTMLVideoElement`  |
+| `<audio>`  | `HTMLAudioElement`  |
