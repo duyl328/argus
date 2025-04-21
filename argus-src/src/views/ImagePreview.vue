@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { Window } from '@tauri-apps/api/window'
-import { ref, computed, onBeforeUnmount } from 'vue'
+import { ref, onBeforeUnmount, watch } from 'vue'
 
 // 接收关闭状态
 import { onMounted } from 'vue'
@@ -19,6 +19,24 @@ const isShowInfo = ref(true)
 
 // 图像具体信息
 const imageInfo = ref<ImageInfo | undefined>(undefined)
+
+// 监听路径变化
+watch(() => props.imgInfo,(newValue,oldValue) => {
+  if (newValue) {
+    previewImage.value = newValue
+    resetImagePosition()
+    getImageInfo(newValue.sourceFilePath).then((res) => {
+      imageInfo.value = JSON.parse(res)
+      if (imageInfo.value && imageInfo.value.width) {
+        scale = imgWidth / imageInfo.value.width
+      }
+      minSize = Math.min(imgHeight, imgWidth) / 2
+      windowSizeChange()
+      isImageShow.value = true
+
+    })
+  }
+})
 
 // 详细信息字段(请求数据库获取)
 if (props.imgInfo) {
@@ -92,8 +110,8 @@ let isInViewport = ref(true)
 let minSize = Math.min(imgHeight, imgWidth) / 2
 
 // 获取容器和图像的引用
-const imageWrapper = ref(undefined)
-const imageContainer = ref(undefined)
+const imageWrapper = ref<HTMLDivElement | null>(null)
+const imageContainer = ref<HTMLDivElement | null>(null)
 
 // 图像是否展示（图像在计算完成之后展示）
 const isImageShow = ref(false)
@@ -263,8 +281,8 @@ function windowSizeChange() {
   // 屏幕的比例
   let screenScale = width / height
   // 图像的宽度
-  let newWidth = 0
-  let newHeight = 0
+  let newWidth: number
+  let newHeight: number
   // 当图像清晰度更大时，则压缩整体比例；反之，按照图像宽度进行内容展示
   if (imageWidth > width || imageHeight > height) {
     if (imageScale > screenScale) {
@@ -323,7 +341,6 @@ onBeforeUnmount(() => {
 
 <template>
   <div class="">
-
     <!--
     上一个
     下一个
@@ -346,7 +363,7 @@ onBeforeUnmount(() => {
       @focus.prevent
       @mousedown.prevent
       @click.stop
-      class="overflow-hidden relative w-full h-full "
+      class="overflow-hidden relative w-full h-full"
     >
       <!-- 预览图片 -->
       <div
@@ -357,7 +374,7 @@ onBeforeUnmount(() => {
         @mouseleave="onMouseLeave"
         ref="imageContainer"
         :style="imageCursorStyle"
-        class=" relative p-4 w-full h-full"
+        class="relative p-4 w-full h-full"
       >
         <img
           v-show="isImageShow"

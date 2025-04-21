@@ -44,6 +44,13 @@ pub async fn get_exif_info(path:String) -> Result<String, String> {
     Ok(result)
 }
 
+/// 获取前端可使用的内存大小
+pub fn get_front_can_use_memory(){
+    // todo: 2025/4/7 17:35 获取对应可使用的内存量，可使用总内存的百分之 10 ，然后计算临近的整数内存
+    let (fm,am) = crate::utils::system_state_util::get_memory();
+    
+}
+
 
 // 全局异常通知
 #[tauri::command]

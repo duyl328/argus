@@ -149,8 +149,7 @@ pub async fn get_image_info(image_path: String) -> Result<String, String> {
 
     let mut conn = establish_connection();
     // 查询数据库是否存在
-    // let option = photo_table::find_photo_by_hash(&mut conn, hash).expect("查询出错");
-    let option:Option<Photo> = Option::None;
+    let option = photo_table::find_photo_by_hash(&mut conn, hash).expect("查询出错");
     return match option {
         // 如果不存在，则创建
         None => {

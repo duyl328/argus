@@ -1,17 +1,13 @@
 <script setup lang="ts">
-import { ref, reactive, onMounted, watch, onUnmounted } from 'vue'
-import { getAllImgs, getDirAllSubfoldersFirstImg } from '@/services/folderService'
-import type { FolderImage } from '@/types/rusts/FolderImage'
-import EmitOrder from '@/constants/emitOrder'
+import { onMounted, onUnmounted, ref } from 'vue'
+import { getAllImgs } from '@/services/folderService'
 import { convertFileSrc } from '@tauri-apps/api/core'
-import { Picture as IconPicture } from '@element-plus/icons-vue'
 import { getImageThumbnail } from '@/services/imageService'
-import LazyImage from '@/components/LazyImage.vue'
 import { ImageShowInfo } from '@/models/ImageShowInfo'
-import ImagePreview from '@/views/ImagePreview.vue'
 import { getAllLibrary } from '@/services/libraryService'
 import type { photoStorageType } from '@/types/photoStorage.type'
 import ImageInfoPreview from '@/views/ImageInfoPreview.vue'
+import { ExpandError } from '@/errors'
 
 const images = ref<ImageShowInfo[]>([])
 // 图像预览数组
@@ -22,7 +18,8 @@ const columns = ref<number>(3)
 const isPreview = ref<boolean>(false)
 // 进行预览的图片
 const previewImage = ref<ImageShowInfo | undefined>(undefined)
-
+// 正在展示的图片 index
+let showImageIndex = -1
 /**
  * 预览关闭
  */
@@ -33,9 +30,34 @@ const closePreview = () => {
 /**
  * 预览打开
  */
-const openPreview = (info: ImageShowInfo) => {
+const openPreview = (info: ImageShowInfo, index: number) => {
+  showImageIndex = index
   previewImage.value = info
   isPreview.value = true
+}
+
+/**
+ * 上一张图片
+ */
+const previousImage = () => {
+  let idx = showImageIndex - 1
+  if (idx < 0) {
+    throw ExpandError.IsFirstOneError
+  }
+  previewImage.value = images.value[idx]
+  showImageIndex = idx
+}
+
+/**
+ * 下一张图片
+ */
+const nextImage = () => {
+  let idx = showImageIndex + 1
+  if (idx >= images.value.length) {
+    throw ExpandError.IsLastOneError
+  }
+  previewImage.value = images.value[idx]
+  showImageIndex = idx
 }
 
 // 屏幕宽度判断
@@ -128,15 +150,12 @@ updateColumns()
 </script>
 
 <template>
-
   <div>
     <!-- 瀑布流主容器 -->
     <div :style="{ gridTemplateColumns: `repeat(${columns}, 1fr)` }" class="grid">
       <!--      如果没有照片，进行展示-->
       <div v-if="images.length === 0" class="m-52 w-11/12 bg-red-200">
-        <h1>
-          未选择图片进行展示，请在资料库中添加路径
-        </h1>
+        <h1>未选择图片进行展示，请在资料库中添加路径</h1>
       </div>
       <!-- 每列的内容 -->
       <div
@@ -164,7 +183,12 @@ updateColumns()
           />
         </div>
         <!--        成功-->
-        <div v-else @click="openPreview(col)" class="relative w-full" style="padding-top: 100%">
+        <div
+          v-else
+          @click="openPreview(col, index)"
+          class="relative w-full"
+          style="padding-top: 100%"
+        >
           <img
             :src="col.compressedPath"
             alt="Image"
@@ -184,7 +208,13 @@ updateColumns()
     </div>
   </div>
 
-  <ImageInfoPreview v-if="isPreview" :closePreview="closePreview" :imgInfo="previewImage" />
+  <ImageInfoPreview
+    v-if="isPreview"
+    :closePreview="closePreview"
+    :imgInfo="previewImage"
+    :previousImage="previousImage"
+    :nextImage="nextImage"
+  />
 </template>
 
 <style scoped lang="scss">

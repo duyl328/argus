@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { Window } from '@tauri-apps/api/window'
-import { ref, reactive, computed, onBeforeUnmount } from 'vue'
-import type { FormItemProps, FormProps } from 'element-plus'
+import { ref, reactive, computed, onBeforeUnmount, onUnmounted, watch } from 'vue'
+import { ElMessage, type FormItemProps, type FormProps } from 'element-plus'
 import { convertFileSize } from '@/utils/fileUtil'
 
 // 接收关闭状态
@@ -11,11 +11,17 @@ import { getImageInfo } from '@/services/imageService'
 import type { ImageInfo } from '@/types/image.type'
 import ImagePreview from '@/views/ImagePreview.vue'
 import dayjs from 'dayjs'
+import { ExpandError } from '@/errors'
 
 // 接收关闭事件
 const props = defineProps({
   imgInfo: Object as () => ImageShowInfo,
-  closePreview: Function
+  // 关闭事件
+  closePreview: Function,
+  // 上一张图片
+  previousImage: Function,
+  // 下一张图片
+  nextImage: Function
 })
 // 正在预览的图像
 const previewImage = ref<ImageShowInfo | undefined>(props.imgInfo)
@@ -25,14 +31,64 @@ const isShowInfo = ref(true)
 // 图像具体信息
 const imageInfo = ref<ImageInfo | undefined>(undefined)
 
+watch(
+  () => props.imgInfo,
+  (newValue, oldValue) => {
+    console.log(newValue?.sourceFileShowPath);
+    previewImage.value = newValue
+    if (newValue) {
+      getImageInfo(newValue.sourceFilePath).then((res) => {
+        imageInfo.value = JSON.parse(res)
+      })
+    }
+  }
+)
+
 // 详细信息字段(请求数据库获取)
 if (props.imgInfo) {
   getImageInfo(props.imgInfo.sourceFilePath).then((res) => {
     imageInfo.value = JSON.parse(res)
-    console.log(imageInfo.value)
-    console.log(dayjs(imageInfo.value!.createTime).format('YYYY/MM/DD HH:mm:ss'))
-    console.log(dayjs(imageInfo.value!.dateTimeOriginal).format('YYYY/MM/DD HH:mm:ss'))
   })
+}
+
+/**
+ * 按键切换
+ * @param event
+ */
+function handleKeydown(event: KeyboardEvent) {
+  switch (event.key) {
+    case 'ArrowUp':
+      break
+    case 'ArrowDown':
+      break
+    case 'ArrowLeft':
+      if (props.previousImage) {
+        try {
+          props.previousImage()
+        } catch (e: unknown) {
+          if (e instanceof ExpandError) {
+            ElMessage.warning(e.message)
+          } else {
+            console.error('未知错误', e)
+          }
+        }
+      }
+      break
+    case 'ArrowRight':
+      try {
+        if (props.nextImage) {
+          props.nextImage()
+        }
+      } catch (e: unknown) {
+        if (e instanceof ExpandError) {
+          ElMessage.warning(e.message)
+        } else {
+          console.error('未知错误', e)
+        }
+      }
+
+      break
+  }
 }
 
 // 关闭预览
@@ -45,6 +101,12 @@ const closePreview = () => {
 onMounted(() => {
   // 隐藏滚动条
   document.body.style.overflow = 'hidden'
+  // 注册快捷键
+  window.addEventListener('keydown', handleKeydown)
+})
+onUnmounted(() => {
+  // 注销快捷键
+  window.removeEventListener('keydown', handleKeydown)
 })
 
 // 全屏
