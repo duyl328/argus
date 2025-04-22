@@ -145,7 +145,7 @@ async function setFullScreen() {
         {{ convertFileSize(imageInfo!.fileSize, 'B').size }}
         {{ convertFileSize(imageInfo!.fileSize, 'B').unit }}
       </div>
-      <div v-if="imageInfo!.updateTime">
+      <div v-if="imageInfo!.dateTimeOriginal">
         <span>修改日期:</span>
         {{ dayjs(imageInfo!.dateTimeOriginal).format('YYYY/MM/DD HH:mm:ss') }}
       </div>
