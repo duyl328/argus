@@ -76,6 +76,10 @@ export class ExpandError extends Error {
    * 已是第一张
    */
   static IsFirstOneError = new ExpandError('已是第一张', 'IsFirstOne', '', 100002, false)
+  /**
+   * 路径为空
+   */
+  static PathIsNullOrBlankError = new ExpandError('预览图片路径为空', 'PathIsNullOrBlank', '', 100003, false)
 
   // endregion
 }

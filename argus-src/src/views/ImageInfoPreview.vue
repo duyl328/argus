@@ -12,6 +12,8 @@ import type { ImageInfo } from '@/types/image.type'
 import ImagePreview from '@/views/ImagePreview.vue'
 import dayjs from 'dayjs'
 import { ExpandError } from '@/errors'
+import { convertFileSrc } from '@tauri-apps/api/core'
+import StringUtils from '@/utils/stringUtils'
 
 // 接收关闭事件
 const props = defineProps({
@@ -27,16 +29,20 @@ const props = defineProps({
 const previewImage = ref<ImageShowInfo | undefined>(props.imgInfo)
 // 是否展示详细信息
 const isShowInfo = ref(true)
-
 // 图像具体信息
 const imageInfo = ref<ImageInfo | undefined>(undefined)
 
 watch(
   () => props.imgInfo,
   (newValue, oldValue) => {
-    console.log(newValue?.sourceFileShowPath);
-    previewImage.value = newValue
     if (newValue) {
+      let str = newValue?.sourceFilePath
+      if (StringUtils.isBlank(str)) {
+        throw ExpandError.PathIsNullOrBlankError
+      }
+
+      newValue!.sourceFileShowPath = convertFileSrc(str!)
+      previewImage.value = newValue
       getImageInfo(newValue.sourceFilePath).then((res) => {
         imageInfo.value = JSON.parse(res)
       })

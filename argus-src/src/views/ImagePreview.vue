@@ -20,6 +20,9 @@ const isShowInfo = ref(true)
 // 图像具体信息
 const imageInfo = ref<ImageInfo | undefined>(undefined)
 
+// 图像是否预加载完毕
+const isLoad = ref(false)
+
 // 监听路径变化
 watch(() => props.imgInfo,(newValue,oldValue) => {
   if (newValue) {
@@ -265,6 +268,17 @@ function onMouseLeave() {
 
 // endregion
 
+// region 图像加载和报错处理
+
+/**
+ * 图像正在加载
+ */
+function imgOnLoad() {
+  isLoad.value = true
+}
+
+// endregion
+
 // 监听窗口变动事件（调整图像展示大小）
 function windowSizeChange() {
   if (isDragged || isAdjust || !imageContainer.value) {
@@ -384,7 +398,16 @@ onBeforeUnmount(() => {
           alt="Image"
           :class="!isDragging ? 'img-transition' : ''"
           :style="imageStyle"
+          @load="imgOnLoad"
         />
+<!--        原图加载完成前使用缩略图展示-->
+        <img
+          v-if="!isLoad"
+          class="absolute top-0 left-0 max-w-fit"
+          :src="previewImage.compressedPath"
+          alt="Image"
+          :class="!isDragging ? 'img-transition' : ''"
+          :style="imageStyle">
       </div>
       <!--  重置图片位置 -->
       <el-button
