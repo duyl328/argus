@@ -400,14 +400,6 @@ onBeforeUnmount(() => {
           :style="imageStyle"
           @load="imgOnLoad"
         />
-<!--        原图加载完成前使用缩略图展示-->
-        <img
-          v-if="!isLoad"
-          class="absolute top-0 left-0 max-w-fit"
-          :src="previewImage.compressedPath"
-          alt="Image"
-          :class="!isDragging ? 'img-transition' : ''"
-          :style="imageStyle">
       </div>
       <!--  重置图片位置 -->
       <el-button
@@ -424,6 +416,6 @@ onBeforeUnmount(() => {
 
 <style scoped lang="scss">
 .img-transition {
-  transition: all 0.2s;
+  //transition: all 0.2s;
 }
 </style>

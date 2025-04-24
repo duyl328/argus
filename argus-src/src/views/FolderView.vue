@@ -212,8 +212,8 @@ updateColumns()
     v-if="isPreview"
     :closePreview="closePreview"
     :imgInfo="previewImage"
-    :previousImage="previousImage"
-    :nextImage="nextImage"
+    :showImageIndex="showImageIndex"
+    :images="images"
   />
 </template>
 

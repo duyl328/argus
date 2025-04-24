@@ -14,26 +14,39 @@ import dayjs from 'dayjs'
 import { ExpandError } from '@/errors'
 import { convertFileSrc } from '@tauri-apps/api/core'
 import StringUtils from '@/utils/stringUtils'
+import ImageCacheManager from '@/utils/imageCacheManager'
 
 // 接收关闭事件
 const props = defineProps({
   imgInfo: Object as () => ImageShowInfo,
   // 关闭事件
   closePreview: Function,
-  // 上一张图片
-  previousImage: Function,
-  // 下一张图片
-  nextImage: Function
+  // 预览的图像列表
+  images: Array as () => ImageShowInfo[],
+  // 当前要预览的图片
+  showImageIndex: Number
 })
-// 正在预览的图像
+// 正在展示的图像【初始信息】
+const previewImageInitInfo =ref<ImageShowInfo | undefined> (props.imgInfo)
+// 正在预览的图像【详细信息】
 const previewImage = ref<ImageShowInfo | undefined>(props.imgInfo)
 // 是否展示详细信息
 const isShowInfo = ref(true)
 // 图像具体信息
 const imageInfo = ref<ImageInfo | undefined>(undefined)
+// 图像缓存管理
+let instance: ImageCacheManager = ImageCacheManager.getInstance()
+
+// 当前展示的图像 index
+let showImageIndex = props.showImageIndex || 0
+// 当前预览的图像列表
+let showImagesList = props.images || []
+// 下一张和上一张按下的次数
+let nextImageCount = 0
+let previousImageCount = 0
 
 watch(
-  () => props.imgInfo,
+  previewImageInitInfo,
   (newValue, oldValue) => {
     if (newValue) {
       let str = newValue?.sourceFilePath
@@ -43,7 +56,7 @@ watch(
 
       newValue!.sourceFileShowPath = convertFileSrc(str!)
       previewImage.value = newValue
-      getImageInfo(newValue.sourceFilePath).then((res) => {
+      getImageInfo(newValue!.sourceFilePath).then((res) => {
         imageInfo.value = JSON.parse(res)
       })
     }
@@ -51,8 +64,8 @@ watch(
 )
 
 // 详细信息字段(请求数据库获取)
-if (props.imgInfo) {
-  getImageInfo(props.imgInfo.sourceFilePath).then((res) => {
+if (previewImageInitInfo) {
+  getImageInfo(previewImageInitInfo.value!.sourceFilePath).then((res) => {
     imageInfo.value = JSON.parse(res)
   })
 }
@@ -62,39 +75,34 @@ if (props.imgInfo) {
  * @param event
  */
 function handleKeydown(event: KeyboardEvent) {
+  let idx = 0
   switch (event.key) {
     case 'ArrowUp':
       break
     case 'ArrowDown':
       break
     case 'ArrowLeft':
-      if (props.previousImage) {
-        try {
-          props.previousImage()
-        } catch (e: unknown) {
-          if (e instanceof ExpandError) {
-            ElMessage.warning(e.message)
-          } else {
-            console.error('未知错误', e)
-          }
-        }
+      idx = showImageIndex - 1
+      if (idx < 0) {
+        ElMessage.warning(ExpandError.IsFirstOneError.message)
+        return
       }
-      break
-    case 'ArrowRight':
-      try {
-        if (props.nextImage) {
-          props.nextImage()
-        }
-      } catch (e: unknown) {
-        if (e instanceof ExpandError) {
-          ElMessage.warning(e.message)
-        } else {
-          console.error('未知错误', e)
-        }
-      }
+      previewImageInitInfo.value = showImagesList[idx]
+      showImageIndex = idx
 
       break
+    case 'ArrowRight':
+      idx = showImageIndex + 1
+      if (idx >= showImagesList.length) {
+        ElMessage.warning(ExpandError.IsLastOneError.message)
+        return
+      }
+      previewImageInitInfo.value = showImagesList[idx]
+      showImageIndex = idx
+      break
   }
+  imageCache(idx)
+
 }
 
 // 关闭预览
@@ -113,8 +121,34 @@ onMounted(() => {
 onUnmounted(() => {
   // 注销快捷键
   window.removeEventListener('keydown', handleKeydown)
+
+  // 清空缓存
+  instance.clearCache()
 })
 
+onMounted(() => {
+  imageCache(0)
+})
+
+/**
+ * 缓存图片【缓存当前展示图片前后的 指定 张图片】
+ * @param imgIndex 当前展示图像的 index
+ * @param imgNum 要缓存的图像张数,默认缓存前后10张
+ */
+function imageCache(imgIndex: number, imgNum: number = 10) {
+  console.log("开始图像缓存");
+  // 获取要缓存的图片范围
+  const startIdx = Math.max(0, imgIndex - imgNum)
+  const endIdx = Math.min(showImagesList.length, imgIndex + imgNum)
+
+  // 缓存图片
+  for (let i = startIdx; i < endIdx; i++) {
+    const img = showImagesList[i]
+    if (img && img.sourceFileShowPath) {
+      instance.preloadImage(img.sourceFileShowPath)
+    }
+  }
+}
 // 全屏
 async function setFullScreen() {
   let current = Window.getCurrent()

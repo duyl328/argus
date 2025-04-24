@@ -79,7 +79,13 @@ export class ExpandError extends Error {
   /**
    * 路径为空
    */
-  static PathIsNullOrBlankError = new ExpandError('预览图片路径为空', 'PathIsNullOrBlank', '', 100003, false)
+  static PathIsNullOrBlankError = new ExpandError(
+    '预览图片路径为空',
+    'PathIsNullOrBlank',
+    '',
+    100003,
+    false
+  )
 
   // endregion
 }
