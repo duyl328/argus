@@ -15,6 +15,7 @@ import { ExpandError } from '@/errors'
 import { convertFileSrc } from '@tauri-apps/api/core'
 import StringUtils from '@/utils/stringUtils'
 import ImageCacheManager from '@/utils/imageCacheManager'
+import ImageInfoCacheManager from '@/utils/imageInfoCacheManager'
 
 // 接收关闭事件
 const props = defineProps({
@@ -27,7 +28,7 @@ const props = defineProps({
   showImageIndex: Number
 })
 // 正在展示的图像【初始信息】
-const previewImageInitInfo =ref<ImageShowInfo | undefined> (props.imgInfo)
+const previewImageInitInfo = ref<ImageShowInfo | undefined>(props.imgInfo)
 // 正在预览的图像【详细信息】
 const previewImage = ref<ImageShowInfo | undefined>(props.imgInfo)
 // 是否展示详细信息
@@ -36,7 +37,8 @@ const isShowInfo = ref(true)
 const imageInfo = ref<ImageInfo | undefined>(undefined)
 // 图像缓存管理
 let instance: ImageCacheManager = ImageCacheManager.getInstance()
-
+// 照片信息缓存管理
+let photoInfoCache = ImageInfoCacheManager.getInstance()
 // 当前展示的图像 index
 let showImageIndex = props.showImageIndex || 0
 // 当前预览的图像列表
@@ -45,28 +47,28 @@ let showImagesList = props.images || []
 let nextImageCount = 0
 let previousImageCount = 0
 
-watch(
-  previewImageInitInfo,
-  (newValue, oldValue) => {
-    if (newValue) {
-      let str = newValue?.sourceFilePath
-      if (StringUtils.isBlank(str)) {
-        throw ExpandError.PathIsNullOrBlankError
-      }
-
-      newValue!.sourceFileShowPath = convertFileSrc(str!)
-      previewImage.value = newValue
-      getImageInfo(newValue!.sourceFilePath).then((res) => {
-        imageInfo.value = JSON.parse(res)
-      })
+watch(previewImageInitInfo, (newValue, oldValue) => {
+  if (newValue) {
+    let str = newValue?.sourceFilePath
+    if (StringUtils.isBlank(str)) {
+      throw ExpandError.PathIsNullOrBlankError
     }
+
+    newValue!.sourceFileShowPath = convertFileSrc(str!)
+    previewImage.value = newValue
+    // getImageInfo(newValue!.sourceFilePath).then((res) => {
+    //   imageInfo.value = JSON.parse(res)
+    // })
+    photoInfoCache.getImageInfo(newValue!.sourceFilePath).then((res) => {
+      imageInfo.value = res
+    })
   }
-)
+})
 
 // 详细信息字段(请求数据库获取)
 if (previewImageInitInfo) {
-  getImageInfo(previewImageInitInfo.value!.sourceFilePath).then((res) => {
-    imageInfo.value = JSON.parse(res)
+  photoInfoCache.getImageInfo(previewImageInitInfo.value!.sourceFilePath).then((res) => {
+    imageInfo.value = res
   })
 }
 
@@ -102,7 +104,6 @@ function handleKeydown(event: KeyboardEvent) {
       break
   }
   imageCache(idx)
-
 }
 
 // 关闭预览
@@ -136,7 +137,6 @@ onMounted(() => {
  * @param imgNum 要缓存的图像张数,默认缓存前后10张
  */
 function imageCache(imgIndex: number, imgNum: number = 10) {
-  console.log("开始图像缓存");
   // 获取要缓存的图片范围
   const startIdx = Math.max(0, imgIndex - imgNum)
   const endIdx = Math.min(showImagesList.length, imgIndex + imgNum)
@@ -146,9 +146,11 @@ function imageCache(imgIndex: number, imgNum: number = 10) {
     const img = showImagesList[i]
     if (img && img.sourceFileShowPath) {
       instance.preloadImage(img.sourceFileShowPath)
+      photoInfoCache.preloadImageInfo(img.sourceFilePath)
     }
   }
 }
+
 // 全屏
 async function setFullScreen() {
   let current = Window.getCurrent()

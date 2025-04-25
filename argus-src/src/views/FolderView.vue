@@ -36,30 +36,6 @@ const openPreview = (info: ImageShowInfo, index: number) => {
   isPreview.value = true
 }
 
-/**
- * 上一张图片
- */
-const previousImage = () => {
-  let idx = showImageIndex - 1
-  if (idx < 0) {
-    throw ExpandError.IsFirstOneError
-  }
-  previewImage.value = images.value[idx]
-  showImageIndex = idx
-}
-
-/**
- * 下一张图片
- */
-const nextImage = () => {
-  let idx = showImageIndex + 1
-  if (idx >= images.value.length) {
-    throw ExpandError.IsLastOneError
-  }
-  previewImage.value = images.value[idx]
-  showImageIndex = idx
-}
-
 // 屏幕宽度判断
 const colJudgement = [
   { width: 2400, col: 9 },
