@@ -59,6 +59,10 @@ class ImageInfoCacheManager {
     })
   }
 
+  getImageInfoSync(src: string): ImageInfo | undefined {
+    return this.cache.get(src)
+  }
+
   private addToCache(src: string, info: ImageInfo) {
     if (this.cache.size >= this.maxSize) {
       const firstKey = this.cache.keys().next().value
