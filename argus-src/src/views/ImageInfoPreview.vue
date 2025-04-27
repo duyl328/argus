@@ -16,6 +16,7 @@ import { convertFileSrc } from '@tauri-apps/api/core'
 import StringUtils from '@/utils/stringUtils'
 import ImageCacheManager from '@/utils/imageCacheManager'
 import ImageInfoCacheManager from '@/utils/imageInfoCacheManager'
+import ImagePreviewV2 from '@/views/ImagePreviewV2.vue'
 
 // 接收关闭事件
 const props = defineProps({
@@ -43,10 +44,8 @@ let photoInfoCache = ImageInfoCacheManager.getInstance()
 let showImageIndex = props.showImageIndex || 0
 // 当前预览的图像列表
 let showImagesList = props.images || []
-// 下一张和上一张按下的次数
-let nextImageCount = 0
-let previousImageCount = 0
-
+// 需要预览的图片列表
+let showImageList = ref<ImageShowInfo[]>([])
 watch(previewImageInitInfo, (newValue, oldValue) => {
   if (newValue) {
     let str = newValue?.sourceFilePath
@@ -56,9 +55,6 @@ watch(previewImageInitInfo, (newValue, oldValue) => {
 
     newValue!.sourceFileShowPath = convertFileSrc(str!)
     previewImage.value = newValue
-    // getImageInfo(newValue!.sourceFilePath).then((res) => {
-    //   imageInfo.value = JSON.parse(res)
-    // })
     photoInfoCache.getImageInfo(newValue!.sourceFilePath).then((res) => {
       imageInfo.value = res
     })
@@ -140,15 +136,16 @@ function imageCache(imgIndex: number, imgNum: number = 10) {
   // 获取要缓存的图片范围
   const startIdx = Math.max(0, imgIndex - imgNum)
   const endIdx = Math.min(showImagesList.length, imgIndex + imgNum)
-
+  let imgs = []
   // 缓存图片
   for (let i = startIdx; i < endIdx; i++) {
     const img = showImagesList[i]
     if (img && img.sourceFileShowPath) {
-      instance.preloadImage(img.sourceFileShowPath)
+      imgs.push(img)
       photoInfoCache.preloadImageInfo(img.sourceFilePath)
     }
   }
+  showImageList.value = imgs
 }
 
 // 全屏
@@ -172,7 +169,7 @@ async function setFullScreen() {
     class="fixed inset-0 z-50 bg-black bg-opacity-90"
   >
     <!--    图像预览-->
-    <ImagePreview class="w-full h-full" :imgInfo="previewImage" />
+    <ImagePreviewV2 class="w-full h-full" :imgInfo="previewImage" />
     <!--    信息展示-->
     <div
       v-if="isShowInfo && imageInfo !== undefined && imageInfo !== null"
