@@ -1,5 +1,4 @@
 pub mod connection;
-pub(crate) mod photo_storage;
-pub(crate) mod post;
+pub mod photo;
+pub mod photo_storage;
 pub mod schema;
-pub mod photo_table;

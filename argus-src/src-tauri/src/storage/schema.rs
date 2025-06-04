@@ -1,7 +1,7 @@
 // @generated automatically by Diesel CLI.
 
 diesel::table! {
-    photo_storages (id) {
+    photo_storages_table (id) {
         id -> Integer,
         img_paths -> Text,
         is_enable -> Bool,
@@ -23,11 +23,6 @@ diesel::table! {
         file_size -> BigInt,
         format -> Text,
         notes -> Nullable<Text>,
-        is_algorithm -> Nullable<Bool>,
-        algorithm_score -> Nullable<Integer>,
-        last_viewed_time -> Nullable<BigInt>,
-        offset_time -> Nullable<Text>,
-        rating -> Nullable<Integer>,
         make -> Nullable<Text>,
         model -> Nullable<Text>,
         software -> Nullable<Text>,
@@ -47,20 +42,15 @@ diesel::table! {
         is_delete -> Bool,
         create_time -> BigInt,
         update_time -> BigInt,
-
+        is_algorithm -> Bool,
+        algorithm_score -> Nullable<Integer>,
+        last_viewed_time -> Nullable<BigInt>,
+        offset_time -> Nullable<Text>,
+        rating -> Nullable<Integer>,
     }
 }
 
-diesel::table! {
-    posts (id) {
-        id -> Integer,
-        is_delete -> Bool,
-        create_time -> BigInt,
-        update_time -> BigInt,
-        title -> Text,
-        body -> Text,
-        published -> Bool,
-    }
-}
-
-diesel::allow_tables_to_appear_in_same_query!(photo_storages, photo_table, posts,);
+diesel::allow_tables_to_appear_in_same_query!(
+    photo_storages_table,
+    photo_table,
+);

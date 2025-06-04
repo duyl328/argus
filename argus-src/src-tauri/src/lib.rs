@@ -8,14 +8,12 @@ mod errors;
 mod explore;
 mod global_task_manager;
 mod http_client;
-mod models;
-mod server;
-mod services;
 mod storage;
 mod structs;
 mod tuples;
 mod utils;
 mod global_front_emit;
+mod websocket;
 
 use crate::storage::connection;
 use crate::structs::{config, global_error_msg};
@@ -27,7 +25,7 @@ use tauri::{async_runtime, AppHandle, Window};
 use crate::bg_services::{BgServes, SERVES};
 use crate::global_task_manager::{start_image_loading_background_task, BackgroundTaskAutoManager};
 use crate::storage::connection::establish_connection;
-use crate::storage::photo_table::insert_photo;
+use crate::storage::photo::repository::insert_photo;
 use crate::structs::config::SYS_CONFIG;
 use crate::utils::img_util::ImageOperate;
 use crate::utils::task_util;
@@ -130,8 +128,6 @@ pub fn run() {
             commands::file_command::get_all_sub_dir,
             commands::file_command::get_all_imgs,
             commands::file_command::get_dir_all_subfolders_first_img,
-            commands::post_command::get_all_post,
-            commands::post_command::insert_post,
             commands::log_command::log_logs,
             commands::emit_test::emit_send_test,
             commands::photo_storage_command::get_photo_storage,

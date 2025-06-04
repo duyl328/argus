@@ -178,7 +178,10 @@ impl Tags {
         gps_info = Option::from(GpsInfo::parse(self, self.continue_on_error)?);
         // 解析时间
         date_time_original = self.parse_create_time();
-        println!("date_time_original11: {}", date_time_original.clone().unwrap_or_default());
+        println!(
+            "date_time_original11: {}",
+            date_time_original.clone().unwrap_or_default()
+        );
         // 评分
         rating = self.parse_number_data(ExifToolDesc::RATING.exif_tool_desc)?;
         Ok(ImgExif {
@@ -198,7 +201,7 @@ impl Tags {
             exposure_program,
             metering_mode,
             artist,
-            rating
+            rating,
         })
     }
 
@@ -206,11 +209,11 @@ impl Tags {
     pub fn parse_create_time(&self) -> Option<DateTime<FixedOffset>> {
         let create_time: Option<String> = self.get(ExifToolDesc::DATE_TIME_ORIGINAL.exif_tool_desc);
         let offset_time: Option<String> = self.get(ExifToolDesc::OFFSET_TIME.exif_tool_desc);
-       
+
         // 如果 create_time 是 None，直接返回 None
         let date_str = create_time?;
         let offset_str = offset_time.unwrap_or_else(|| "+00:00".to_string());
-        
+
         let format = "%Y:%m:%d %H:%M:%S%.3f%:z";
         let naive_datetime = NaiveDateTime::parse_from_str(&date_str, format).unwrap();
 
@@ -584,8 +587,7 @@ pub struct ExifInfo {
 // generate_tag_constants!();
 
 #[cfg(test)]
-mod test{
-    use crate::storage::photo_table;
+mod test {
     use crate::utils::exif_utils::exif_util;
     use crate::utils::exif_utils::exif_util::ExifUtil;
     use crate::utils::exif_utils::tag::Tags;
@@ -608,6 +610,7 @@ mod test{
         let mt = tag.parse(&exif_info);
         let result = mt.pack_object().expect("数据打包失败！");
 
-        let photo = photo_table::merge_info(image.clone(), result.clone());
+        let photo =
+            crate::storage::photo::repository::merge_info(image.clone(), result.clone());
     }
 }

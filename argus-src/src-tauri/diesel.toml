@@ -6,7 +6,8 @@ file = "src/storage/schema.rs"
 custom_type_derives = ["diesel::query_builder::QueryId", "Clone"]
 
 [migrations_directory]
-dir = "D:\\argus\\argus-src\\src-tauri\\migrations"
+dir = "D:\\yuanll\\argus\\argus-src\\src-tauri\\migrations"
+
 
 # diesel migration run
 
@@ -19,6 +20,8 @@ dir = "D:\\argus\\argus-src\\src-tauri\\migrations"
 #database      一组用于设置和重置数据库的命令。
 #completions   为diesel命令生成shell完成脚本。
 #print-schema  打印数据库模式的表定义。
+#diesel print-schema > src/schema.rs
+
 #help          打印此消息或给定子命令的帮助
 #
 #Options:
