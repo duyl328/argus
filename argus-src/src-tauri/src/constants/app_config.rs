@@ -1,7 +1,8 @@
-use crate::structs::image_size::ImageSize;
+use crate::infra::image_size::ImageSize;
 use image::ImageFormat;
 
-pub const BANNER1: &str = "
+// 使用 r#" 原始字符串避免手动转义
+pub const BANNER1: &str = r#"
 
     // | |                               //   ) )   //
    //__| |     __      ___              ((         //
@@ -21,7 +22,7 @@ pub const BANNER2: &str = "
                                        |
                                o__     o
                                <\\__ __/>
-";
+"#;
 
 pub const BANNER4: &str = "
 

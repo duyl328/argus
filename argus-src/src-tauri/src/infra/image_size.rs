@@ -1,4 +1,4 @@
-use crate::constant::DEFAULT_THUMBNAIL_SIZE;
+use crate::constants::app_config::DEFAULT_THUMBNAIL_SIZE;
 
 /// 对图像大小的描述
 #[derive(Clone)]

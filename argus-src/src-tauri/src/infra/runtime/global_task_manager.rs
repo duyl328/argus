@@ -1,4 +1,4 @@
-use crate::constant::{IMAGE_COMPRESSION_RATIO, IMAGE_COMPRESSION_STORAGE_FORMAT};
+use crate::constants::app_config::{IMAGE_COMPRESSION_RATIO, IMAGE_COMPRESSION_STORAGE_FORMAT};
 use crate::utils::img_util::ImageOperate;
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
@@ -87,7 +87,7 @@ impl BackgroundImageLoadingTaskManager {
     // }
 
     // 报错消息触发
-    pub (crate) fn err_msg_pop(msg:String){
+    pub(crate) fn err_msg_pop(msg:String){
 
     }
 }

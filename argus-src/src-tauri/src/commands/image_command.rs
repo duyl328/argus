@@ -1,23 +1,21 @@
 use crate::commands::command::get_exif_info;
-use crate::constant::{
+use crate::constants::app_config::{
     DEFAULT_THUMBNAIL_SIZE, IMAGE_COMPRESSION_RATIO, IMAGE_COMPRESSION_STORAGE_FORMAT,
 };
 use crate::errors::AError;
 use crate::storage::photo::model;
 use crate::storage::connection::establish_connection;
 use crate::storage::schema::photo_table::img_path;
-use crate::structs::config::SYS_CONFIG;
+use crate::infra::config::SYS_CONFIG;
 use crate::utils::exif_utils::exif_util;
 use crate::utils::exif_utils::exif_util::ExifUtil;
 use crate::utils::exif_utils::tag::Tags;
-use crate::utils::file_hash_util::FileHashUtils;
 use crate::utils::file_util::{get_all_dir_img, get_all_subfolders};
 use crate::utils::img_util::ImageOperate;
 use crate::utils::json_util::JsonUtil;
-use crate::utils::{file_util, image_format_util};
+use crate::utils::{file_util, img_util};
 use anyhow::Result;
 use tokio::task;
-use crate::utils::hash_util::HashUtil;
 use crate::utils::task_util::{DbTask, DB_GLOBAL_TASK};
 
 /// 压缩图片地址获取
@@ -90,10 +88,10 @@ pub async fn get_image_thumbnail_path(image_path: String) -> Result<String, Stri
         return Err(string);
     };
     // 获取 Hash
-    let hash = FileHashUtils::sha256_async(&*image_path)
+    let hash = file_util::sha256_async(&*image_path)
         .await
         .expect(AError::ThumbnailCacheConfigurationReadFailed.message());
-    log::info!("FileHashUtils {}", hash);
+    log::info!("file_util {}", hash);
 
     // 计算指定路径
     // 获取图片压缩比和图片压缩格式
@@ -103,9 +101,9 @@ pub async fn get_image_thumbnail_path(image_path: String) -> Result<String, Stri
             .to_string()
     })?;
     // 获取文件名后缀
-    let fmt = image_format_util::get_suffix_name(IMAGE_COMPRESSION_STORAGE_FORMAT);
+    let fmt = ImageOperate::get_suffix_name(IMAGE_COMPRESSION_STORAGE_FORMAT);
     let file_path =
-        FileHashUtils::hash_to_file_path(&*hash, &*root_dir, &*fmt, DEFAULT_THUMBNAIL_SIZE);
+        file_util::hash_to_file_path(&*hash, &*root_dir, &*fmt, DEFAULT_THUMBNAIL_SIZE);
 
     Ok(file_path.display().to_string())
 }
@@ -142,7 +140,7 @@ pub async fn get_image_info(image_path: String) -> Result<String, String> {
         return Err(string);
     };
     // 获取指定图像的 Hash
-    let hash = FileHashUtils::sha256_async(&*image_path)
+    let hash = file_util::sha256_async(&*image_path)
         .await
         .expect("获取文件 Hash 失败");
 

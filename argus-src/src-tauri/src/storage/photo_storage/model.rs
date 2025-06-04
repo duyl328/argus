@@ -20,7 +20,7 @@ impl PhotoStorageEntity {
     pub fn default() -> Self {
         Self {
             img_paths: String::from(""),
-            id: crate::constant::BASIC_SETTING_ID, // 假设默认 ID 是 1，你可能需要确保唯一性
+            id: crate::app_config::BASIC_SETTING_ID, // 假设默认 ID 是 1，你可能需要确保唯一性
             is_enable: false,
             create_time: TimeUtils::current_timestamp(),
             update_time: TimeUtils::current_timestamp(),

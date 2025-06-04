@@ -1,4 +1,4 @@
-use crate::conf;
+use crate::infra::conf;
 use anyhow::Result;
 use reqwest::{Client, ClientBuilder};
 use std::time::Duration;

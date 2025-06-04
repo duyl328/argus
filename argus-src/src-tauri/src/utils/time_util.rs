@@ -1,5 +1,5 @@
 extern crate chrono;
-use crate::structs::config::SYS_CONFIG;
+use crate::infra::config::SYS_CONFIG;
 pub use chrono::{DateTime, NaiveDateTime, TimeZone, Utc};
 
 pub struct TimeUtils;

@@ -1,4 +1,4 @@
-use crate::tuples::Pair;
+use crate::utils::tuples::Pair;
 use crate::utils::exif_utils::gps_util::GpsInfo;
 use crate::utils::exif_utils::value::ValueType;
 use crate::utils::json_util::JsonUtil;

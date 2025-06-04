@@ -1,10 +1,10 @@
-use crate::constant::{IMAGE_COMPRESSION_RATIO, IMAGE_COMPRESSION_STORAGE_FORMAT};
-use crate::global_front_emit;
-use crate::structs::global_error_msg::{
+use crate::constants::app_config::{IMAGE_COMPRESSION_RATIO, IMAGE_COMPRESSION_STORAGE_FORMAT};
+use crate::constants::notify_message;
+use crate::infra::global_error_msg::{
     GlobalErrorMsg, LoadMsg, GLOBAL_EMIT_APP_HANDLE, GLOBAL_EMIT_IS_INIT, IMG_DISPOSE_IS_CANCEL,
     IMG_DISPOSE_IS_START,
 };
-use crate::tuples::Pair;
+use crate::utils::tuples::Pair;
 use crate::utils::file_util::{get_all_dir_img, get_all_subfolders};
 use crate::utils::img_util::ImageOperate;
 use crate::utils::json_util::JsonUtil;
@@ -53,7 +53,7 @@ pub async fn add_photo_retrieve_task(
     // 最多 10 个任务
     let semaphore = Arc::new(Semaphore::new(20)); // 最多 10 个任务同时执行
     // 更新前端界面
-    app.clone().emit(global_front_emit::PHOTO_LOADING_MSG_TIP, "后台正在处理!")
+    app.clone().emit(notify_message::PHOTO_LOADING_MSG_TIP, "后台正在处理!")
         .unwrap();
      // 添加任务
     for x in result {
@@ -103,7 +103,7 @@ pub async fn add_photo_retrieve_task(
                     };
                     let str = JsonUtil::stringify(&lm).unwrap();
 
-                    ap.emit(global_front_emit::PHOTO_LOADING_MSG_TIP, str)
+                    ap.emit(notify_message::PHOTO_LOADING_MSG_TIP, str)
                         .unwrap();
                 }
                 Err(e) => {
@@ -115,11 +115,11 @@ pub async fn add_photo_retrieve_task(
                     };
                     let str = JsonUtil::stringify(&lm).unwrap();
 
-                    ap.emit(global_front_emit::PHOTO_LOADING_MSG_TIP, str)
+                    ap.emit(notify_message::PHOTO_LOADING_MSG_TIP, str)
                         .unwrap();
 
                     ap.emit(
-                        global_front_emit::PHOTO_LOADING_ERR_TIP,
+                        notify_message::PHOTO_LOADING_ERR_TIP,
                         format!("{} 出错: {}", lm.task_msg, e.to_string()),
                     )
                     .unwrap();
@@ -145,7 +145,7 @@ pub fn emit_global_msg(app: AppHandle) {
     *emit = Some(emit_tx);
     let f = move |info: String| {
         app.clone()
-            .emit(global_front_emit::GLOBAL_ERROR_MSG_DISPLAY, info)
+            .emit(notify_message::GLOBAL_ERROR_MSG_DISPLAY, info)
             .unwrap();
     };
 
@@ -163,7 +163,7 @@ pub async fn global_msg_emit() -> Result<String, String> {
             title: "标题".parse().unwrap(),
             msg: "内容".parse().unwrap(),
             duration: 5000,
-            kind: crate::structs::global_error_msg::GlobalErrorMsgTypeEnum::Success,
+            kind: crate::infra::global_error_msg::GlobalErrorMsgTypeEnum::Success,
         };
         let result = JsonUtil::stringify(&ms).expect("数据序列化失败!");
         let qqq = x.send(result).await;

@@ -1,13 +1,13 @@
 use std::sync::Once;
 
-pub struct ComputedValue<T> {
+pub struct LazyValue<T> {
     value: Option<T>,
     computed: Once,
 }
 
-impl<T> ComputedValue<T> {
+impl<T> LazyValue<T> {
     pub(crate) fn new() -> Self {
-        ComputedValue {
+        LazyValue {
             value: None,
             computed: Once::new(),
         }

@@ -1,6 +1,6 @@
-use crate::conf;
-use crate::conf::{Conf, CONF_DEFAULT};
-use crate::constant::DEFAULT_PROFILE_NAME;
+use crate::infra::conf;
+use crate::infra::conf::{Conf, CONF_DEFAULT};
+use crate::constants::app_config::DEFAULT_PROFILE_NAME;
 use crate::utils::file_util;
 use crate::utils::file_util::{create_folder, get_root_folder};
 use crate::utils::json_util::JsonUtil;

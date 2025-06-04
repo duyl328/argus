@@ -1,13 +1,12 @@
-use crate::computed_value::ComputedValue;
+use crate::utils::computed_value::LazyValue;
 use crate::errors::AError;
-use crate::structs::config::SYS_CONFIG;
-use crate::structs::image_size::ImageSize;
+use crate::infra::config::SYS_CONFIG;
+use crate::infra::image_size::ImageSize;
 use crate::utils::base64_util::base64_encode;
-use crate::utils::file_hash_util::FileHashUtils;
 use crate::utils::file_util::file_exists;
 use crate::utils::system_state_util::get_memory_as_percentage;
 use crate::utils::task_util::{DbTask, DB_GLOBAL_TASK};
-use crate::utils::{file_util, image_format_util};
+use crate::utils::{file_util};
 use anyhow::{anyhow, Context, Result};
 use image::{imageops, DynamicImage, GenericImageView, ImageError, ImageFormat};
 use image::{imageops::FilterType, ImageReader};
@@ -83,7 +82,7 @@ impl ImageOperate {
             .to_string();
 
         // 计算 Hash
-        let hash = FileHashUtils::sha256_async(image_path)
+        let hash = file_util::sha256_async(image_path)
             .await
             .map_err(|e| anyhow!(AError::HashConversionFailed.message()))?;
 
@@ -211,12 +210,12 @@ impl ImageOperate {
         // 获取根目录
         let root_dir = Arc::new(SYS_CONFIG.thumbnail_storage_path.clone().unwrap());
         // 获取文件名
-        let file_name = Arc::new(image_format_util::get_suffix_name(fmt.clone()));
+        let file_name = Arc::new(ImageOperate::get_suffix_name(fmt.clone()));
 
         // 读取图片
         let img = Arc::new(ImageOperate::read_image(&dir.clone()).await?); // 使用 Arc 包装图像
         let mut join_set = JoinSet::new();
-        let shared_img_dyc = Arc::new(Mutex::new(ComputedValue::<DynamicImage>::new()));
+        let shared_img_dyc = Arc::new(Mutex::new(LazyValue::<DynamicImage>::new()));
 
         for level in compression_level {
             log::info!("获取图片尺寸 {}", &level.size);
@@ -230,7 +229,7 @@ impl ImageOperate {
                 // 获取 Hash
                 let hash = &image.hash;
                 // 获取保存路径
-                let save_path = FileHashUtils::hash_to_file_path(
+                let save_path = file_util::hash_to_file_path(
                     hash.as_str(),
                     &root_dir_clone,
                     &file_name_clone,
@@ -309,10 +308,10 @@ impl ImageOperate {
         })?;
 
         // 获取保存路径
-        let save_path = FileHashUtils::hash_to_file_path(
+        let save_path = file_util::hash_to_file_path(
             read_img.hash.as_str(),
             &root_dir,
-            &image_format_util::get_suffix_name(fmt),
+            &ImageOperate::get_suffix_name(fmt),
             compression_level,
         )
         .display()
@@ -338,6 +337,31 @@ impl ImageOperate {
         }
 
         Ok(save_path)
+    }
+
+    /// 通过图片格式获取匹配文件名
+    pub fn get_suffix_name(image_format: ImageFormat) -> String {
+        match image_format {
+            ImageFormat::Png => String::from("png"),
+            ImageFormat::Jpeg => String::from("jpg"),
+            ImageFormat::Gif => String::from("gif"),
+            ImageFormat::WebP => String::from("webp"),
+            ImageFormat::Pnm => String::from("pnm"),
+            ImageFormat::Tiff => String::from("tiff"),
+            ImageFormat::Tga => String::from("tga"),
+            ImageFormat::Dds => String::from("dds"),
+            ImageFormat::Bmp => String::from("bmp"),
+            ImageFormat::Ico => String::from("ico"),
+            ImageFormat::Hdr => String::from("hdr"),
+            ImageFormat::OpenExr => String::from("exr"),
+            ImageFormat::Farbfeld => String::from("ff"),
+            ImageFormat::Avif => String::from("avif"),
+            ImageFormat::Qoi => String::from("qoi"),
+            ImageFormat::Pcx => String::from("pcx"),
+            _ => {
+                panic!("未知的图片类型! ");
+            }
+        }
     }
 }
 

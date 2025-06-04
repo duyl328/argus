@@ -95,8 +95,8 @@ impl GlobalErrorMsgTypeEnum {
 
 #[cfg(test)]
 mod test {
-    use crate::structs::global_error_msg::GlobalErrorMsg;
-    use crate::structs::global_error_msg::GlobalErrorMsgTypeEnum;
+    use crate::infra::global_error_msg::GlobalErrorMsg;
+    use crate::infra::global_error_msg::GlobalErrorMsgTypeEnum;
     use crate::utils::json_util::JsonUtil;
     use std::cmp::PartialEq;
 

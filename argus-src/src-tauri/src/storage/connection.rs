@@ -1,5 +1,5 @@
-use crate::structs::config::SYS_CONFIG;
-use crate::utils::{db_init_util, file_util};
+use crate::infra::config::SYS_CONFIG;
+use crate::utils::{db_util, file_util};
 use diesel::connection::SimpleConnection;
 use diesel::sqlite::SqliteConnection;
 use diesel::{Connection, QueryResult, RunQueryDsl};
@@ -46,7 +46,7 @@ pub static DATABASE_URL: Lazy<String> = Lazy::new(|| {
     let db_dir = SYS_CONFIG.database_path.clone().unwrap();
     let db_name = SYS_CONFIG.database_name.clone().unwrap();
     // 运行时根据环境变量计算
-    let database_url = env::var(crate::constant::DATABASE_URL_KEY)
+    let database_url = env::var(crate::app_config::DATABASE_URL_KEY)
         .unwrap_or_else(|_| database_path.parse().unwrap());
     let cpath = file_util::get_root_folder().expect("根路径读取失败！ ");
 
@@ -102,7 +102,7 @@ pub fn drop_table(
 
 /// 初始化数据库【未使用】
 fn init_databases() {
-    let vec = db_init_util::get_init_sql_list();
+    let vec = db_util::get_init_sql_list();
     let mut connection = establish_connection();
     for x in vec {
         let is_exist = does_table_exist(&mut connection, &*x.name).unwrap();

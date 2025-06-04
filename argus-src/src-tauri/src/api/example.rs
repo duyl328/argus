@@ -1,4 +1,4 @@
-use crate::http_client::get_base_url;
+use crate::http::http_client::get_base_url;
 use anyhow::Result;
 
 pub async fn get_example() -> Result<String> {

@@ -1,5 +1,5 @@
 use crate::api::example::get_example;
-use crate::http_client::HttpClient;
+use crate::http::http_client::HttpClient;
 use crate::utils::exif_utils::exif_util;
 use crate::utils::exif_utils::exif_util::ExifUtil;
 use crate::utils::exif_utils::tag::Tags;

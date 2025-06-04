@@ -1,5 +1,5 @@
 use tauri::{AppHandle, Emitter};
-use crate::global_front_emit::DOWNLOAD_STARTED;
+use crate::constants::notify_message::DOWNLOAD_STARTED;
 
 #[tauri::command]
 pub async fn emit_send_test(app: AppHandle, param: String) -> String {

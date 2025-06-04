@@ -1,37 +1,33 @@
 mod api;
-pub mod bg_services;
 mod commands;
-mod computed_value;
-mod conf;
-mod constant;
 mod errors;
 mod explore;
-mod global_task_manager;
-mod http_client;
 mod storage;
-mod structs;
-mod tuples;
 mod utils;
-mod global_front_emit;
 mod websocket;
+mod infra;
+mod constants;
+mod http;
 
 use crate::storage::connection;
-use crate::structs::{config, global_error_msg};
+use infra::global_error_msg;
 use std::error::Error;
 use std::sync::{Arc, Mutex};
 use once_cell::sync::Lazy;
 use tauri::{async_runtime, AppHandle, Window};
 
-use crate::bg_services::{BgServes, SERVES};
-use crate::global_task_manager::{start_image_loading_background_task, BackgroundTaskAutoManager};
+use infra::runtime::bg_services::{BgServes, SERVES};
+use infra::runtime::global_task_manager::{start_image_loading_background_task, BackgroundTaskAutoManager};
 use crate::storage::connection::establish_connection;
 use crate::storage::photo::repository::insert_photo;
-use crate::structs::config::SYS_CONFIG;
+use infra::config::SYS_CONFIG;
 use crate::utils::img_util::ImageOperate;
 use crate::utils::task_util;
 use tauri::{App, Emitter, Listener, Manager, State, WindowEvent};
 use tokio::sync::{mpsc, watch};
-
+use constants::app_config;
+use infra::config;
+use infra::runtime::bg_services;
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -83,7 +79,7 @@ pub fn run() {
                 // },
                 // 写入自定义位置
                 tauri_plugin_log::TargetKind::Folder {
-                    path: std::path::PathBuf::from(constant::LOG_PATH),
+                    path: std::path::PathBuf::from(app_config::LOG_PATH),
                     file_name: None,
                 },
             ))
