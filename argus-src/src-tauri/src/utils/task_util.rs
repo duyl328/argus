@@ -1,5 +1,5 @@
 use crate::storage::connection::establish_connection;
-use crate::storage::photo_table;
+use crate::storage::photo::repository;
 use crate::utils::img_util::ImageOperate;
 use once_cell::sync::Lazy;
 use std::sync::mpsc::{self, Receiver, Sender};
@@ -31,13 +31,13 @@ pub fn start_db_writer_thread(receiver: Receiver<DbTask>) {
         for task in receiver {
             match task {
                 DbTask::PhotoBaseInsert(data) => {
-                    let result = photo_table::insert_photo(&mut conn, data);
+                    let result = repository::insert_photo(&mut conn, data);
                     if let Err(e) = result {
                         eprintln!("Error inserting data: {}", e);
                     }
                 },
                 DbTask::PhotoFullInfoInsert(data,exif) => {
-                    let result = photo_table::insert_photo_and_info(&mut conn, data,exif);
+                    let result = repository::insert_photo_and_info(&mut conn, data, exif);
                     if let Err(e) = result {
                         eprintln!("Error inserting data: {}", e);
                     }

@@ -97,6 +97,9 @@ diesel migration redo
 
 ```bash
 diesel print-schema > src/schema.rs
+
+# 目前项目在用
+diesel print-schema > src/storage/schema.rs
 ```
 
 📌 **作用**：读取数据库结构，生成对应的 Rust 表定义代码。

@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Queryable, Selectable, Insertable, Debug, Serialize, Deserialize, Clone)]
 #[diesel(table_name = crate::storage::schema::photo_table)]
 #[diesel(check_for_backend(diesel::sqlite::Sqlite))]
-pub struct Photo {
+pub struct PhotoEntity {
     #[serde(skip_serializing)] // 不进行序列化
     pub id: i32,
     /// 图像路径
@@ -59,7 +59,7 @@ pub struct Photo {
         */
     /// 是否经过算法【识别 人物、场景 等内容】
     #[serde(rename = "isAlgorithm")]
-    pub is_algorithm: Option<bool>,
+    pub is_algorithm: bool,
 
     /// 算法评分
     #[serde(rename = "algorithmScore")]
@@ -129,7 +129,7 @@ pub struct Photo {
 
 #[derive(Insertable, AsChangeset,Serialize, Deserialize)]
 #[diesel(table_name = crate::storage::schema::photo_table)]
-pub struct NewExifPhoto {
+pub struct NewExifPhotoEntity {
     /// 图像路径
     #[serde(rename = "imgPath")]
     pub img_path: String,
@@ -156,7 +156,7 @@ pub struct NewExifPhoto {
 
     /// 是否经过算法【识别 人物、场景 等内容】
     #[serde(rename = "isAlgorithm")]
-    pub is_algorithm: Option<bool>,
+    pub is_algorithm: bool,
 
     /// 算法评分
     #[serde(rename = "algorithmScore")]
@@ -226,7 +226,7 @@ pub struct NewExifPhoto {
 
 #[derive(Insertable)]
 #[diesel(table_name = crate::storage::schema::photo_table)]
-pub struct NewPhoto {
+pub struct NewPhotoEntity {
     /// 图像路径
     pub img_path: String,
     /// 文件名称

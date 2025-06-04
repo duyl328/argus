@@ -1,19 +1,20 @@
-use crate::models::photo_storage::{NewPhotoStorage, PhotoStorage};
-use crate::storage::schema::photo_storages::dsl::photo_storages;
-use crate::storage::schema::photo_storages::is_delete;
+use crate::storage::schema::photo_storages_table::dsl::photo_storages_table;
+use crate::storage::schema::photo_storages_table::is_delete;
 use crate::utils::time_util::TimeUtils;
 use anyhow::{anyhow, Result};
 use diesel::associations::HasTable;
 use diesel::prelude::*;
+use crate::storage::photo_storage::model::{NewPhotoStorageEntity, PhotoStorageEntity};
+
 /// 获取数据
-pub fn get_all_photo_path(connection: &mut SqliteConnection) -> Result<Vec<PhotoStorage>> {
+pub fn get_all_photo_path(connection: &mut SqliteConnection) -> Result<Vec<PhotoStorageEntity>> {
     // 尝试加载所有数据
-    // let results = photo_storages::table
-    //     .select(PhotoStorage::as_select()).filter(is_delete.eq(false))
+    // let results = photo_storages_table::table
+    //     .select(PhotoStorageMod::as_select()).filter(is_delete.eq(false))
     //     .load(connection)?;
-    let results = photo_storages
+    let results = photo_storages_table
         .filter(is_delete.eq(false)) // 过滤条件
-        .load::<PhotoStorage>(connection)?;
+        .load::<PhotoStorageEntity>(connection)?;
 
     Ok(results)
 }
@@ -36,7 +37,7 @@ pub fn insert_img_path(
     }
 
     let timestamp = TimeUtils::current_timestamp();
-    let item = NewPhotoStorage {
+    let item = NewPhotoStorageEntity {
         img_paths: &photo_path.to_owned(),
         is_enable: &is_enable,
         is_delete: &false,
@@ -44,9 +45,9 @@ pub fn insert_img_path(
         update_time: &timestamp,
     };
 
-    let result = diesel::insert_into(photo_storages::table())
+    let result = diesel::insert_into(photo_storages_table::table())
         .values(item)
-        .returning(PhotoStorage::as_returning())
+        .returning(PhotoStorageEntity::as_returning())
         .get_result(connection);
     if result.is_ok() {
         Ok(())
@@ -58,14 +59,14 @@ pub fn insert_img_path(
 /// 更新图像存储路径
 pub fn update_photo_storages(
     connection: &mut SqliteConnection,
-    item: &mut PhotoStorage,
+    item: &mut PhotoStorageEntity,
 ) -> Result<()> {
-    use crate::storage::schema::photo_storages;
-    let result = diesel::update(photo_storages::table.filter(photo_storages::id.eq(item.id)))
+    use crate::storage::schema::photo_storages_table;
+    let result = diesel::update(photo_storages_table::table.filter(photo_storages_table::id.eq(item.id)))
         .set((
-            photo_storages::img_paths.eq(&item.img_paths),
-            photo_storages::update_time.eq(TimeUtils::current_timestamp()),
-            photo_storages::is_enable.eq(item.is_enable),
+            photo_storages_table::img_paths.eq(&item.img_paths),
+            photo_storages_table::update_time.eq(TimeUtils::current_timestamp()),
+            photo_storages_table::is_enable.eq(item.is_enable),
         ))
         .execute(connection);
 
@@ -83,11 +84,11 @@ pub fn update_photo_storages(
 
 /// 删除一个图像路径
 pub fn delete_img_path(connection: &mut SqliteConnection, id: i32) -> Result<()> {
-    use crate::storage::schema::photo_storages;
-    let result = diesel::update(photo_storages::table.filter(photo_storages::id.eq(id)))
+    use crate::storage::schema::photo_storages_table;
+    let result = diesel::update(photo_storages_table::table.filter(photo_storages_table::id.eq(id)))
         .set((
-            photo_storages::update_time.eq(TimeUtils::current_timestamp()),
-            photo_storages::is_delete.eq(true),
+            photo_storages_table::update_time.eq(TimeUtils::current_timestamp()),
+            photo_storages_table::is_delete.eq(true),
         ))
         .execute(connection);
 

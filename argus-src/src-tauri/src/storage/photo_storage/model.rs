@@ -3,9 +3,9 @@ use diesel::{Insertable, Queryable, Selectable};
 use serde::{Deserialize, Serialize};
 
 #[derive(Queryable, Selectable, Insertable, Debug, Serialize, Deserialize)]
-#[diesel(table_name = crate::storage::schema::photo_storages)]
+#[diesel(table_name = crate::storage::schema::photo_storages_table)]
 #[diesel(check_for_backend(diesel::sqlite::Sqlite))]
-pub struct PhotoStorage {
+pub struct PhotoStorageEntity {
     /// 图像路径存储
     pub id: i32,
     pub img_paths: String,
@@ -15,7 +15,7 @@ pub struct PhotoStorage {
     pub update_time: i64,
 }
 
-impl PhotoStorage {
+impl PhotoStorageEntity {
     /// 默认设置，提供默认值
     pub fn default() -> Self {
         Self {
@@ -30,8 +30,8 @@ impl PhotoStorage {
 }
 
 #[derive(Insertable)]
-#[diesel(table_name = crate::storage::schema::photo_storages)]
-pub struct NewPhotoStorage<'a> {
+#[diesel(table_name = crate::storage::schema::photo_storages_table)]
+pub struct NewPhotoStorageEntity<'a> {
     /// 图像路径存储
     pub img_paths: &'a String,
     pub is_enable: &'a bool,

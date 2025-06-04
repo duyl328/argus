@@ -1,5 +1,4 @@
-use crate::models::photo::{NewExifPhoto, NewPhoto, Photo};
-use crate::storage::schema::photo_table::dsl::photo_table;
+use crate::storage::schema::photo_table::dsl::*;
 use crate::storage::schema::photo_table::{hash, is_delete};
 use crate::utils::exif_utils::tag::{ExifInfo, ImgExif};
 use crate::utils::img_util::ImageOperate;
@@ -8,6 +7,7 @@ use anyhow::{anyhow, Result};
 use diesel::associations::HasTable;
 use diesel::prelude::*;
 use diesel::{RunQueryDsl, SqliteConnection, TextExpressionMethods};
+use crate::storage::photo::model::{NewExifPhotoEntity, NewPhotoEntity, PhotoEntity};
 
 /// 把照片存储到数据库
 pub fn insert_photo(connection: &mut SqliteConnection, img_info: ImageOperate) -> Result<()> {
@@ -20,7 +20,7 @@ pub fn insert_photo(connection: &mut SqliteConnection, img_info: ImageOperate) -
         ""
     };
     let timestamp = TimeUtils::current_timestamp();
-    let np = NewPhoto {
+    let np = NewPhotoEntity {
         img_path: img_info.img_path,
         img_name: img_info.img_name,
         hash: img_info.hash,
@@ -35,7 +35,7 @@ pub fn insert_photo(connection: &mut SqliteConnection, img_info: ImageOperate) -
     return if photos.is_empty() {
         let res = diesel::insert_into(photo_table::table())
             .values(np)
-            .returning(Photo::as_returning())
+            .returning(PhotoEntity::as_returning())
             .get_result(connection);
         if res.is_ok() {
             Ok(())
@@ -51,7 +51,7 @@ pub fn insert_photo(connection: &mut SqliteConnection, img_info: ImageOperate) -
 pub fn merge_info(
     img_info: ImageOperate,
     img_exif: ImgExif,
-) -> NewExifPhoto {
+) -> NewExifPhotoEntity {
     let op = if let Some(x) = img_info.format {
         x.to_mime_type()
     } else {
@@ -70,7 +70,7 @@ pub fn merge_info(
     let date_time_original_op = img_exif.date_time_original.map(|info| info.timestamp_millis());
     let offset_time_op = img_exif.date_time_original.map(|info| info.offset().clone().to_string());
     let focal_length_op = img_exif.focal_length.map(|info| info as f32);
-    let np = NewExifPhoto {
+    let np = NewExifPhotoEntity {
         img_path: img_info.img_path,
         img_name: img_info.img_name,
         hash: img_info.hash,
@@ -80,7 +80,7 @@ pub fn merge_info(
         file_size: img_info.file_size,
         format: op.to_string(),
         notes: None,
-        is_algorithm: None,
+        is_algorithm: false,
         algorithm_score: None,
         create_time: timestamp,
         update_time: timestamp,
@@ -127,7 +127,7 @@ pub fn insert_photo_and_info(
     return if photos.is_empty() {
         let res = diesel::insert_into(photo_table::table())
             .values(np)
-            .returning(Photo::as_returning())
+            .returning(PhotoEntity::as_returning())
             .get_result(connection);
         if res.is_ok() {
             Ok(())
@@ -150,11 +150,19 @@ pub fn insert_photo_and_info(
 pub fn search_photo_by_hash(
     connection: &mut SqliteConnection,
     hash_str: String,
-) -> Result<Vec<Photo>> {
+) -> Result<Vec<PhotoEntity>> {
+
     let results = photo_table
         .filter(is_delete.eq(false))
         .filter(hash.like(hash_str))
-        .load::<Photo>(connection)?;
+        .select(PhotoEntity::as_select())
+        .load::<PhotoEntity>(connection)?;
+
+
+    // let results = photo_table
+    //     .filter(is_delete.eq(false))
+    //     .filter(hash.like(hash_str))
+    //     .load::<PhotoEntity>(connection)?;
     return Ok(results);
 }
 
@@ -162,11 +170,14 @@ pub fn search_photo_by_hash(
 pub fn find_photo_by_hash(
     connection: &mut SqliteConnection,
     img_hash: String,
-) -> Result<Option<Photo>> {
+) -> Result<Option<PhotoEntity>> {
+
     let results = photo_table
         .filter(is_delete.eq(false))
-        .filter(crate::storage::schema::photo_table::hash.eq(img_hash))
-        .load::<Photo>(connection)?;
+        .filter(hash.eq(img_hash))
+        .select(PhotoEntity::as_select())
+        .load::<PhotoEntity>(connection)?;
+
     return if results.is_empty() {
         Ok(None)
     } else {
@@ -180,12 +191,12 @@ pub fn find_photo_by_hash(
 pub fn search_photo_by_file_path(
     connection: &mut SqliteConnection,
     file_path: String,
-) -> Vec<Photo> {
+) -> Vec<PhotoEntity> {
     return Vec::new();
 }
 pub fn search_photo_by_file_name(
     connection: &mut SqliteConnection,
     file_name: String,
-) -> Vec<Photo> {
+) -> Vec<PhotoEntity> {
     return Vec::new();
 }

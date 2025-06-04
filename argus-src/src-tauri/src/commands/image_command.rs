@@ -3,9 +3,8 @@ use crate::constant::{
     DEFAULT_THUMBNAIL_SIZE, IMAGE_COMPRESSION_RATIO, IMAGE_COMPRESSION_STORAGE_FORMAT,
 };
 use crate::errors::AError;
-use crate::models::photo::Photo;
+use crate::storage::photo::model;
 use crate::storage::connection::establish_connection;
-use crate::storage::photo_table;
 use crate::storage::schema::photo_table::img_path;
 use crate::structs::config::SYS_CONFIG;
 use crate::utils::exif_utils::exif_util;
@@ -149,7 +148,8 @@ pub async fn get_image_info(image_path: String) -> Result<String, String> {
 
     let mut conn = establish_connection();
     // 查询数据库是否存在
-    let option = photo_table::find_photo_by_hash(&mut conn, hash).expect("查询出错");
+
+    let option = crate::storage::photo::repository::find_photo_by_hash(&mut conn, hash).expect("查询出错");
     return match option {
         // 如果不存在，则创建
         None => {
@@ -166,7 +166,7 @@ pub async fn get_image_info(image_path: String) -> Result<String, String> {
             let mt = tag.parse(&exif_info);
             let result = mt.pack_object().expect("数据打包失败！");
 
-            let photo = photo_table::merge_info(image.clone(), result.clone());
+            let photo = crate::storage::photo::repository::merge_info(image.clone(), result.clone());
             let result1 = JsonUtil::stringify(&photo).expect("序列化失败");
             
             // 数据保存到数据库
