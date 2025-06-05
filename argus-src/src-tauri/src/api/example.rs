@@ -1,5 +1,5 @@
-use crate::http::http_client::get_base_url;
 use anyhow::Result;
+use crate::net_connection::http_client::get_base_url;
 
 pub async fn get_example() -> Result<String> {
     let base_url = get_base_url();

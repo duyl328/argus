@@ -107,3 +107,6 @@ pub const DEFAULT_THUMBNAIL_SIZE: u32 = IMAGE_COMPRESSION_RATIO[2].size;
 
 /// 默认配置文件名称
 pub const DEFAULT_PROFILE_NAME: &str = "conf-argus.toml";
+
+/// 服务 ip 地址
+pub const HOST: Option<&str> = None;

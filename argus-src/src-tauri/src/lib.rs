@@ -7,7 +7,7 @@ mod utils;
 mod websocket;
 mod infra;
 mod constants;
-mod http;
+mod net_connection;
 
 use crate::storage::connection;
 use infra::global_error_msg;
@@ -91,6 +91,9 @@ pub fn run() {
     let configs = config::init_config();
 
     print!("配置完毕!!!!!!!!!!!!!");
+    
+    // 启动 http 服务
+    crate::net_connection::service::start_server();
 
     // 启动后台服务
     builder
