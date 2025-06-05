@@ -21,6 +21,11 @@ pub struct Conf {
     pub directory_level: u32,
     /// Python 服务地址
     pub python_service_path: String,
+
+    /// Http 端口
+    pub port: u16,
+    pub host: String,
+    pub web_socket_heartbeat_interval: u64
 }
 
 pub(crate) static CONF: Lazy<Arc<RwLock<Conf>>> = Lazy::new(|| Arc::new(RwLock::new(Conf::default())));
@@ -39,6 +44,9 @@ impl Conf {
             time_basic_fmt: "%Y-%m-%d %H:%M:%S".to_string(),
             directory_level: 3,
             python_service_path: String::from("http://127.0.0.1:5000/"),
+            port: 0,
+            host: "".to_string(),
+            web_socket_heartbeat_interval: 30_000,
         }
     }
 }

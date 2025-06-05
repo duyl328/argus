@@ -1,6 +1,6 @@
+use crate::constants::app_config::DEFAULT_PROFILE_NAME;
 use crate::infra::conf;
 use crate::infra::conf::{Conf, CONF_DEFAULT};
-use crate::constants::app_config::DEFAULT_PROFILE_NAME;
 use crate::utils::file_util;
 use crate::utils::file_util::{create_folder, get_root_folder};
 use crate::utils::json_util::JsonUtil;
@@ -41,6 +41,17 @@ pub struct Config {
     /// Python 服务地址
     pub python_service_path: Option<String>,
 
+    // http 配置
+    /// WebSocket 心跳间隔
+    pub web_socket_heartbeat_interval: Option<u64>,
+    
+    /// 路径
+    pub host: Option<String>,
+    /// 端口【用户指定则尝试用户指定端口】
+    pub port: Option<u16>,
+    /// 最大连接【暂不使用】
+    pub max_connections: Option<usize>,
+
     #[serde(flatten)] // 收集多余的字段
     extra: HashMap<String, String>,
 }
@@ -61,6 +72,10 @@ impl Config {
             time_basic_fmt: Some(CONF_DEFAULT.time_basic_fmt.clone()),
             directory_level: Some(CONF_DEFAULT.directory_level.clone()),
             python_service_path: Some(CONF_DEFAULT.python_service_path.clone()),
+            web_socket_heartbeat_interval: Some(30_000),
+            host: None,
+            port: None,
+            max_connections: None,
             extra: HashMap::new(),
         }
     }
@@ -80,7 +95,9 @@ impl PartialEq for Config {
             && self.extra == other.extra
     }
 }
-
+// todo: 2025/6/5 13:45 全局配置不使用全局变量存储；更改为注入管理（分别在软件开启注入 tauri 和 axum） tauri 使用 .manage(app_state.clone()) 完成
+// 不使用全局托管状态，使用框架自带的状态内容进行状态的管理
+/// 全局配置
 pub static SYS_CONFIG: Lazy<Config> = Lazy::new(|| {
     let config = load_config().expect("系统配置文件加载失败! ");
     // 构建必须参数
@@ -101,10 +118,11 @@ pub fn save_config(config: &Config) -> Result<()> {
     Ok(())
 }
 
+/// 加载配置： 如果配置有则使用配置，反之使用默认
 fn load_config() -> Result<Config> {
     log::info!("load_config");
     let path = get_config_dir();
-    log::info!("餐速回构建完毕!!!!!!!!!!!!!  ");
+    log::info!("参数构建完毕!!!!!!!!!!!!!  ");
     let str = JsonUtil::stringify(&path)?;
     log::info!("{}  ", str);
     let mut data = conf::CONF.write().expect("write 报错了");
@@ -182,7 +200,23 @@ fn load_config() -> Result<Config> {
                 .python_service_path
                 .unwrap_or_else(|| data.python_service_path.clone()),
         ),
+        web_socket_heartbeat_interval: Some(
+            config_clone
+                .web_socket_heartbeat_interval
+                .unwrap_or_else(|| data.web_socket_heartbeat_interval.clone()),
+        ),
+        host: Some(
+            config_clone
+                .host
+                .unwrap_or_else(|| data.host.clone()),
+        ),
+        port: Some(
+            config_clone
+                .port
+                .unwrap_or_else(|| data.port.clone()),
+        ),
         extra: Default::default(),
+        max_connections: None,
     };
     // 如果配置有变动，保存修复后的配置
     if config != merged_config {
