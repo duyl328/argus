@@ -10,7 +10,7 @@ pub fn create_http_routes() -> Router<WebSocketState> {
     Router::new()
         // 健康检查
         .route("/health", get(health_check))
-
+        .route("/", get(|| async { "Hello" }))
         // 认证相关
         .route("/auth/login", post(login))
         .route("/auth/logout", post(logout))
@@ -18,14 +18,14 @@ pub fn create_http_routes() -> Router<WebSocketState> {
         // 照片相关API
         .route("/photos", get(list_photos))
         .route("/photos", post(upload_photo))
-        .route("/photos/:id", get(get_photo))
-        .route("/photos/:id", put(update_photo))
-        .route("/photos/:id", delete(delete_photo))
-        .route("/photos/:id/download", get(download_photo))
+        .route("/photos/{id}", get(get_photo))
+        .route("/photos/{id}", put(update_photo))
+        .route("/photos/{id}", delete(delete_photo))
+        .route("/photos/{id}/download", get(download_photo))
 
         // 任务相关API
-        .route("/tasks/:id", get(get_task_status))
-        .route("/tasks/:id/cancel", post(cancel_task))
+        .route("/tasks/{id}", get(get_task_status))
+        .route("/tasks/{id}/cancel", post(cancel_task))
 
         // 应用认证中间件【为整个 router 添加】
         // .layer(middleware::from_fn_with_state(AppState::default(), auth_middleware))

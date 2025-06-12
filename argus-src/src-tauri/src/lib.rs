@@ -1,33 +1,36 @@
 mod api;
 mod commands;
+mod constants;
 mod errors;
 mod explore;
+mod infra;
+mod net_connection;
 mod storage;
 mod utils;
 mod websocket;
-mod infra;
-mod constants;
-mod net_connection;
 
 use crate::storage::connection;
 use infra::global_error_msg;
+use once_cell::sync::Lazy;
 use std::error::Error;
 use std::sync::{Arc, Mutex};
-use once_cell::sync::Lazy;
 use tauri::{async_runtime, AppHandle, Window};
 
-use infra::runtime::bg_services::{BgServes, SERVES};
-use infra::runtime::global_task_manager::{start_image_loading_background_task, BackgroundTaskAutoManager};
 use crate::storage::connection::establish_connection;
 use crate::storage::photo::repository::insert_photo;
-use infra::config::SYS_CONFIG;
 use crate::utils::img_util::ImageOperate;
 use crate::utils::task_util;
-use tauri::{App, Emitter, Listener, Manager, State, WindowEvent};
-use tokio::sync::{mpsc, watch};
 use constants::app_config;
 use infra::config;
+use infra::config::SYS_CONFIG;
 use infra::runtime::bg_services;
+use infra::runtime::bg_services::{BgServes, SERVES};
+use infra::runtime::global_task_manager::{
+    start_image_loading_background_task, BackgroundTaskAutoManager,
+};
+use tauri::{App, Emitter, Listener, Manager, State, WindowEvent};
+use tokio::runtime::Runtime;
+use tokio::sync::{mpsc, watch};
 
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -90,10 +93,7 @@ pub fn run() {
     // 初始化配置文件
     let configs = config::init_config();
 
-    print!("配置完毕!!!!!!!!!!!!!");
-    
-    // 启动 http 服务
-    crate::net_connection::service::start_server();
+    println!("配置完毕!!!!!!!!!!!!!");
 
     // 启动后台服务
     builder
@@ -155,6 +155,23 @@ fn main_setup() -> fn(&mut App) -> Result<(), Box<dyn Error>> {
         {
             log::info!("{}", constant::BANNER4);
         }
+
+        let lazy = SYS_CONFIG.thumbnail_storage_path.clone().unwrap();
+        let option = SYS_CONFIG.host.clone();
+        println!("{}", option.is_none());
+        let host = option.unwrap();
+        // 启动 http 服务
+        std::thread::spawn(|| {
+            let rt = Runtime::new().unwrap();
+            rt.block_on(async {
+                // 你的异步服务，例如：
+                tokio::spawn(async {
+                    if let Err(e) = crate::net_connection::service::start_server().await {
+                        eprintln!("启动服务器失败: {:?}", e);
+                    }
+                });
+            });
+        });
 
         let cpath = std::env::current_dir().expect("软件路径获取");
         log::info!("软件路径:{:?}", cpath);

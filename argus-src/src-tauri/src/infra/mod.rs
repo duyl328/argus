@@ -4,3 +4,4 @@ mod env;
 pub mod global_error_msg;
 pub mod conf;
 pub mod runtime;
+mod config2;

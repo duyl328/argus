@@ -44,7 +44,7 @@ pub struct Config {
     // http 配置
     /// WebSocket 心跳间隔
     pub web_socket_heartbeat_interval: Option<u64>,
-    
+
     /// 路径
     pub host: Option<String>,
     /// 端口【用户指定则尝试用户指定端口】
@@ -73,9 +73,9 @@ impl Config {
             directory_level: Some(CONF_DEFAULT.directory_level.clone()),
             python_service_path: Some(CONF_DEFAULT.python_service_path.clone()),
             web_socket_heartbeat_interval: Some(30_000),
-            host: None,
-            port: None,
-            max_connections: None,
+            host: Some(CONF_DEFAULT.host.clone()),
+            port: Some(CONF_DEFAULT.port.clone()),
+            max_connections: Some(1000),
             extra: HashMap::new(),
         }
     }
@@ -93,6 +93,10 @@ impl PartialEq for Config {
             && self.directory_level == other.directory_level
             && self.python_service_path == other.python_service_path
             && self.extra == other.extra
+            && self.web_socket_heartbeat_interval == other.web_socket_heartbeat_interval
+            && self.host == other.host
+            && self.port == other.port
+            && self.max_connections == other.max_connections
     }
 }
 // todo: 2025/6/5 13:45 全局配置不使用全局变量存储；更改为注入管理（分别在软件开启注入 tauri 和 axum） tauri 使用 .manage(app_state.clone()) 完成
@@ -129,7 +133,8 @@ fn load_config() -> Result<Config> {
     let mut config;
 
     // 检查配置文件是否存在
-    if file_util::file_exists(&*path) {
+    let exists = file_util::file_exists(&*path);
+    if exists {
         // 如果文件存在，读取并反序列化
         let config_str = fs::read_to_string(path)?;
 
@@ -205,16 +210,8 @@ fn load_config() -> Result<Config> {
                 .web_socket_heartbeat_interval
                 .unwrap_or_else(|| data.web_socket_heartbeat_interval.clone()),
         ),
-        host: Some(
-            config_clone
-                .host
-                .unwrap_or_else(|| data.host.clone()),
-        ),
-        port: Some(
-            config_clone
-                .port
-                .unwrap_or_else(|| data.port.clone()),
-        ),
+        host: Some(config_clone.host.unwrap_or_else(|| data.host.clone())),
+        port: Some(config_clone.port.unwrap_or_else(|| data.port.clone())),
         extra: Default::default(),
         max_connections: None,
     };

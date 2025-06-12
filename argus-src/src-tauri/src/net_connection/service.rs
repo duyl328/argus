@@ -11,22 +11,24 @@ pub async fn start_server() -> Result<(), anyhow::Error> {
     let state = WebSocketState::default();
     let app = create_app(state);
 
-    let host = SYS_CONFIG.clone().host.unwrap();
-    let port = SYS_CONFIG.clone().port.unwrap();
+    let host = SYS_CONFIG.host.clone().unwrap();
+    let port = SYS_CONFIG.port.clone().unwrap();
 
     // 获取一个空闲端口
-    let std_listener = std::net::TcpListener::bind(format!("127.0.0.1:{port}").as_str()).unwrap();
+    // let std_listener = std::net::TcpListener::bind(format!("127.0.0.1:{port}").as_str()).unwrap();
+    // 
+    // let socket_addr = std_listener.local_addr().unwrap();
+    // let port = socket_addr.port();
+    // println!("使用的端口是：{:?}", socket_addr);
 
-    let socket_addr = std_listener.local_addr().unwrap();
+    // netstat -ano | findstr :51310
+
+    let listener = tokio::net::TcpListener::bind(format!("127.0.0.1:{port}")).await?;
+
+    let socket_addr = listener.local_addr().unwrap();
     let port = socket_addr.port();
-    println!("使用的端口是：{}", port);
+    println!("使用的端口是：{:?}", socket_addr);
 
-    // 示例服务：axum
-    let app = axum::Router::new().route("/", axum::routing::get(|| async { "Hello" }));
-
-    // let addr = format!("{}:{}", config.host, config.port);
-
-    let listener = tokio::net::TcpListener::bind(socket_addr).await?;
 
     // tracing::info!("Server starting on {}", addr);
 
