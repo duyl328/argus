@@ -9,3 +9,7 @@
 !/argus-src/src-tauri/resources/exiftool-13.10_64/
 !/front.zip
 !/utopia-front-vue.zip
+
+# 本地运行产生的崩溃日志与临时输出
+/hs_err_pid*.log
+/argus-src/src-tauri/2
